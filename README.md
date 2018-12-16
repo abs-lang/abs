@@ -20,10 +20,9 @@ into this:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
-IP=curl -s 'https://api.ipify.org?format=json' | jq -r ".ip"
-total = parts | split(".") | sum
+ip = $(curl -s 'https://api.ipify.org?format=json' | jq -r ".ip")
 
-if total > 100 {
+if ip.split(".").sum() > 100 {
     echo "Hey that's a large number."
 }
 ```
