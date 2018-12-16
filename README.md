@@ -50,8 +50,13 @@ if ip.split(".").sum() > 100 {
   * allow "false" json ({k: "v"}) where k is a literal string
 * ~~interpreter code `abs test.abs`~~
 * builds for interpreter
-* add array std functions
-* add string standard functions
+* add array std functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array / https://lodash.com/docs/4.17.11 -- filter by array methods)
+* add string standard functions (https://golang.org/pkg/strings/)
+* builtins
+  * json
+  * math (https://golang.org/pkg/math/)
+  * rand (https://golang.org/pkg/math/rand/)
+  * time (https://golang.org/pkg/math/)
 * pipe operator
 * floats
 * for
@@ -63,8 +68,7 @@ if ip.split(".").sum() > 100 {
   * expressions
   * functions
     * named
-  * math
-  * builtin
+  * builtins
 * license
 * else if
 
