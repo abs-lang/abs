@@ -5,8 +5,8 @@ import (
 	"abs/object"
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
-	"strings"
 )
 
 var (
@@ -447,22 +447,15 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 }
 
 func evalCommandExpression(cmd string, env *object.Environment) object.Object {
-	parts := strings.Fields(cmd)
-	head := parts[0]
-	parts = parts[1:len(parts)]
-
-	for i, arg := range parts {
-		if strings.HasPrefix(arg, "\"") && strings.HasSuffix(arg, "\"") {
-			parts[i] = arg[1 : len(arg)-1]
-		}
-	}
-
-	c := exec.Command(head, parts...)
+	commands := []string{"-c", cmd}
+	c := exec.Command("bash", commands...)
+	c.Env = os.Environ()
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	c.Stdout = &out
 	c.Stderr = &stderr
 	err := c.Run()
+
 	if err != nil {
 		return newError("executing command '%s' failed : %s %s", cmd, fmt.Sprint(err), stderr.String())
 	}

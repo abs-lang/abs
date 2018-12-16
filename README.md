@@ -39,7 +39,7 @@ if ip.split(".").sum() > 100 {
 
 * bash command syntax
   * ~~basic command execution~~
-  * pipes
+  * ~~pipes~~
   * interpolation
   * do not require semicolon at the end of a command
   * `$(sleep1; ls -la)` fails
@@ -69,6 +69,7 @@ if ip.split(".").sum() > 100 {
 
 ### Later
 
+* decide what to do with semicolons (either all in or ignore them)
 * bash command syntax
   * special variable `$?` for BC
 * add go native functions
