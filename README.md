@@ -75,10 +75,18 @@ if ip.split(".").sum() > 100 {
 * add hash std functions
 * named functions
 * until
+* parsing errors with line nr etc
+
+## Status
+
+Early stage, so it could be that the language parser / evaluator might throw a bunch
+of errors if you feed it funny code.
+
+Open an issue and let's have fun!
 
 ## Credits
 
-* [Terence Parr (ANTLR), for introducing me to parser generators](https://www.antlr.org/)
-* [Thorsten Ball (interpreter book), for demystifying interpreters and providing the initial codebase for the abs interpreter](https://interpreterbook.com/)
-* [Joe Jean, for suggesting the interpreter book](https://www.joejean.net/)
-* [Bash, for being terrible at control flow ;-)](https://en.wikipedia.org/wiki/Bash_(Unix_shell))
+* [Terence Parr (ANTLR)](https://www.antlr.org/), for introducing me to parser generators
+* [Thorsten Ball (interpreter book)](https://interpreterbook.com/), for demystifying interpreters and providing the initial codebase for the abs interpreter
+* [Joe Jean](https://www.joejean.net/), for suggesting the interpreter book
+* [Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), for being terrible at control flow ;-)
