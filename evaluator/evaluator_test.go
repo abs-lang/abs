@@ -361,6 +361,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`env("PWD")`, "/go/src/abs/evaluator"},
 		{`len("")`, 0},
 		{`len("four")`, 4},
 		{`len("hello world")`, 11},
@@ -390,6 +391,16 @@ func TestBuiltinFunctions(t *testing.T) {
 		case nil:
 			testNullObject(t, evaluated)
 		case string:
+			s, ok := evaluated.(*object.String)
+			if ok {
+				if s.Value != tt.expected {
+					t.Errorf("object is not the right string. got=%s want:%s",
+						s.Value, tt.expected)
+				}
+
+				return
+			}
+
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
 				t.Errorf("object is not Error. got=%T (%+v)",

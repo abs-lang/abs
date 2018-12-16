@@ -84,6 +84,7 @@ func Run(code string, addNewline bool) {
 	program := p.ParseProgram()
 	if len(p.Errors()) != 0 {
 		printParserErrors(p.Errors())
+		return
 	}
 
 	evaluated := evaluator.Eval(program, env)

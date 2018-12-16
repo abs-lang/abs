@@ -57,6 +57,7 @@ if ip.split(".").sum() > 100 {
 * for
 * while
 * foreach
+* ~~environment vars~~
 * description of the language
   * assignments
   * expressions
