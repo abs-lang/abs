@@ -37,7 +37,7 @@ if total > 100 {
 ## TODO
 
 * ~~remove `let`~~
-* remove parens from ifs
+* ~~remove parens from ifs~~
 * bash command syntax
 * fix hashes
 * add array std functions
@@ -58,6 +58,7 @@ if total > 100 {
   * math
   * builtin
 * license
+* else if
 * ...
 
 
