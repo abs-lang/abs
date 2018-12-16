@@ -1,6 +1,8 @@
 package lexer
 
-import "abs/token"
+import (
+	"abs/token"
+)
 
 type Lexer struct {
 	input        string
@@ -68,6 +70,9 @@ func (l *Lexer) NextToken() token.Token {
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
+	case '$':
+		tok.Type = token.COMMAND
+		tok.Literal = l.readCommand()
 	case '[':
 		tok = newToken(token.LBRACKET, l.ch)
 	case ']':
@@ -142,6 +147,17 @@ func (l *Lexer) readString() string {
 		}
 	}
 	return l.input[position:l.position]
+}
+
+func (l *Lexer) readCommand() string {
+	position := l.position + 2
+	for {
+		l.readChar()
+		if l.ch == ';' || l.ch == 0 {
+			break
+		}
+	}
+	return l.input[position : l.position-1]
 }
 
 func isLetter(ch byte) bool {

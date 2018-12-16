@@ -215,6 +215,20 @@ func (ie *IfExpression) String() string {
 	return out.String()
 }
 
+type CommandExpression struct {
+	Token token.Token // The command itself
+	Value string
+}
+
+func (ce *CommandExpression) expressionNode()      {}
+func (ce *CommandExpression) TokenLiteral() string { return ce.Token.Literal }
+func (ce *CommandExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString(ce.Token.Literal)
+
+	return out.String()
+}
+
 type FunctionLiteral struct {
 	Token      token.Token // The 'fn' token
 	Parameters []*Identifier

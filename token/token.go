@@ -36,6 +36,7 @@ const (
 	RBRACE   = "}"
 	LBRACKET = "["
 	RBRACKET = "]"
+	COMMAND  = "$()"
 
 	// Keywords
 	FUNCTION = "FUNCTION"

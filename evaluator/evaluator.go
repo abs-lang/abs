@@ -3,7 +3,10 @@ package evaluator
 import (
 	"abs/ast"
 	"abs/object"
+	"bytes"
 	"fmt"
+	"os/exec"
+	"strings"
 )
 
 var (
@@ -112,6 +115,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env)
+
+	case *ast.CommandExpression:
+		return evalCommandExpression(node.Value, env)
 
 	}
 
@@ -438,4 +444,28 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	}
 
 	return pair.Value
+}
+
+func evalCommandExpression(cmd string, env *object.Environment) object.Object {
+	parts := strings.Fields(cmd)
+	head := parts[0]
+	parts = parts[1:len(parts)]
+
+	for i, arg := range parts {
+		if strings.HasPrefix(arg, "\"") && strings.HasSuffix(arg, "\"") {
+			parts[i] = arg[1 : len(arg)-1]
+		}
+	}
+
+	c := exec.Command(head, parts...)
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	c.Stdout = &out
+	c.Stderr = &stderr
+	err := c.Run()
+	if err != nil {
+		return newError("executing command '%s' failed : %s %s", cmd, fmt.Sprint(err), stderr.String())
+	}
+
+	return &object.String{Value: out.String()}
 }

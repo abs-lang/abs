@@ -29,7 +29,10 @@ if (5 < 10) {
 "foobar"
 "foo bar"
 [1, 2];
+$(echo "()");
 {"foo": "bar"}
+$(curl icanhazip.com -X POST);
+$(ls *.go);
 `
 
 	tests := []struct {
@@ -113,11 +116,14 @@ if (5 < 10) {
 		{token.INT, "2"},
 		{token.RBRACKET, "]"},
 		{token.SEMICOLON, ";"},
+		{token.COMMAND, `echo "()"`},
 		{token.LBRACE, "{"},
 		{token.STRING, "foo"},
 		{token.COLON, ":"},
 		{token.STRING, "bar"},
 		{token.RBRACE, "}"},
+		{token.COMMAND, "curl icanhazip.com -X POST"},
+		{token.COMMAND, "ls *.go"},
 		{token.EOF, ""},
 	}
 

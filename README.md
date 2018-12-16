@@ -39,7 +39,13 @@ if total > 100 {
 * ~~remove `let`~~
 * ~~remove parens from ifs~~
 * bash command syntax
-* fix hashes
+  * ~~basic command execution~~
+  * pipes
+  * interpolation
+  * do not require semicolon at the end of a command
+* "fix" hashes
+  * hash key should be string
+  * allow "false" json ({k: "v"}) where k is a literal string
 * add array std functions
 * add go native functions
 * add hash std functions

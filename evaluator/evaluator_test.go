@@ -420,6 +420,36 @@ func TestBuiltinFunctions(t *testing.T) {
 	}
 }
 
+func TestCommand(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`$(echo "123")`, "123\n"},
+		{`$(echo hello world)`, "hello world\n"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		switch expected := tt.expected.(type) {
+		case nil:
+			testNullObject(t, evaluated)
+		case string:
+			stringObj, ok := evaluated.(*object.String)
+			if !ok {
+				t.Errorf("object is not String. got=%T (%+v)",
+					evaluated, evaluated)
+				continue
+			}
+			if stringObj.Value != expected {
+				t.Errorf("wrong string. expected=%q, got=%q",
+					expected, stringObj.Value)
+			}
+		}
+	}
+}
+
 func TestArrayLiterals(t *testing.T) {
 	input := "[1, 2 * 2, 3 + 3]"
 
