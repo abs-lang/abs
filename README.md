@@ -35,30 +35,27 @@ if ip.split(".").sum() > 100 {
 
 ## TODO
 
+### 1.0
+
 * bash command syntax
   * ~~basic command execution~~
   * pipes
   * interpolation
   * do not require semicolon at the end of a command
   * `$(sleep1; ls -la)` fails
-  * special variable `$?` for BC
   * allow to access the status code of a command with `comm = $(...); comm[status]` or `comm.status`
   * remove "\n" from return output
 * "fix" hashes
   * hash key should be string
   * allow "false" json ({k: "v"}) where k is a literal string
-* interpreter code `abs test.abs`
+* ~~interpreter code `abs test.abs`~~
 * builds for interpreter
 * add array std functions
-* add go native functions
-* add hash std functions
 * add string standard functions
 * pipe operator
 * floats
-* named functions
 * for
 * while
-* until
 * foreach
 * description of the language
   * assignments
@@ -69,8 +66,15 @@ if ip.split(".").sum() > 100 {
   * builtin
 * license
 * else if
-* ...
 
+### Later
+
+* bash command syntax
+  * special variable `$?` for BC
+* add go native functions
+* add hash std functions
+* named functions
+* until
 
 ## Credits
 
