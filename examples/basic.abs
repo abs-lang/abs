@@ -1,2 +1,2 @@
-ip = $(curl -s 'https://api.ipify.org?format=json' | jq -r ".ip" | awk '{print "[" $1 "]"}');
+ip = $(curl -s 'https://api.ipify.org?format=json' | jq -rj ".ip" | awk '{print "[" $1 "]"}');
 echo "your ip is " + ip

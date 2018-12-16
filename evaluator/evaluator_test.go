@@ -425,8 +425,9 @@ func TestCommand(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`$(echo "123")`, "123\n"},
-		{`$(echo hello world)`, "hello world\n"},
+		{`$(echo -n "123")`, "123"},
+		{`$(echo -n hello world)`, "hello world"},
+		{`$(echo hello world | xargs echo -n)`, "hello world"},
 	}
 
 	for _, tt := range tests {

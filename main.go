@@ -32,5 +32,5 @@ func main() {
 		panic(err)
 	}
 
-	repl.Run(string(code))
+	repl.Run(string(code), false)
 }

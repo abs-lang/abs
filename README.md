@@ -44,7 +44,7 @@ if ip.split(".").sum() > 100 {
   * do not require semicolon at the end of a command
   * `$(sleep1; ls -la)` fails
   * allow to access the status code of a command with `comm = $(...); comm[status]` or `comm.status`
-  * remove "\n" from return output
+  * ~~remove "\n" from echo output~~
 * "fix" hashes
   * hash key should be string
   * allow "false" json ({k: "v"}) where k is a literal string
