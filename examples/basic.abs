@@ -1,2 +1,2 @@
-ip = $(curl icanhazip.com)
-echo "your ip is" + ip
+ip = $(curl icanhazip.com);
+echo "your ip is " + ip

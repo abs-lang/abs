@@ -74,20 +74,30 @@ func executor(line string) {
 		return
 	}
 
-	l := lexer.New(line)
+	ret := Run(line)
+
+	if ret {
+		fmt.Printf("%s", "\n")
+	}
+}
+
+func Run(code string) bool {
+	l := lexer.New(code)
 	p := parser.New(l)
 
 	program := p.ParseProgram()
 	if len(p.Errors()) != 0 {
 		printParserErrors(p.Errors())
-		return
+		return false
 	}
 
 	evaluated := evaluator.Eval(program, env)
 	if evaluated != nil {
 		fmt.Printf("%s", evaluated.Inspect())
-		fmt.Printf("%s", "\n")
+		return true
 	}
+
+	return false
 }
 
 func printParserErrors(errors []string) {
