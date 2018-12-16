@@ -45,14 +45,19 @@ if total > 100 {
 * "fix" hashes
   * hash key should be string
   * allow "false" json ({k: "v"}) where k is a literal string
+* interpreter code `abs test.abs`
+* builds for interpreter
 * add array std functions
 * add go native functions
 * add hash std functions
 * add string standard functions
 * pipe operator
-* interpreter code `abs test.abs`
 * floats
 * named functions
+* for
+* while
+* until
+* foreach
 * description of the language
   * assignments
   * expressions
