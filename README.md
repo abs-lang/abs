@@ -36,13 +36,12 @@ if total > 100 {
 
 ## TODO
 
-* ~~remove `let`~~
-* ~~remove parens from ifs~~
 * bash command syntax
   * ~~basic command execution~~
   * pipes
   * interpolation
   * do not require semicolon at the end of a command
+  * `$(sleep1; ls -la)` fails
 * "fix" hashes
   * hash key should be string
   * allow "false" json ({k: "v"}) where k is a literal string
@@ -54,8 +53,6 @@ if total > 100 {
 * interpreter code `abs test.abs`
 * floats
 * named functions
-* history in repl
-* customize repl message
 * description of the language
   * assignments
   * expressions

@@ -24,6 +24,15 @@ func (e *Environment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 
+func (e *Environment) GetKeys() []string {
+	keys := make([]string, 0, len(e.store))
+	for k := range e.store {
+		keys = append(keys, k)
+	}
+
+	return keys
+}
+
 func (e *Environment) Set(name string, val Object) Object {
 	e.store[name] = val
 	return val

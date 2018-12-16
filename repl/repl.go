@@ -5,45 +5,94 @@ import (
 	"abs/lexer"
 	"abs/object"
 	"abs/parser"
-	"bufio"
 	"fmt"
 	"io"
+	"os"
+
+	prompt "github.com/c-bata/go-prompt"
 )
 
-const PROMPT = ">> "
+var env *object.Environment
+
+func init() {
+	env = object.NewEnvironment()
+}
+
+func completer(d prompt.Document) []prompt.Suggest {
+	s := []prompt.Suggest{}
+
+	for _, key := range env.GetKeys() {
+		s = append(s, prompt.Suggest{Text: key})
+	}
+
+	if len(d.GetWordBeforeCursor()) == 0 {
+		return nil
+	}
+
+	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+}
+
+var LivePrefixState struct {
+	LivePrefix string
+	IsEnable   bool
+}
+
+func changeLivePrefix() (string, bool) {
+	return LivePrefixState.LivePrefix, LivePrefixState.IsEnable
+}
 
 func Start(in io.Reader, out io.Writer) {
-	scanner := bufio.NewScanner(in)
-	env := object.NewEnvironment()
+	p := prompt.New(
+		executor,
+		completer,
+		prompt.OptionPrefix("⧐  "),
+		prompt.OptionLivePrefix(changeLivePrefix),
+		prompt.OptionTitle("abs-repl"),
+	)
+	p.Run()
+}
 
-	for {
-		fmt.Printf(PROMPT)
-		scanned := scanner.Scan()
-		if !scanned {
-			return
-		}
+func executor(line string) {
+	if line == "quit" {
+		fmt.Printf("%s", "Adios!")
+		fmt.Printf("%s", "\n")
+		os.Exit(0)
+	}
 
-		line := scanner.Text()
-		l := lexer.New(line)
-		p := parser.New(l)
+	if line == "help" {
+		fmt.Printf("Try typing something along the lines of:")
+		fmt.Printf("%s", "\n")
+		fmt.Printf("%s", "\n")
+		fmt.Print("  ⧐  current_date = $(date)")
+		fmt.Printf("%s", "\n")
+		fmt.Printf("%s", "\n")
+		fmt.Print("A command should be triggered in your system. Then try printing the result of that command with:")
+		fmt.Printf("%s", "\n")
+		fmt.Printf("%s", "\n")
+		fmt.Printf("  ⧐  current_date")
+		fmt.Printf("%s", "\n")
+		return
+	}
 
-		program := p.ParseProgram()
-		if len(p.Errors()) != 0 {
-			printParserErrors(out, p.Errors())
-			continue
-		}
+	l := lexer.New(line)
+	p := parser.New(l)
 
-		evaluated := evaluator.Eval(program, env)
-		if evaluated != nil {
-			io.WriteString(out, evaluated.Inspect())
-			io.WriteString(out, "\n")
-		}
+	program := p.ParseProgram()
+	if len(p.Errors()) != 0 {
+		printParserErrors(p.Errors())
+		return
+	}
+
+	evaluated := evaluator.Eval(program, env)
+	if evaluated != nil {
+		fmt.Printf("%s", evaluated.Inspect())
+		fmt.Printf("%s", "\n")
 	}
 }
 
-func printParserErrors(out io.Writer, errors []string) {
-	io.WriteString(out, " parser errors:\n")
+func printParserErrors(errors []string) {
+	fmt.Printf("%s", " parser errors:\n")
 	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
+		fmt.Printf("%s", "\t"+msg+"\n")
 	}
 }

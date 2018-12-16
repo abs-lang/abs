@@ -12,8 +12,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Hello %s! This is the Abs programming language!\n",
-		user.Username)
-	fmt.Printf("Feel free to type in commands\n")
+	fmt.Printf("Hello %s, welcome to the Abs programming language!\n", user.Username)
+	fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")
 	repl.Start(os.Stdin, os.Stdout)
 }
