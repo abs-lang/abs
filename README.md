@@ -46,6 +46,20 @@ if total > 100 {
 * add string standard functions
 * pipe operator
 * interpreter code `abs test.abs`
+* floats
+* named functions
+* history in repl
+* customize repl message
+* description of the language
+  * assignments
+  * expressions
+  * functions
+    * named
+  * math
+  * builtin
+* license
+* ...
+
 
 ## Credits
 

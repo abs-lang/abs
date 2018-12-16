@@ -1,3 +1,4 @@
+.PHONY: repl
 run:
 	docker run -tiv $$(pwd):/go/src/abs --name abs --rm abs
 fmt:
@@ -6,3 +7,5 @@ build:
 	docker build -t abs .
 test:
 	go test ./...
+repl:
+	go run main.go
