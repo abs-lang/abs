@@ -36,6 +36,8 @@ if total > 100 {
 
 ## TODO
 
+* ~~remove `let`~~
+* remove parens from ifs
 * bash command syntax
 * fix hashes
 * add array std functions
@@ -43,6 +45,7 @@ if total > 100 {
 * add hash std functions
 * add string standard functions
 * pipe operator
+* interpreter code `abs test.abs`
 
 ## Credits
 
