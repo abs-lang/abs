@@ -74,10 +74,10 @@ func executor(line string) {
 		return
 	}
 
-	Run(line, true)
+	Run(line, true, true)
 }
 
-func Run(code string, addNewline bool) {
+func Run(code string, printEvaluated bool, addNewline bool) {
 	l := lexer.New(code)
 	p := parser.New(l)
 
@@ -88,7 +88,7 @@ func Run(code string, addNewline bool) {
 	}
 
 	evaluated := evaluator.Eval(program, env)
-	if evaluated != nil {
+	if evaluated != nil && (printEvaluated || evaluated.Type() == object.ERROR_OBJ) {
 		fmt.Printf("%s", evaluated.Inspect())
 
 		if addNewline {

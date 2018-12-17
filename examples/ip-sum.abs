@@ -1,11 +1,6 @@
-# Simple program that fetches your IP and sums it up
-IP=curl -s 'https://api.ipify.org?format=json' | jq -r ".ip"
-echo "Your IP is: $IP"
-parts = ip | split(".")
-echo "Splitting IP into 4 numbers:"
-echo parts[0]
-echo parts[1]
-echo parts[2]
-echo parts[3]
-echo "Sum:"
-echo parts | sum
+ip = $(curl -s 'https://api.ipify.org?format=json' | jq -rj ".ip");
+
+total = ip.split(".").map(int).sum()
+if total > 100 {
+    echo("The sum of [%s] is %s.", ip, total)
+}

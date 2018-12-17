@@ -361,6 +361,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`int(10)`, 10},
+		{`int("10")`, 10},
+		{`int("abc")`, `int(...) can only be called on strings which represent integers, 'abc' given`},
+		{`int([])`, "argument to `int` not supported, got ARRAY"},
 		{`len("")`, 0},
 		{`len("four")`, 4},
 		{`len("hello world")`, 11},

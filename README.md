@@ -9,10 +9,8 @@ IFS=. read first second third fourth <<EOF
 ${IP##*-}
 EOF
 total=$((first + second + third + fourth))
-
-if [ $1 -gt 100 ]
-    then
-    echo Hey that\'s a large number.
+if [ $total -gt 100 ]
+    echo "The sum of [$IP] is $total."
 fi
 ```
 
@@ -20,10 +18,11 @@ into this:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
-ip = $(curl -s 'https://api.ipify.org?format=json' | jq -r ".ip")
+ip = $(curl -s 'https://api.ipify.org?format=json' | jq -rj ".ip");
 
-if ip.split(".").sum() > 100 {
-    echo "Hey that's a large number."
+total = ip.split(".").map(int).sum()
+if total > 100 {
+    echo("The sum of [%s] is %s.", ip, total)
 }
 ```
 
@@ -52,9 +51,10 @@ if ip.split(".").sum() > 100 {
 * builds for interpreter
 * add array std functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array / https://lodash.com/docs/4.17.11 -- filter by array methods)
 * add string standard functions (https://golang.org/pkg/strings/)
+* comments
 * builtins
   * funcs
-    * type
+    * type(...)
   * json
   * math (https://golang.org/pkg/math/)
   * rand (https://golang.org/pkg/math/rand/)

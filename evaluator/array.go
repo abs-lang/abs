@@ -26,6 +26,24 @@ func getArrayFns() map[string]*object.Builtin {
 				return NULL
 			},
 		},
+		"sum": &object.Builtin{
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+
+				arr := args[0].(*object.Array)
+
+				var sum int64 = 0
+
+				for _, v := range arr.Elements {
+					elem := v.(*object.Integer)
+					sum += elem.Value
+				}
+
+				return &object.Integer{Value: int64(sum)}
+			},
+		},
 		"map": &object.Builtin{
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 2 {
