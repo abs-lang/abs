@@ -38,6 +38,10 @@ if total > 100 {
 
 * bash command syntax
   * interpolation
+* badges
+  * build
+  * version
+* travis
 * "fix" hashes
   * hash key should be string
   * allow "false" json ({k: "v"}) where k is a literal string
