@@ -163,7 +163,7 @@ func (l *Lexer) readComment() string {
 	position := l.position
 	for {
 		l.readChar()
-		if l.ch == '\n' || l.ch == '\r' {
+		if l.ch == '\n' || l.ch == '\r' || l.ch == 0 {
 			break
 		}
 	}
