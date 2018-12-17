@@ -45,6 +45,7 @@ if total > 100 {
 * add array std functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array / https://lodash.com/docs/4.17.11 -- filter by array methods)
 * add string standard functions (https://golang.org/pkg/strings/)
 * add godoc everywhere
+* https://stackoverflow.com/questions/10586153/split-string-into-an-array-in-bash
 * builtins
   * funcs
     * type(...)
