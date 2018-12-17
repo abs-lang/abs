@@ -5,7 +5,6 @@ import (
 	"abs/object"
 	"abs/util"
 	"bytes"
-	"fmt"
 	"os"
 	"os/exec"
 )
@@ -498,8 +497,12 @@ func evalCommandExpression(cmd string, env *object.Environment) object.Object {
 	err := c.Run()
 
 	if err != nil {
-		return util.NewError("executing command '%s' failed : %s %s", cmd, fmt.Sprint(err), stderr.String())
+		// TODO not cross platform, throw error if we cant pull
+		// an error code out
+		// https://stackoverflow.com/questions/10385551/get-exit-code-go
+		// code, _ := strconv.Atoi(err.Error()[12:])
+		return &object.String{Value: stderr.String(), Ok: false}
 	}
 
-	return &object.String{Value: out.String()}
+	return &object.String{Value: out.String(), Ok: true}
 }

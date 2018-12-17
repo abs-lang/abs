@@ -40,10 +40,11 @@ if total > 100 {
   * ~~basic command execution~~
   * ~~pipes~~
   * interpolation
-  * do not require semicolon at the end of a command
-  * `$(sleep1; ls -la)` fails
+  * ~~do not require semicolon at the end of a command~~
+  * ~~`$(sleep1; ls)` fails because semicolo screws up~~
   * allow to access the status code of a command with `comm = $(...); comm[status]` or `comm.status`
   * ~~remove "\n" from echo output~~
+  * TODO prevCharOtherThan
 * "fix" hashes
   * hash key should be string
   * allow "false" json ({k: "v"}) where k is a literal string
@@ -51,7 +52,6 @@ if total > 100 {
 * builds for interpreter
 * add array std functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array / https://lodash.com/docs/4.17.11 -- filter by array methods)
 * add string standard functions (https://golang.org/pkg/strings/)
-* comments
 * add godoc everywhere
 * builtins
   * funcs
@@ -61,7 +61,10 @@ if total > 100 {
   * rand (https://golang.org/pkg/math/rand/)
   * time (https://golang.org/pkg/math/)
 * fix \" in strings
-* pipe operator
+* operators
+    * pipe
+    * &&
+    * ||
 * floats
 * for
 * while

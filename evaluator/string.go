@@ -33,5 +33,12 @@ func getStringFns() map[string]*object.Builtin {
 				return &object.Array{Elements: elements}
 			},
 		},
+		"ok": &object.Builtin{
+			Fn: func(args ...object.Object) object.Object {
+				s := args[0].(*object.String)
+
+				return &object.Boolean{Value: s.Ok}
+			},
+		},
 	}
 }

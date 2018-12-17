@@ -31,13 +31,15 @@ if (5 < 10) {
 [1, 2];
 $(echo "()");
 {"foo": "bar"}
-$(curl icanhazip.com -X POST);
+$(curl icanhazip.com -X POST)
 $(ls *.go);
 a = [1]
 a.first()
 # Comment
 // Comment
 hello
+$(command; command)
+$(command2; command2);
 `
 
 	tests := []struct {
@@ -142,6 +144,8 @@ hello
 		{token.COMMENT, "# Comment"},
 		{token.COMMENT, "// Comment"},
 		{token.IDENT, "hello"},
+		{token.COMMAND, "command; command"},
+		{token.COMMAND, "command2; command2"},
 		{token.EOF, ""},
 	}
 

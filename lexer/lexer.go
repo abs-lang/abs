@@ -132,6 +132,14 @@ func (l *Lexer) peekChar() byte {
 	}
 }
 
+func (l *Lexer) prevChar(steps int) byte {
+	prevPosition := l.readPosition - steps
+	if prevPosition < 1 {
+		return 0
+	}
+	return l.input[prevPosition]
+}
+
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
@@ -170,15 +178,30 @@ func (l *Lexer) readComment() string {
 	return l.input[position:l.position]
 }
 
+// We want to extract the actual command
+// from $(command).
+// We first go ahead 2 characters (`$(`)
+// and then remove either 1 or 2 of them
+// at the end (`)` or `);`). This forces
+// commands to be on a single line,
+// which is also not a terrible thing
+// (we might want to support \ at some point
+// in the future).
 func (l *Lexer) readCommand() string {
 	position := l.position + 2
+	subtract := 1
 	for {
 		l.readChar()
-		if l.ch == ';' || l.ch == 0 {
+
+		if l.ch == '\n' || l.ch == '\r' || l.ch == 0 {
+			// TODO: for compat turn this into prevCharOtherThan
+			if l.prevChar(2) == ';' {
+				subtract = 2
+			}
 			break
 		}
 	}
-	return l.input[position : l.position-1]
+	return l.input[position : l.position-subtract]
 }
 
 func isLetter(ch byte) bool {

@@ -117,6 +117,7 @@ func (f *Function) Inspect() string {
 
 type String struct {
 	Value string
+	Ok    bool // A special property to check whether a command exited correctly
 }
 
 func (s *String) Type() ObjectType { return STRING_OBJ }
