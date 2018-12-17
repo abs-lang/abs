@@ -1,3 +1,4 @@
+# Simple program that fetches your IP and sums it up
 ip = $(curl -s 'https://api.ipify.org?format=json' | jq -rj ".ip");
 
 total = ip.split(".").map(int).sum()

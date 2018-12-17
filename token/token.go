@@ -7,9 +7,10 @@ const (
 	EOF     = "EOF"
 
 	// Identifiers + literals
-	IDENT  = "IDENT"  // add, foobar, x, y, ...
-	INT    = "INT"    // 1343456
-	STRING = "STRING" // "foobar"
+	IDENT   = "IDENT"  // add, foobar, x, y, ...
+	INT     = "INT"    // 1343456
+	STRING  = "STRING" // "foobar"
+	COMMENT = "#"      // # Comment
 
 	// Operators
 	ASSIGN   = "="

@@ -71,6 +71,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
 	p.registerPrefix(token.LBRACE, p.parseHashLiteral)
 	p.registerPrefix(token.COMMAND, p.parseCommand)
+	p.registerPrefix(token.COMMENT, p.parseComment)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -491,6 +492,12 @@ func (p *Parser) parseHashLiteral() ast.Expression {
 
 func (p *Parser) parseCommand() ast.Expression {
 	return &ast.CommandExpression{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+// We don't really have to do anything when comments
+// come in, we can simply ignore them
+func (p *Parser) parseComment() ast.Expression {
+	return nil
 }
 
 func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {

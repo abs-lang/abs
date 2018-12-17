@@ -35,6 +35,9 @@ $(curl icanhazip.com -X POST);
 $(ls *.go);
 a = [1]
 a.first()
+# Comment
+// Comment
+hello
 `
 
 	tests := []struct {
@@ -136,6 +139,9 @@ a.first()
 		{token.IDENT, "first"},
 		{token.LPAREN, "("},
 		{token.RPAREN, ")"},
+		{token.COMMENT, "# Comment"},
+		{token.COMMENT, "// Comment"},
+		{token.IDENT, "hello"},
 		{token.EOF, ""},
 	}
 
