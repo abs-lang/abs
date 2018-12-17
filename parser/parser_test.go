@@ -707,6 +707,62 @@ func TestCallExpressionParameterParsing(t *testing.T) {
 	}
 }
 
+func TestMethodExpressionParameterParsing(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedMethod string
+		expectedObj    string
+		expectedArgs   []string
+	}{
+		{
+			input:          "test.method(1, 2 * 3, 4 + 5);",
+			expectedObj:    "test",
+			expectedMethod: "method",
+			expectedArgs:   []string{"1", "(2 * 3)", "(4 + 5)"},
+		},
+		{
+			input:          "a.method_name(1);",
+			expectedObj:    "a",
+			expectedMethod: "method_name",
+			expectedArgs:   []string{"1"},
+		},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		exp, ok := stmt.Expression.(*ast.MethodExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.MethodExpression. got=%T",
+				stmt.Expression)
+		}
+
+		if !testIdentifier(t, exp.Object, tt.expectedObj) {
+			return
+		}
+
+		if !testIdentifier(t, exp.Method, tt.expectedMethod) {
+			return
+		}
+
+		if len(exp.Arguments) != len(tt.expectedArgs) {
+			t.Fatalf("wrong number of arguments. want=%d, got=%d",
+				len(tt.expectedArgs), len(exp.Arguments))
+		}
+
+		for i, arg := range tt.expectedArgs {
+			if exp.Arguments[i].String() != arg {
+				t.Errorf("argument %d wrong. want=%q, got=%q", i,
+					arg, exp.Arguments[i].String())
+			}
+		}
+	}
+}
+
 func TestStringLiteralExpression(t *testing.T) {
 	input := `"hello world";`
 
@@ -1078,6 +1134,27 @@ func testIdentifier(t *testing.T, exp ast.Expression, value string) bool {
 }
 
 func testCommand(t *testing.T, exp ast.Expression, value string) bool {
+	command, ok := exp.(*ast.CommandExpression)
+	if !ok {
+		t.Errorf("exp not *ast.CommandExpression. got=%T", exp)
+		return false
+	}
+
+	if command.Value != value {
+		t.Errorf("command.Value not %s. got=%s", value, command.Value)
+		return false
+	}
+
+	if command.TokenLiteral() != value {
+		t.Errorf("command.TokenLiteral not %s. got=%s", value,
+			command.TokenLiteral())
+		return false
+	}
+
+	return true
+}
+
+func testMethod(t *testing.T, exp ast.Expression, value string) bool {
 	command, ok := exp.(*ast.CommandExpression)
 	if !ok {
 		t.Errorf("exp not *ast.CommandExpression. got=%T", exp)

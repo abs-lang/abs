@@ -190,6 +190,33 @@ func (ie *InfixExpression) String() string {
 	return out.String()
 }
 
+type MethodExpression struct {
+	Token     token.Token // The operator token, e.g. .
+	Object    Expression
+	Method    Expression
+	Arguments []Expression
+}
+
+func (me *MethodExpression) expressionNode()      {}
+func (me *MethodExpression) TokenLiteral() string { return me.Token.Literal }
+func (me *MethodExpression) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, a := range me.Arguments {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(me.Object.String())
+	out.WriteString(".")
+	out.WriteString(me.Method.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
+
+	return out.String()
+}
+
 type IfExpression struct {
 	Token       token.Token // The 'if' token
 	Condition   Expression

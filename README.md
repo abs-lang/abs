@@ -53,10 +53,13 @@ if ip.split(".").sum() > 100 {
 * add array std functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array / https://lodash.com/docs/4.17.11 -- filter by array methods)
 * add string standard functions (https://golang.org/pkg/strings/)
 * builtins
+  * funcs
+    * type
   * json
   * math (https://golang.org/pkg/math/)
   * rand (https://golang.org/pkg/math/rand/)
   * time (https://golang.org/pkg/math/)
+* fix \" in strings
 * pipe operator
 * floats
 * for

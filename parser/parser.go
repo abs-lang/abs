@@ -18,6 +18,7 @@ const (
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
 	INDEX       // array[index]
+	DOT         // some.method()
 )
 
 var precedences = map[token.TokenType]int{
@@ -31,6 +32,7 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK: PRODUCT,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,
+	token.DOT:      DOT,
 }
 
 type (
@@ -72,6 +74,7 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
+	p.registerInfix(token.DOT, p.parseMethodExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
 	p.registerInfix(token.SLASH, p.parseInfixExpression)
 	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
@@ -292,6 +295,16 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression.Right = p.parseExpression(precedence)
 
 	return expression
+}
+
+func (p *Parser) parseMethodExpression(object ast.Expression) ast.Expression {
+	exp := &ast.MethodExpression{Token: p.curToken, Object: object}
+	precedence := p.curPrecedence()
+	p.nextToken()
+	exp.Method = p.parseExpression(precedence)
+	p.nextToken()
+	exp.Arguments = p.parseExpressionList(token.RPAREN)
+	return exp
 }
 
 func (p *Parser) parseBoolean() ast.Expression {

@@ -33,6 +33,8 @@ $(echo "()");
 {"foo": "bar"}
 $(curl icanhazip.com -X POST);
 $(ls *.go);
+a = [1]
+a.first()
 `
 
 	tests := []struct {
@@ -124,6 +126,16 @@ $(ls *.go);
 		{token.RBRACE, "}"},
 		{token.COMMAND, "curl icanhazip.com -X POST"},
 		{token.COMMAND, "ls *.go"},
+		{token.IDENT, "a"},
+		{token.ASSIGN, "="},
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.RBRACKET, "]"},
+		{token.IDENT, "a"},
+		{token.DOT, "."},
+		{token.IDENT, "first"},
+		{token.LPAREN, "("},
+		{token.RPAREN, ")"},
 		{token.EOF, ""},
 	}
 
