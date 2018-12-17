@@ -47,6 +47,7 @@ if total > 100 {
 * add godoc everywhere
 * https://stackoverflow.com/questions/10586153/split-string-into-an-array-in-bash
 * builtins
+  * stdin
   * funcs
     * type(...)
   * json
