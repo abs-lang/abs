@@ -37,18 +37,10 @@ if total > 100 {
 ### 1.0
 
 * bash command syntax
-  * ~~basic command execution~~
-  * ~~pipes~~
   * interpolation
-  * ~~do not require semicolon at the end of a command~~
-  * ~~`$(sleep1; ls)` fails because semicolo screws up~~
-  * allow to access the status code of a command with `comm = $(...); comm[status]` or `comm.status`
-  * ~~remove "\n" from echo output~~
-  * TODO prevCharOtherThan
 * "fix" hashes
   * hash key should be string
   * allow "false" json ({k: "v"}) where k is a literal string
-* ~~interpreter code `abs test.abs`~~
 * builds for interpreter
 * add array std functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array / https://lodash.com/docs/4.17.11 -- filter by array methods)
 * add string standard functions (https://golang.org/pkg/strings/)
@@ -61,23 +53,32 @@ if total > 100 {
   * rand (https://golang.org/pkg/math/rand/)
   * time (https://golang.org/pkg/math/)
 * fix \" in strings
+* TODO prevCharOtherThan
 * operators
     * pipe
     * &&
     * ||
+    * for
+    * while
+    * foreach
+    * else if
+* tests for ok function
 * floats
-* for
-* while
-* foreach
 * ~~environment vars~~
-* description of the language
+* documentation
+  * why & intro
+  * interpreter
+  * basic syntax
   * assignments
   * expressions
+  * bash
+    * cmd.ok()
+    * pipes
+    * basic execution
   * functions
     * named
   * builtins
 * license
-* else if
 
 ### Later
 
