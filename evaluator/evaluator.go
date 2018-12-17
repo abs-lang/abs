@@ -11,15 +11,17 @@ import (
 )
 
 var (
-	NULL     = &object.Null{}
-	TRUE     = &object.Boolean{Value: true}
-	FALSE    = &object.Boolean{Value: false}
-	Fns      map[string]*object.Builtin
-	ArrayFns map[string]*object.Builtin
+	NULL      = &object.Null{}
+	TRUE      = &object.Boolean{Value: true}
+	FALSE     = &object.Boolean{Value: false}
+	Fns       map[string]*object.Builtin
+	ArrayFns  map[string]*object.Builtin
+	StringFns map[string]*object.Builtin
 )
 
 func init() {
 	ArrayFns = getArrayFns()
+	StringFns = getStringFns()
 	Fns = getFns()
 }
 
@@ -379,6 +381,13 @@ func applyMethod(o object.Object, method string, args []object.Object) object.Ob
 
 	case *object.Array:
 		if f, ok := ArrayFns[method]; ok {
+			args = append([]object.Object{o}, args...)
+			return f.Fn(args...)
+		}
+
+		return util.NewError("cannot call method '%s()' on type '%s'", method, o.Type())
+	case *object.String:
+		if f, ok := StringFns[method]; ok {
 			args = append([]object.Object{o}, args...)
 			return f.Fn(args...)
 		}

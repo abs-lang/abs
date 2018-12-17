@@ -85,6 +85,7 @@ if ip.split(".").sum() > 100 {
 * named functions
 * until
 * parsing errors with line nr etc
+  * would be nice to link at doc
 
 ## Status
 
