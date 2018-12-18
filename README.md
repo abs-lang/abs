@@ -62,6 +62,7 @@ if total > 100 {
 * TODO prevCharOtherThan
 * operators
     * pipe
+      * allow calling all functions with pipe, need to refactor argument checking of fns, we should include everything in functions.go?
     * &&
     * ||
     * for
