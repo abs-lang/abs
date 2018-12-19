@@ -41,6 +41,14 @@ hello
 $(command; command)
 $(command2; command2);
 one | two | tree
+"hel\"lo"
+"hel\lo"
+"hel\\\\lo"
+"\"hello\""
+"\"he\"\"llo\""
+"hello\\"
+"hello\\\\"
+"\\\\hello"
 `
 
 	tests := []struct {
@@ -152,6 +160,14 @@ one | two | tree
 		{token.IDENT, "two"},
 		{token.PIPE, "|"},
 		{token.IDENT, "tree"},
+		{token.STRING, "hel\"lo"},
+		{token.STRING, "hel\\lo"},
+		{token.STRING, "hel\\\\lo"},
+		{token.STRING, "\"hello\""},
+		{token.STRING, "\"he\"\"llo\""},
+		{token.STRING, "hello\\"},
+		{token.STRING, "hello\\\\"},
+		{token.STRING, "\\\\hello"},
 		{token.EOF, ""},
 	}
 

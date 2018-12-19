@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"abs/token"
+	"strings"
 )
 
 type Lexer struct {
@@ -159,14 +160,38 @@ func (l *Lexer) readNumber() string {
 }
 
 func (l *Lexer) readString() string {
-	position := l.position + 1
+	var chars []string
+	doubleEscape := false
 	for {
 		l.readChar()
-		if l.ch == '"' || l.ch == 0 {
+
+		if l.ch == '\\' && l.peekChar() == '\\' {
+			chars = append(chars, string('\\'))
+			l.readChar()
+			doubleEscape = true
+			continue
+		}
+
+		// If we encounter a \, let's check whether
+		// we're trying to escape a ". If so, let's skip
+		// the / and add the " to the string.
+		if l.ch == '\\' && l.peekChar() == '"' {
+			chars = append(chars, string('"'))
+			l.readChar()
+			continue
+		}
+
+		// The string ends when we encounter a "
+		// and the character before that was not a \,
+		// or the \ was escaped as well ("string\\").
+		if (l.ch == '"' && (l.prevChar(2) != '\\' || doubleEscape)) || l.ch == 0 {
 			break
 		}
+
+		chars = append(chars, string(l.ch))
+		doubleEscape = false
 	}
-	return l.input[position:l.position]
+	return strings.Join(chars, "")
 }
 
 func (l *Lexer) readComment() string {
