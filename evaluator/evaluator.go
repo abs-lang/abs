@@ -509,11 +509,7 @@ func evalCommandExpression(cmd string, env *object.Environment) object.Object {
 	err := c.Run()
 
 	if err != nil {
-		// TODO not cross platform, throw error if we cant pull
-		// an error code out
-		// https://stackoverflow.com/questions/10385551/get-exit-code-go
-		// code, _ := strconv.Atoi(err.Error()[12:])
-		return &object.String{Value: stderr.String(), Ok: false}
+		return &object.String{Value: stderr.String()}
 	}
 
 	return &object.String{Value: out.String(), Ok: true}
