@@ -361,6 +361,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`rand(1)`, 0},
 		{`int(10)`, 10},
 		{`int("10")`, 10},
 		{`int("abc")`, `int(...) can only be called on strings which represent integers, 'abc' given`},

@@ -3,7 +3,9 @@ package evaluator
 import (
 	"abs/object"
 	"abs/util"
+	"crypto/rand"
 	"fmt"
+	"math/big"
 	"os"
 	"strconv"
 )
@@ -13,8 +15,7 @@ func getFns() map[string]*object.Builtin {
 		"len": &object.Builtin{
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1",
-						len(args))
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
 				}
 
 				switch arg := args[0].(type) {
@@ -28,7 +29,28 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
-		// exit(0)
+		// rand(max:20)
+		"rand": &object.Builtin{
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+
+				switch arg := args[0].(type) {
+				case *object.Integer:
+					r, err := rand.Int(rand.Reader, big.NewInt(arg.Value))
+
+					if err != nil {
+						return util.NewError("error occurred while calling 'rand(%d)': %s", arg.Value, err.Error())
+					}
+
+					return &object.Integer{Value: r.Int64()}
+				default:
+					return util.NewError("argument to `rand(...)` not supported, got %s", arg.Type())
+				}
+			},
+		},
+		// exit(code:0)
 		"exit": &object.Builtin{
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
@@ -84,16 +106,14 @@ func getFns() map[string]*object.Builtin {
 		"env": &object.Builtin{
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1",
-						len(args))
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
 				}
 
 				switch arg := args[0].(type) {
 				case *object.String:
 					return &object.String{Value: os.Getenv(arg.Value)}
 				default:
-					return util.NewError("argument to `env` not supported, got %s",
-						args[0].Type())
+					return util.NewError("argument to `env` not supported, got %s", args[0].Type())
 				}
 			},
 		},
