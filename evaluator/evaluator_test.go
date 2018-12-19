@@ -620,9 +620,6 @@ func TestHashLiterals(t *testing.T) {
 		"one": 10 - 9,
 		two: 1 + 1,
 		"thr" + "ee": 6 / 2,
-		4: 4,
-		true: 5,
-		false: 6
 	}`
 
 	evaluated := testEval(input)
@@ -635,9 +632,6 @@ func TestHashLiterals(t *testing.T) {
 		(&object.String{Value: "one"}).HashKey():   1,
 		(&object.String{Value: "two"}).HashKey():   2,
 		(&object.String{Value: "three"}).HashKey(): 3,
-		(&object.Integer{Value: 4}).HashKey():      4,
-		TRUE.HashKey():                             5,
-		FALSE.HashKey():                            6,
 	}
 
 	if len(result.Pairs) != len(expected) {
@@ -675,18 +669,6 @@ func TestHashIndexExpressions(t *testing.T) {
 			`{}["foo"]`,
 			nil,
 		},
-		{
-			`{5: 5}[5]`,
-			5,
-		},
-		{
-			`{true: 5}[true]`,
-			5,
-		},
-		{
-			`{false: 5}[false]`,
-			5,
-		},
 	}
 
 	for _, tt := range tests {
@@ -715,8 +697,7 @@ func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 		return false
 	}
 	if result.Value != expected {
-		t.Errorf("object has wrong value. got=%d, want=%d",
-			result.Value, expected)
+		t.Errorf("object has wrong value. got=%d, want=%d", result.Value, expected)
 		return false
 	}
 
