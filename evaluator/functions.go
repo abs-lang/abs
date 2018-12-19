@@ -117,6 +117,26 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
+		"args": &object.Builtin{
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+
+				switch arg := args[0].(type) {
+				case *object.Integer:
+					i := arg.Value
+
+					if int(i) > len(os.Args)-1 {
+						return &object.String{Value: ""}
+					}
+
+					return &object.String{Value: os.Args[i]}
+				default:
+					return util.NewError("argument to `args(...)` not supported, got %s", args[0].Type())
+				}
+			},
+		},
 	}
 
 }

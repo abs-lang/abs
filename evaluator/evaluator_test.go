@@ -361,6 +361,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`args("o")`, "argument to `args(...)` not supported, got STRING"},
+		{`args(3)`, ""},
 		{`rand(1)`, 0},
 		{`int(10)`, 10},
 		{`int("10")`, 10},
@@ -378,7 +380,6 @@ func TestBuiltinFunctions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-
 		switch expected := tt.expected.(type) {
 		case int:
 			testIntegerObject(t, evaluated, int64(expected))
@@ -388,22 +389,19 @@ func TestBuiltinFunctions(t *testing.T) {
 			s, ok := evaluated.(*object.String)
 			if ok {
 				if s.Value != tt.expected {
-					t.Errorf("object is not the right string. got=%s want:%s",
-						s.Value, tt.expected)
+					t.Errorf("object is not the right string. got=%s want:%s", s.Value, tt.expected)
 				}
 
-				return
+				continue
 			}
 
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
-				t.Errorf("object is not Error. got=%T (%+v)",
-					evaluated, evaluated)
+				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
 			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q",
-					expected, errObj.Message)
+				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
 			}
 		case []int:
 			array, ok := evaluated.(*object.Array)
