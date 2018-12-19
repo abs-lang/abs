@@ -511,6 +511,7 @@ func TestCommand(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`a = "A"; b = "B"; eee = "-e"; $(echo $eee -n $a$a$b$b$c$c)`, "AABB"},
 		{`$(echo -n "123")`, "123"},
 		{`$(echo -n hello world)`, "hello world"},
 		{`$(echo hello world | xargs echo -n)`, "hello world"},
@@ -525,13 +526,11 @@ func TestCommand(t *testing.T) {
 		case string:
 			stringObj, ok := evaluated.(*object.String)
 			if !ok {
-				t.Errorf("object is not String. got=%T (%+v)",
-					evaluated, evaluated)
+				t.Errorf("object is not String. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
 			if stringObj.Value != expected {
-				t.Errorf("wrong string. expected=%q, got=%q",
-					expected, stringObj.Value)
+				t.Errorf("wrong string. expected=%q, got=%q", expected, stringObj.Value)
 			}
 		}
 	}

@@ -1,0 +1,3 @@
+var = "/etc"
+out = $(ls -la $var)
+echo(out)

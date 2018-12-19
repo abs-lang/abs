@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"os"
 	"os/exec"
+	"regexp"
 )
 
 var (
@@ -487,6 +488,17 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 }
 
 func evalCommandExpression(cmd string, env *object.Environment) object.Object {
+	re := regexp.MustCompile("\\$([a-zA-Z_]{1,})")
+	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
+		v, ok := env.Get(m[1:])
+
+		if !ok {
+			return ""
+		}
+
+		return v.Inspect()
+	})
+
 	commands := []string{"-c", cmd}
 	c := exec.Command("bash", commands...)
 	c.Env = os.Environ()
