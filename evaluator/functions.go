@@ -10,22 +10,39 @@ import (
 
 func getFns() map[string]*object.Builtin {
 	return map[string]*object.Builtin{
-		"len": &object.Builtin{Fn: func(args ...object.Object) object.Object {
-			if len(args) != 1 {
-				return util.NewError("wrong number of arguments. got=%d, want=1",
-					len(args))
-			}
+		"len": &object.Builtin{
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1",
+						len(args))
+				}
 
-			switch arg := args[0].(type) {
-			case *object.Array:
-				return &object.Integer{Value: int64(len(arg.Elements))}
-			case *object.String:
-				return &object.Integer{Value: int64(len(arg.Value))}
-			default:
-				return util.NewError("argument to `len` not supported, got %s",
-					args[0].Type())
-			}
+				switch arg := args[0].(type) {
+				case *object.Array:
+					return &object.Integer{Value: int64(len(arg.Elements))}
+				case *object.String:
+					return &object.Integer{Value: int64(len(arg.Value))}
+				default:
+					return util.NewError("argument to `len` not supported, got %s",
+						args[0].Type())
+				}
+			},
 		},
+		// exit(0)
+		"exit": &object.Builtin{
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+
+				switch arg := args[0].(type) {
+				case *object.Integer:
+					os.Exit(int(arg.Value))
+					return arg
+				default:
+					return util.NewError("argument to `exit(...)` not supported, got '%s' (%s)", arg.Inspect(), arg.Type())
+				}
+			},
 		},
 		"echo": &object.Builtin{
 			Fn: func(args ...object.Object) object.Object {
