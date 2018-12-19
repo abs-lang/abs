@@ -435,6 +435,7 @@ func TestBuiltinMethods(t *testing.T) {
 		{`[].first()`, nil},
 		{`"1.2.3".split(".").map(len)`, []int{1, 1, 1}},
 		{`[1,2,3].map(fn(x) { x + 1})`, []int{2, 3, 4}},
+		{`"ok".ok()`, false},
 		{`["hello"].first()`, "hello"},
 	}
 
@@ -442,6 +443,8 @@ func TestBuiltinMethods(t *testing.T) {
 		evaluated := testEval(tt.input)
 
 		switch expected := tt.expected.(type) {
+		case bool:
+			testBooleanObject(t, evaluated, bool(expected))
 		case int:
 			testIntegerObject(t, evaluated, int64(expected))
 		case nil:
