@@ -431,10 +431,14 @@ func TestBuiltinMethods(t *testing.T) {
 		{`"a.b.c".split(".")`, []string{"a", "b", "c"}},
 		{`[1,2,3].first()`, 1},
 		{`[].first()`, nil},
+		{`[] | first()`, nil},
 		{`"1.2.3".split(".").map(len)`, []int{1, 1, 1}},
 		{`[1,2,3].map(fn(x) { x + 1})`, []int{2, 3, 4}},
+		{`[1,2,3] | map(fn(x) { x + 1})`, []int{2, 3, 4}},
 		{`"ok".ok()`, false},
+		{`"ok" | ok()`, false},
 		{`["hello"].first()`, "hello"},
+		{`["hello"] | first()`, "hello"},
 	}
 
 	for _, tt := range tests {
@@ -451,11 +455,10 @@ func TestBuiltinMethods(t *testing.T) {
 			s, ok := evaluated.(*object.String)
 			if ok {
 				if s.Value != tt.expected {
-					t.Errorf("object is not the right string. got=%s want:%s",
-						s.Value, tt.expected)
+					t.Errorf("object is not the right string. got=%s want:%s", s.Value, tt.expected)
 				}
 
-				return
+				continue
 			}
 
 			errObj, ok := evaluated.(*object.Error)
@@ -492,8 +495,7 @@ func TestBuiltinMethods(t *testing.T) {
 			}
 
 			if len(array.Elements) != len(expected) {
-				t.Errorf("wrong num of elements. want=%d, got=%d",
-					len(expected), len(array.Elements))
+				t.Errorf("wrong num of elements. want=%d, got=%d", len(expected), len(array.Elements))
 				continue
 			}
 

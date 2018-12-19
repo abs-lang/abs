@@ -40,6 +40,7 @@ a.first()
 hello
 $(command; command)
 $(command2; command2);
+one | two | tree
 `
 
 	tests := []struct {
@@ -146,6 +147,11 @@ $(command2; command2);
 		{token.IDENT, "hello"},
 		{token.COMMAND, "command; command"},
 		{token.COMMAND, "command2; command2"},
+		{token.IDENT, "one"},
+		{token.PIPE, "|"},
+		{token.IDENT, "two"},
+		{token.PIPE, "|"},
+		{token.IDENT, "tree"},
 		{token.EOF, ""},
 	}
 

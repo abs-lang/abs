@@ -38,6 +38,7 @@ const (
 	LBRACKET = "["
 	RBRACKET = "]"
 	DOT      = "."
+	PIPE     = "|"
 	COMMAND  = "$()"
 
 	// Keywords

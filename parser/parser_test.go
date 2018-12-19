@@ -726,6 +726,18 @@ func TestMethodExpressionParameterParsing(t *testing.T) {
 			expectedMethod: "method_name",
 			expectedArgs:   []string{"1"},
 		},
+		{
+			input:          "test | method(1, 2 * 3, 4 + 5);",
+			expectedObj:    "test",
+			expectedMethod: "method",
+			expectedArgs:   []string{"1", "(2 * 3)", "(4 + 5)"},
+		},
+		{
+			input:          "a | method_name(1);",
+			expectedObj:    "a",
+			expectedMethod: "method_name",
+			expectedArgs:   []string{"1"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -742,11 +754,11 @@ func TestMethodExpressionParameterParsing(t *testing.T) {
 		}
 
 		if !testIdentifier(t, exp.Object, tt.expectedObj) {
-			return
+			continue
 		}
 
 		if !testIdentifier(t, exp.Method, tt.expectedMethod) {
-			return
+			continue
 		}
 
 		if len(exp.Arguments) != len(tt.expectedArgs) {
