@@ -58,6 +58,8 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Literal = l.readComment()
 	case '*':
 		tok = newToken(token.ASTERISK, l.ch)
+	case '^':
+		tok = newToken(token.CARET, l.ch)
 	case '<':
 		tok = newToken(token.LT, l.ch)
 	case '>':

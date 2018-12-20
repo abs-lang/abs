@@ -48,7 +48,7 @@ one | two | tree
 "\"he\"\"llo\""
 "hello\\"
 "hello\\\\"
-"\\\\hello"
+"\\\\hello"^
 `
 
 	tests := []struct {
@@ -168,6 +168,7 @@ one | two | tree
 		{token.STRING, "hello\\"},
 		{token.STRING, "hello\\\\"},
 		{token.STRING, "\\\\hello"},
+		{token.CARET, "^"},
 		{token.EOF, ""},
 	}
 

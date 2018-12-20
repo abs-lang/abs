@@ -5,6 +5,7 @@ import (
 	"abs/object"
 	"abs/util"
 	"bytes"
+	"math"
 	"os"
 	"os/exec"
 	"regexp"
@@ -262,6 +263,8 @@ func evalIntegerInfixExpression(
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
+	case "^":
+		return &object.Integer{Value: int64(math.Pow(float64(leftVal), float64(rightVal)))}
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
@@ -281,8 +284,7 @@ func evalStringInfixExpression(
 	left, right object.Object,
 ) object.Object {
 	if operator != "+" {
-		return util.NewError("unknown operator: %s %s %s",
-			left.Type(), operator, right.Type())
+		return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 
 	leftVal := left.(*object.String).Value
