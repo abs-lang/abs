@@ -380,6 +380,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len([])`, 0},
 		{`echo("hello", "world!")`, nil},
 		{`env("PWD")`, "/go/src/abs/evaluator"},
+		{`type("PWD")`, "STRING"},
+		{`type(1)`, "INTEGER"},
+		{`type({})`, "HASH"},
+		{`type([])`, "ARRAY"},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
