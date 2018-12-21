@@ -10,7 +10,7 @@ func TestNextToken(t *testing.T) {
 	input := `five = 5;
 ten = 10;
 
-add = fn(x, y) {
+add = f(x, y) {
   x + y;
 };
 
@@ -66,7 +66,7 @@ one | two | tree
 		{token.SEMICOLON, ";"},
 		{token.IDENT, "add"},
 		{token.ASSIGN, "="},
-		{token.FUNCTION, "fn"},
+		{token.FUNCTION, "f"},
 		{token.LPAREN, "("},
 		{token.IDENT, "x"},
 		{token.COMMA, ","},

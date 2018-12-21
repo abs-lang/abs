@@ -157,21 +157,21 @@ if (10 > 1) {
 		},
 		{
 			`
-f = fn(x) {
+fn = f(x) {
   return x;
   x + 10;
 };
-f(10);`,
+fn(10);`,
 			10,
 		},
 		{
 			`
-f = fn(x) {
+fn = f(x) {
    result = x + 10;
    return result;
    return 10;
 };
-f(10);`,
+fn(10);`,
 			20,
 		},
 	}
@@ -236,7 +236,7 @@ if (10 > 1) {
 			"identifier not found: foobar",
 		},
 		{
-			`{"name": "Abs"}[fn(x) { x }];`,
+			`{"name": "Abs"}[f(x) { x }];`,
 			"unusable as hash key: FUNCTION",
 		},
 		{
@@ -279,7 +279,7 @@ func TestAssignStatements(t *testing.T) {
 }
 
 func TestFunctionObject(t *testing.T) {
-	input := "fn(x) { x + 2; };"
+	input := "f(x) { x + 2; };"
 
 	evaluated := testEval(input)
 	fn, ok := evaluated.(*object.Function)
@@ -308,12 +308,12 @@ func TestFunctionApplication(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"identity = fn(x) { x; }; identity(5);", 5},
-		{"identity = fn(x) { return x; }; identity(5);", 5},
-		{"double = fn(x) { x * 2; }; double(5);", 10},
-		{"add = fn(x, y) { x + y; }; add(5, 5);", 10},
-		{"add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
-		{"fn(x) { x; }(5)", 5},
+		{"identity = f(x) { x; }; identity(5);", 5},
+		{"identity = f(x) { return x; }; identity(5);", 5},
+		{"double = f(x) { x * 2; }; double(5);", 10},
+		{"add = f(x, y) { x + y; }; add(5, 5);", 10},
+		{"add = f(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
+		{"f(x) { x; }(5)", 5},
 	}
 
 	for _, tt := range tests {
@@ -327,7 +327,7 @@ first = 10;
 second = 10;
 third = 10;
 
-ourFunction = fn(first) {
+ourFunction = f(first) {
   second = 20;
 
   first + second + third;
@@ -340,8 +340,8 @@ ourFunction(20) + first + second;`
 
 func TestClosures(t *testing.T) {
 	input := `
-newAdder = fn(x) {
-  fn(y) { x + y };
+newAdder = f(x) {
+  f(y) { x + y };
 };
 
 addTwo = newAdder(2);
@@ -525,8 +525,8 @@ func TestBuiltinMethods(t *testing.T) {
 		{`[].first()`, nil},
 		{`[] | first()`, nil},
 		{`"1.2.3".split(".").map(len)`, []int{1, 1, 1}},
-		{`[1,2,3].map(fn(x) { x + 1})`, []int{2, 3, 4}},
-		{`[1,2,3] | map(fn(x) { x + 1})`, []int{2, 3, 4}},
+		{`[1,2,3].map(f(x) { x + 1})`, []int{2, 3, 4}},
+		{`[1,2,3] | map(f(x) { x + 1})`, []int{2, 3, 4}},
 		{`"ok".ok()`, false},
 		{`"ok" | ok()`, false},
 		{`["hello"].first()`, "hello"},

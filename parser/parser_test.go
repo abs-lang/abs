@@ -276,8 +276,8 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			"(a + (b / c))",
 		},
 		{
-			"a + b * c + d / e - f",
-			"(((a + (b * c)) + (d / e)) - f)",
+			"a + b * c + d / e - ff",
+			"(((a + (b * c)) + (d / e)) - ff)",
 		},
 		{
 			"3 + 4; -5 * 5",
@@ -344,8 +344,8 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			"add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
 		},
 		{
-			"add(a + b + c * d / f + g)",
-			"add((((a + b) + ((c * d) / f)) + g))",
+			"add(a + b + c * d / ff + g)",
+			"add((((a + b) + ((c * d) / ff)) + g))",
 		},
 		{
 			"a * [1, 2, 3, 4][b * c] * d",
@@ -516,7 +516,7 @@ func TestIfElseExpression(t *testing.T) {
 }
 
 func TestFunctionLiteralParsing(t *testing.T) {
-	input := `fn(x, y) { x + y; }`
+	input := `f(x, y) { x + y; }`
 
 	l := lexer.New(input)
 	p := New(l)
@@ -595,9 +595,9 @@ func TestFunctionParameterParsing(t *testing.T) {
 		input          string
 		expectedParams []string
 	}{
-		{input: "fn() {};", expectedParams: []string{}},
-		{input: "fn(x) {};", expectedParams: []string{"x"}},
-		{input: "fn(x, y, z) {};", expectedParams: []string{"x", "y", "z"}},
+		{input: "f() {};", expectedParams: []string{}},
+		{input: "f(x) {};", expectedParams: []string{"x"}},
+		{input: "f(x, y, z) {};", expectedParams: []string{"x", "y", "z"}},
 	}
 
 	for _, tt := range tests {
