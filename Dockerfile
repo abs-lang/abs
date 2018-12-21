@@ -13,5 +13,10 @@ WORKDIR /go/src/abs
 RUN go get -d -v ./...
 
 RUN chmod +x scripts/release.sh
+# This is simply done because Go
+# will build faster. A docker build
+# is probably less frequent than an ABS
+# build, so...
+RUN ./scripts/release.sh
 
 CMD bash
