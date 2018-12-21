@@ -19,7 +19,7 @@ const (
 	BANG     = "!"
 	ASTERISK = "*"
 	SLASH    = "/"
-	CARET    = "^"
+	EXPONENT = "**"
 
 	AND = "&&"
 	OR  = "OR"

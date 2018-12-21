@@ -283,7 +283,7 @@ func evalIntegerInfixExpression(
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
-	case "^":
+	case "**":
 		// TODO this does not support floats
 		return &object.Integer{Value: int64(math.Pow(float64(leftVal), float64(rightVal)))}
 	case "<":
