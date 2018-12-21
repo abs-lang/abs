@@ -82,7 +82,13 @@ func (l *Lexer) NextToken() token.Token {
 	case ',':
 		tok = newToken(token.COMMA, l.ch)
 	case '.':
-		tok = newToken(token.DOT, l.ch)
+		if l.peekChar() == '.' {
+			tok.Type = token.RANGE
+			tok.Literal = ".."
+			l.readChar()
+		} else {
+			tok = newToken(token.DOT, l.ch)
+		}
 	case '|':
 		if l.peekChar() == '|' {
 			tok.Type = token.OR

@@ -20,6 +20,7 @@ const (
 	ASTERISK = "*"
 	SLASH    = "/"
 	EXPONENT = "**"
+	RANGE    = ".."
 
 	AND = "&&"
 	OR  = "OR"

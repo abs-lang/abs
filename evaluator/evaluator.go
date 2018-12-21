@@ -294,6 +294,14 @@ func evalIntegerInfixExpression(
 		return nativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":
 		return nativeBoolToBooleanObject(leftVal != rightVal)
+	// A range results in an array of integers from left to right
+	case "..":
+		a := make([]object.Object, 0)
+
+		for i := leftVal; i <= rightVal; i++ {
+			a = append(a, &object.Integer{Value: int64(i)})
+		}
+		return &object.Array{Elements: a}
 	default:
 		return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}

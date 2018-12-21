@@ -216,6 +216,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"2 && 1", 2, "&&", 1},
 		{"1 || 2", 1, "||", 2},
 		{"2 || 1", 2, "||", 1},
+		{"1 .. 10", 1, "..", 10},
 	}
 
 	for _, tt := range infixTests {

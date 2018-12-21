@@ -55,6 +55,7 @@ one | two | tree
 "hello\\\\"
 "\\\\hello"
 **
+1..10
 `
 
 	tests := []struct {
@@ -189,6 +190,9 @@ one | two | tree
 		{token.STRING, "hello\\\\"},
 		{token.STRING, "\\\\hello"},
 		{token.EXPONENT, "**"},
+		{token.INT, "1"},
+		{token.RANGE, ".."},
+		{token.INT, "10"},
 		{token.EOF, ""},
 	}
 
