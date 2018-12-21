@@ -65,7 +65,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
-	p.registerPrefix(token.STRING, p.parseStringLiteral)
+	p.registerPrefix(token.STRING, p.ParseStringLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
@@ -73,8 +73,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
-	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
-	p.registerPrefix(token.LBRACE, p.parseHashLiteral)
+	p.registerPrefix(token.LBRACKET, p.ParseArrayLiteral)
+	p.registerPrefix(token.LBRACE, p.ParseHashLiteral)
 	p.registerPrefix(token.COMMAND, p.parseCommand)
 	p.registerPrefix(token.COMMENT, p.parseComment)
 
@@ -282,7 +282,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 }
 
 // "some"
-func (p *Parser) parseStringLiteral() ast.Expression {
+func (p *Parser) ParseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 }
 
@@ -471,7 +471,7 @@ func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
 }
 
 // [1, 2, 3]
-func (p *Parser) parseArrayLiteral() ast.Expression {
+func (p *Parser) ParseArrayLiteral() ast.Expression {
 	array := &ast.ArrayLiteral{Token: p.curToken}
 
 	array.Elements = p.parseExpressionList(token.RBRACKET)
@@ -494,7 +494,7 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 }
 
 // {"a": "b"}
-func (p *Parser) parseHashLiteral() ast.Expression {
+func (p *Parser) ParseHashLiteral() ast.Expression {
 	hash := &ast.HashLiteral{Token: p.curToken}
 	hash.Pairs = make(map[ast.Expression]ast.Expression)
 

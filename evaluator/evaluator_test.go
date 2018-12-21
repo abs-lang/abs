@@ -403,6 +403,12 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`type(1)`, "INTEGER"},
 		{`type({})`, "HASH"},
 		{`type([])`, "ARRAY"},
+		{`type("{}".json())`, "HASH"},
+		{`"{\"k\": \"v\"}".json()["k"]`, "v"},
+		{`"hello".json()`, "argument to `json` must be a valid JSON object, got 'hello'"},
+		{`"\"hello".json()`, "argument to `json` must be a valid JSON object, got '\"hello'"},
+		// {`"[1, 2, \"hello\"]".json()`, 1},
+		// {`"[1, 2, \"hello\"]".json()`, "hello"},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
