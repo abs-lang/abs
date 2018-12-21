@@ -56,6 +56,13 @@ func (l *Lexer) NextToken() token.Token {
 	case '#':
 		tok.Type = token.COMMENT
 		tok.Literal = l.readComment()
+	case '&':
+		if l.peekChar() == '&' {
+			tok.Type = token.AND
+			tok.Literal = l.readLogicalOperator()
+		} else {
+			tok = newToken(token.ILLEGAL, l.ch)
+		}
 	case '*':
 		tok = newToken(token.ASTERISK, l.ch)
 	case '^':
@@ -159,6 +166,11 @@ func (l *Lexer) readNumber() string {
 		l.readChar()
 	}
 	return l.input[position:l.position]
+}
+
+func (l *Lexer) readLogicalOperator() string {
+	l.readChar()
+	return l.input[l.position-1 : l.position+1]
 }
 
 func (l *Lexer) readString() string {

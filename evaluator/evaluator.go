@@ -208,6 +208,12 @@ func evalInfixExpression(
 	left, right object.Object,
 ) object.Object {
 	switch {
+	case operator == "&&":
+		if !isTruthy(left) {
+			return left
+		}
+
+		return right
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
@@ -217,11 +223,9 @@ func evalInfixExpression(
 	case operator == "!=":
 		return nativeBoolToBooleanObject(left != right)
 	case left.Type() != right.Type():
-		return util.NewError("type mismatch: %s %s %s",
-			left.Type(), operator, right.Type())
+		return util.NewError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
 	default:
-		return util.NewError("unknown operator: %s %s %s",
-			left.Type(), operator, right.Type())
+		return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -274,8 +278,7 @@ func evalIntegerInfixExpression(
 	case "!=":
 		return nativeBoolToBooleanObject(leftVal != rightVal)
 	default:
-		return util.NewError("unknown operator: %s %s %s",
-			left.Type(), operator, right.Type())
+		return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -334,7 +337,14 @@ func isTruthy(obj object.Object) bool {
 	case FALSE:
 		return false
 	default:
-		return true
+		switch v := obj.(type) {
+		case *object.Integer:
+			return v.Value != 0
+		case *object.String:
+			return v.Value != ""
+		default:
+			return true
+		}
 	}
 }
 

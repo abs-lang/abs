@@ -15,7 +15,7 @@ add = fn(x, y) {
 };
 
 result = add(five, ten);
-!-/*5;
+&&!-/*5;
 5 < 10 > 5;
 
 if (5 < 10) {
@@ -31,6 +31,7 @@ if (5 < 10) {
 [1, 2];
 $(echo "()");
 {"foo": "bar"}
+
 $(curl icanhazip.com -X POST)
 $(ls *.go);
 a = [1]
@@ -87,6 +88,7 @@ one | two | tree
 		{token.IDENT, "ten"},
 		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
+		{token.AND, "&&"},
 		{token.BANG, "!"},
 		{token.MINUS, "-"},
 		{token.SLASH, "/"},
