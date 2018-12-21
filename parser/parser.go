@@ -11,15 +11,15 @@ import (
 const (
 	_ int = iota
 	LOWEST
-	EQUALS      // ==
+	EQUALS      // == or !=
 	LESSGREATER // > or <
-	SUM         // +
-	PRODUCT     // *
-	AND         // *
+	SUM         // + or -
+	PRODUCT     // * or / or ^
+	AND         // && or ||
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
 	INDEX       // array[index]
-	DOT         // some.method()
+	DOT         // some.function() or some | function()
 )
 
 var precedences = map[token.TokenType]int{
@@ -168,6 +168,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	return p.parseExpressionStatement()
 }
 
+// x = y
 func (p *Parser) parseAssignStatement() *ast.AssignStatement {
 	stmt := &ast.AssignStatement{}
 	if !p.curTokenIs(token.IDENT) {
@@ -193,6 +194,7 @@ func (p *Parser) parseAssignStatement() *ast.AssignStatement {
 	return stmt
 }
 
+// return x
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
@@ -207,6 +209,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
+// (x * y) + z
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 
@@ -257,10 +260,12 @@ func (p *Parser) curPrecedence() int {
 	return LOWEST
 }
 
+// var
 func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
+// 1
 func (p *Parser) parseIntegerLiteral() ast.Expression {
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 
@@ -276,10 +281,12 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	return lit
 }
 
+// "some"
 func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 }
 
+// !x
 func (p *Parser) parsePrefixExpression() ast.Expression {
 	expression := &ast.PrefixExpression{
 		Token:    p.curToken,
@@ -293,6 +300,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	return expression
 }
 
+// x * x
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,
@@ -307,6 +315,7 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	return expression
 }
 
+// some.function()
 func (p *Parser) parseMethodExpression(object ast.Expression) ast.Expression {
 	exp := &ast.MethodExpression{Token: p.curToken, Object: object}
 	precedence := p.curPrecedence()
@@ -317,6 +326,7 @@ func (p *Parser) parseMethodExpression(object ast.Expression) ast.Expression {
 	return exp
 }
 
+// true
 func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }
@@ -333,6 +343,11 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
+// if x {
+//   return x
+// } esle {
+//   return y
+// }
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
 
@@ -357,6 +372,7 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	return expression
 }
 
+// { x + 1 }
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	block := &ast.BlockStatement{Token: p.curToken}
 	block.Statements = []ast.Statement{}
@@ -374,6 +390,9 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
+// f() {
+//   return 1
+// }
 func (p *Parser) parseFunctionLiteral() ast.Expression {
 	lit := &ast.FunctionLiteral{Token: p.curToken}
 
@@ -392,6 +411,7 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	return lit
 }
 
+// f(x, y)
 func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 	identifiers := []*ast.Identifier{}
 
@@ -419,6 +439,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 	return identifiers
 }
 
+// function()
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	exp := &ast.CallExpression{Token: p.curToken, Function: function}
 	exp.Arguments = p.parseExpressionList(token.RPAREN)
@@ -449,6 +470,7 @@ func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
 	return list
 }
 
+// [1, 2, 3]
 func (p *Parser) parseArrayLiteral() ast.Expression {
 	array := &ast.ArrayLiteral{Token: p.curToken}
 
@@ -457,6 +479,7 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 	return array
 }
 
+// some["thing"]
 func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
 
@@ -470,6 +493,7 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	return exp
 }
 
+// {"a": "b"}
 func (p *Parser) parseHashLiteral() ast.Expression {
 	hash := &ast.HashLiteral{Token: p.curToken}
 	hash.Pairs = make(map[ast.Expression]ast.Expression)

@@ -14,6 +14,14 @@ import (
 
 var env *object.Environment
 
+// Global environment for the REPL.
+//
+// We want the environment to be persistent
+// across invokations (else how useful would
+// the REPL be?), but we also want it to
+// be available here so that other features,
+// such as suggestions, work by inspecting
+// the environment.
 func init() {
 	env = object.NewEnvironment()
 }
@@ -52,6 +60,11 @@ func Start(in io.Reader, out io.Writer) {
 	p.Run()
 }
 
+// The executor simply reads what
+// the user has entered and decides
+// what to do with it:
+// either quit, print the help message
+// or evaluate code.
 func executor(line string) {
 	if line == "quit" {
 		fmt.Printf("%s", "Adios!")
@@ -77,6 +90,10 @@ func executor(line string) {
 	Run(line, true, true)
 }
 
+// Core of the REPL.
+//
+// This function takes code and evaluates
+// it, spitting out the result.
 func Run(code string, printEvaluated bool, addNewline bool) {
 	l := lexer.New(code)
 	p := parser.New(l)

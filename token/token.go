@@ -20,8 +20,9 @@ const (
 	ASTERISK = "*"
 	SLASH    = "/"
 	CARET    = "^"
-	AND      = "&&"
-	OR       = "OR"
+
+	AND = "&&"
+	OR  = "OR"
 
 	LT = "<"
 	GT = ">"

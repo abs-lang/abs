@@ -346,23 +346,33 @@ func evalIdentifier(
 	return util.NewError("identifier not found: " + node.Value)
 }
 
+// This is the core of ABS's logical
+// evaluation, and epic quirks we'll
+// remember for years are to be found
+// here.
 func isTruthy(obj object.Object) bool {
-	switch obj {
-	case NULL:
+	switch v := obj.(type) {
+	// A null is always false
+	case *object.Null:
 		return false
-	case TRUE:
-		return true
-	case FALSE:
-		return false
+	case *object.Boolean:
+		return v.Value
+	// An integer is truthy
+	// unless it's 0
+	case *object.Integer:
+		return v.Value != 0
+	// A string is truthy
+	// unless is empty
+	case *object.String:
+		return v.Value != ""
+	// Everything else is truthy
+	//
+	// NOTE: we might regret this
+	// in the future
+	//
+	// NOTE 2: yolo!
 	default:
-		switch v := obj.(type) {
-		case *object.Integer:
-			return v.Value != 0
-		case *object.String:
-			return v.Value != ""
-		default:
-			return true
-		}
+		return true
 	}
 }
 

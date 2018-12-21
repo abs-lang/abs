@@ -8,6 +8,7 @@ import (
 	"os/user"
 )
 
+// The ABS interpreter
 func main() {
 	user, err := user.Current()
 	if err != nil {

@@ -80,14 +80,9 @@ func (l *Lexer) NextToken() token.Token {
 	case '.':
 		tok = newToken(token.DOT, l.ch)
 	case '|':
-		// If the next character is a pipe,
-		// we're hitting a logical ||, so we
-		// need to reate the token and skip
-		// the next character (the 2nd |).
 		if l.peekChar() == '|' {
 			tok.Type = token.OR
-			tok.Literal = "||"
-			l.readChar()
+			tok.Literal = l.readLogicalOperator()
 		} else {
 			tok = newToken(token.PIPE, l.ch)
 		}
@@ -178,11 +173,19 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
+// A logical operator is 2 chars, so
+// we can simply read 2 chars and call
+// it a day.
 func (l *Lexer) readLogicalOperator() string {
 	l.readChar()
 	return l.input[l.position-1 : l.position+1]
 }
 
+// Reads a strings from the text.
+// Strings can be escaped with \".
+// To close a string with an escape
+// character ("\"), escape the escape
+// character itself ("\\").
 func (l *Lexer) readString() string {
 	var chars []string
 	doubleEscape := false
@@ -218,6 +221,9 @@ func (l *Lexer) readString() string {
 	return strings.Join(chars, "")
 }
 
+// Go ahead until you find a new line.
+// This makes it so that comments take
+// a full line.
 func (l *Lexer) readComment() string {
 	position := l.position
 	for {

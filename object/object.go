@@ -100,6 +100,26 @@ func (f *Function) Inspect() string {
 	return out.String()
 }
 
+// The String is a special fella.
+//
+// Like ints, or bools, you might
+// think it will only have a Value
+// property, the string itself.
+//
+// TA-DA! No, we also have an Ok
+// property that is used when running
+// shell commands -- since the shell
+// will return strings.
+//
+// So, look at this:
+//
+// cmd = $(ls -la)
+// type(cmd) // STRING
+// cmd.ok() // TRUE
+//
+// cmd = $(curlzzzzz)
+// type(cmd) // STRING
+// cmd.ok() // FALSE
 type String struct {
 	Value string
 	Ok    bool // A special property to check whether a command exited correctly

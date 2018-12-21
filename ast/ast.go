@@ -24,6 +24,8 @@ type Expression interface {
 	expressionNode()
 }
 
+// Represents the whole program
+// as a bunch of statements
 type Program struct {
 	Statements []Statement
 }
