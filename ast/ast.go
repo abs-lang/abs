@@ -244,6 +244,25 @@ func (ie *IfExpression) String() string {
 	return out.String()
 }
 
+type WhileExpression struct {
+	Token       token.Token // The 'while' token
+	Condition   Expression
+	Consequence *BlockStatement
+}
+
+func (ie *WhileExpression) expressionNode()      {}
+func (ie *WhileExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *WhileExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("while")
+	out.WriteString(ie.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ie.Consequence.String())
+
+	return out.String()
+}
+
 type CommandExpression struct {
 	Token token.Token // The command itself
 	Value string

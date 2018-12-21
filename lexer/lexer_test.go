@@ -24,6 +24,10 @@ if (5 < 10) {
 	return false;
 }
 
+while (1 > 0) {
+	echo("hello")
+}
+
 10 == 10;
 10 != 9;
 "foobar"
@@ -118,6 +122,18 @@ one | two | tree
 		{token.RETURN, "return"},
 		{token.FALSE, "false"},
 		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.WHILE, "while"},
+		{token.LPAREN, "("},
+		{token.INT, "1"},
+		{token.GT, ">"},
+		{token.INT, "0"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "echo"},
+		{token.LPAREN, "("},
+		{token.STRING, "hello"},
+		{token.RPAREN, ")"},
 		{token.RBRACE, "}"},
 		{token.INT, "10"},
 		{token.EQ, "=="},

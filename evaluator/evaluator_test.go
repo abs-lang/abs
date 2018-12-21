@@ -133,6 +133,28 @@ func TestIfElseExpressions(t *testing.T) {
 	}
 }
 
+func TestWhileExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"a = 0; while (a < 10) { a = a + 1 }; a", 10},
+		{`a = ""; while (len(a) < 3) { a = a + "a" }; a`, "aaa"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(tt.expected.(int)))
+		case string:
+			testStringObject(t, evaluated, tt.expected.(string))
+		default:
+			panic("should not reach here")
+		}
+	}
+}
+
 func TestReturnStatements(t *testing.T) {
 	tests := []struct {
 		input    string

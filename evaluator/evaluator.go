@@ -81,6 +81,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 
+	case *ast.WhileExpression:
+		return evalWhileExpression(node, env)
+
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
 
@@ -325,6 +328,22 @@ func evalIfExpression(
 	} else {
 		return NULL
 	}
+}
+
+func evalWhileExpression(
+	we *ast.WhileExpression,
+	env *object.Environment,
+) object.Object {
+	condition := Eval(we.Condition, env)
+	if isError(condition) {
+		return condition
+	}
+
+	if isTruthy(condition) {
+		Eval(we.Consequence, env)
+		evalWhileExpression(we, env)
+	}
+	return NULL
 }
 
 func evalIdentifier(
