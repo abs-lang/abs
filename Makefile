@@ -11,3 +11,5 @@ repl:
 	go run main.go
 build_simple:
 	go build -o builds/abs main.go
+release:
+	./scripts/release.sh
