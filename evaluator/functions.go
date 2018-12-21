@@ -242,25 +242,6 @@ func getFns() map[string]*object.Builtin {
 				return util.NewError("argument to `json` must be a valid JSON object, got '%s'", s.Value)
 			},
 		},
-		// first(array:[1, 2, 3])
-		"first": &object.Builtin{
-			Types: []string{object.ARRAY_OBJ},
-			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
-				}
-				if args[0].Type() != object.ARRAY_OBJ {
-					return util.NewError("argument to `first` must be ARRAY, got %s", args[0].Type())
-				}
-
-				arr := args[0].(*object.Array)
-				if len(arr.Elements) > 0 {
-					return arr.Elements[0]
-				}
-
-				return NULL
-			},
-		},
 		// sum(array:[1, 2, 3])
 		"sum": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},

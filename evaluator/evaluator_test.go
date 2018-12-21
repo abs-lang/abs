@@ -527,16 +527,11 @@ func TestBuiltinMethods(t *testing.T) {
 		expected interface{}
 	}{
 		{`"a.b.c".split(".")`, []string{"a", "b", "c"}},
-		{`[1,2,3].first()`, 1},
-		{`[].first()`, nil},
-		{`[] | first()`, nil},
 		{`"1.2.3".split(".").map(len)`, []int{1, 1, 1}},
 		{`[1,2,3].map(f(x) { x + 1})`, []int{2, 3, 4}},
 		{`[1,2,3] | map(f(x) { x + 1})`, []int{2, 3, 4}},
 		{`"ok".ok()`, false},
 		{`"ok" | ok()`, false},
-		{`["hello"].first()`, "hello"},
-		{`["hello"] | first()`, "hello"},
 	}
 
 	for _, tt := range tests {
