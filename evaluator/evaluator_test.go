@@ -405,6 +405,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`contains("hello", "lo")`, true},
+		{`contains("hello", "_")`, false},
 		{`args("o")`, "argument 0 to args(...) is not supported (got: o, allowed: INTEGER)"},
 		{`args(3)`, ""},
 		{`rand(1)`, 0},
@@ -429,8 +431,6 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`"{\"k\": \"v\"}".json()["k"]`, "v"},
 		{`"hello".json()`, "argument to `json` must be a valid JSON object, got 'hello'"},
 		{`"\"hello".json()`, "argument to `json` must be a valid JSON object, got '\"hello'"},
-		// {`"[1, 2, \"hello\"]".json()`, 1},
-		// {`"[1, 2, \"hello\"]".json()`, "hello"},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -439,6 +439,8 @@ func TestBuiltinFunctions(t *testing.T) {
 			testIntegerObject(t, evaluated, int64(expected))
 		case nil:
 			testNullObject(t, evaluated)
+		case bool:
+			testBooleanObject(t, evaluated, expected)
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {

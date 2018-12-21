@@ -290,6 +290,22 @@ func getFns() map[string]*object.Builtin {
 				return &object.Array{Elements: newElements}
 			},
 		},
+		"contains": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("args", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				switch args[0].(type) {
+				case *object.String:
+					return &object.Boolean{Value: strings.Contains(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+				default:
+					return &object.Boolean{Value: false}
+				}
+			},
+		},
 	}
 
 }
