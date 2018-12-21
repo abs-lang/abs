@@ -183,7 +183,29 @@ func getFns() map[string]*object.Builtin {
 
 				s := args[0].(*object.String)
 				sep := args[1].(*object.String)
+
 				parts := strings.Split(s.Value, sep.Value)
+				length := len(parts)
+				elements := make([]object.Object, length, length)
+
+				for k, v := range parts {
+					elements[k] = &object.String{Value: v}
+				}
+
+				return &object.Array{Elements: elements}
+			},
+		},
+		// lines(string:"a\nb")
+		"lines": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				s := args[0].(*object.String)
+				parts := strings.Split(s.Value, "\n")
 				length := len(parts)
 				elements := make([]object.Object, length, length)
 
@@ -290,6 +312,7 @@ func getFns() map[string]*object.Builtin {
 				return &object.Array{Elements: newElements}
 			},
 		},
+		// contains("str", "tr")
 		"contains": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {

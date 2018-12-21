@@ -431,6 +431,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`"{\"k\": \"v\"}".json()["k"]`, "v"},
 		{`"hello".json()`, "argument to `json` must be a valid JSON object, got 'hello'"},
 		{`"\"hello".json()`, "argument to `json` must be a valid JSON object, got '\"hello'"},
+		{`split("a\"b\"c", "\"")`, []string{"a", "b", "c"}},
+		{`lines("a
+b
+c")`, []string{"a", "b", "c"}},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -474,6 +478,21 @@ func TestBuiltinFunctions(t *testing.T) {
 
 			for i, expectedElem := range expected {
 				testIntegerObject(t, array.Elements[i], int64(expectedElem))
+			}
+		case []string:
+			array, ok := evaluated.(*object.Array)
+			if !ok {
+				t.Errorf("obj not Array. got=%T (%+v)", evaluated, evaluated)
+				continue
+			}
+
+			if len(array.Elements) != len(expected) {
+				t.Errorf("wrong num of elements. want=%d, got=%d", len(expected), len(array.Elements))
+				continue
+			}
+
+			for i, expectedElem := range expected {
+				testStringObject(t, array.Elements[i], expectedElem)
 			}
 		}
 	}
