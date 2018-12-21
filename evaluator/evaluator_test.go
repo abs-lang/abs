@@ -383,18 +383,18 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`args("o")`, "argument to `args(...)` not supported, got STRING"},
+		{`args("o")`, "argument 0 to args(...) is not supported (got: o, allowed: INTEGER)"},
 		{`args(3)`, ""},
 		{`rand(1)`, 0},
 		{`int(10)`, 10},
 		{`int("10")`, 10},
 		{`int("abc")`, `int(...) can only be called on strings which represent integers, 'abc' given`},
-		{`int([])`, "argument to `int` not supported, got ARRAY"},
+		{`int([])`, "argument 0 to int(...) is not supported (got: [], allowed: INTEGER, STRING)"},
 		{`len("")`, 0},
 		{`len("four")`, 4},
 		{`len("hello world")`, 11},
-		{`len(1)`, "argument to `len` not supported, got INTEGER"},
-		{`len("one", "two")`, "wrong number of arguments. got=2, want=1"},
+		{`len(1)`, "argument 0 to len(...) is not supported (got: 1, allowed: STRING, ARRAY)"},
+		{`len("one", "two")`, "wrong number of arguments to len(...): got=2, want=1"},
 		{`len([1, 2, 3])`, 3},
 		{`len([])`, 0},
 		{`echo("hello", "world!")`, nil},

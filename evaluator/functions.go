@@ -14,14 +14,31 @@ import (
 	"strings"
 )
 
+// Utility function that validates arguments passed to builtin
+// functions.
+func validateArgs(name string, args []object.Object, size int, types [][]string) object.Object {
+	if len(args) != size {
+		return util.NewError("wrong number of arguments to %s(...): got=%d, want=1", name, len(args))
+	}
+
+	for i, t := range types {
+		if !util.Contains(t, string(args[i].Type())) {
+			return util.NewError("argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
+		}
+	}
+
+	return nil
+}
+
 func getFns() map[string]*object.Builtin {
 	return map[string]*object.Builtin{
 		// len(var:"hello")
 		"len": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				err := validateArgs("len", args, 1, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}})
+				if err != nil {
+					return err
 				}
 
 				switch arg := args[0].(type) {
@@ -39,39 +56,33 @@ func getFns() map[string]*object.Builtin {
 		"rand": &object.Builtin{
 			Types: []string{object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				err := validateArgs("rand", args, 1, [][]string{{object.INTEGER_OBJ}})
+				if err != nil {
+					return err
 				}
 
-				switch arg := args[0].(type) {
-				case *object.Integer:
-					r, err := rand.Int(rand.Reader, big.NewInt(arg.Value))
+				arg := args[0].(*object.Integer)
+				r, e := rand.Int(rand.Reader, big.NewInt(arg.Value))
 
-					if err != nil {
-						return util.NewError("error occurred while calling 'rand(%d)': %s", arg.Value, err.Error())
-					}
-
-					return &object.Integer{Value: r.Int64()}
-				default:
-					return util.NewError("argument to `rand(...)` not supported, got %s", arg.Type())
+				if e != nil {
+					return util.NewError("error occurred while calling 'rand(%d)': %s", arg.Value, e.Error())
 				}
+
+				return &object.Integer{Value: r.Int64()}
 			},
 		},
 		// exit(code:0)
 		"exit": &object.Builtin{
 			Types: []string{object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				err := validateArgs("exit", args, 1, [][]string{{object.INTEGER_OBJ}})
+				if err != nil {
+					return err
 				}
 
-				switch arg := args[0].(type) {
-				case *object.Integer:
-					os.Exit(int(arg.Value))
-					return arg
-				default:
-					return util.NewError("argument to `exit(...)` not supported, got '%s' (%s)", arg.Inspect(), arg.Type())
-				}
+				arg := args[0].(*object.Integer)
+				os.Exit(int(arg.Value))
+				return arg
 			},
 		},
 		// echo(arg:"hello")
@@ -95,8 +106,9 @@ func getFns() map[string]*object.Builtin {
 		"int": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				err := validateArgs("int", args, 1, [][]string{{object.INTEGER_OBJ, object.STRING_OBJ}})
+				if err != nil {
+					return err
 				}
 
 				switch arg := args[0].(type) {
@@ -111,6 +123,7 @@ func getFns() map[string]*object.Builtin {
 
 					return &object.Integer{Value: int64(i)}
 				default:
+					// we will never reach here
 					return util.NewError("argument to `int` not supported, got %s", args[0].Type())
 				}
 			},
@@ -119,46 +132,41 @@ func getFns() map[string]*object.Builtin {
 		"env": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				err := validateArgs("env", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
 				}
 
-				switch arg := args[0].(type) {
-				case *object.String:
-					return &object.String{Value: os.Getenv(arg.Value)}
-				default:
-					return util.NewError("argument to `env` not supported, got %s", args[0].Type())
-				}
+				arg := args[0].(*object.String)
+				return &object.String{Value: os.Getenv(arg.Value)}
 			},
 		},
 		// args(position:1)
 		"args": &object.Builtin{
 			Types: []string{object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				err := validateArgs("args", args, 1, [][]string{{object.INTEGER_OBJ}})
+				if err != nil {
+					return err
 				}
 
-				switch arg := args[0].(type) {
-				case *object.Integer:
-					i := arg.Value
+				arg := args[0].(*object.Integer)
+				i := arg.Value
 
-					if int(i) > len(os.Args)-1 {
-						return &object.String{Value: ""}
-					}
-
-					return &object.String{Value: os.Args[i]}
-				default:
-					return util.NewError("argument to `args(...)` not supported, got %s", args[0].Type())
+				if int(i) > len(os.Args)-1 {
+					return &object.String{Value: ""}
 				}
+
+				return &object.String{Value: os.Args[i]}
 			},
 		},
 		// type(variable:"hello")
 		"type": &object.Builtin{
 			Types: []string{},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				err := validateArgs("args", args, 1, [][]string{})
+				if err != nil {
+					return err
 				}
 
 				return &object.String{Value: string(args[0].Type())}
@@ -168,13 +176,9 @@ func getFns() map[string]*object.Builtin {
 		"split": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				// TODO we're passing the wrong amount of args to these functions
-				if len(args) != 2 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
-				}
-
-				if args[0].Type() != object.STRING_OBJ || args[1].Type() != object.STRING_OBJ {
-					return util.NewError("argument to `split` must be STRING, got %s", args[0].Type())
+				err := validateArgs("args", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
 				}
 
 				s := args[0].(*object.String)
@@ -195,6 +199,11 @@ func getFns() map[string]*object.Builtin {
 		"ok": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
 				s := args[0].(*object.String)
 
 				return &object.Boolean{Value: s.Ok}
@@ -221,12 +230,9 @@ func getFns() map[string]*object.Builtin {
 		"json": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
-				}
-
-				if args[0].Type() != object.STRING_OBJ {
-					return util.NewError("argument to `split` must be STRING, got %s", args[0].Type())
+				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
 				}
 
 				s := args[0].(*object.String)
@@ -246,12 +252,9 @@ func getFns() map[string]*object.Builtin {
 		"sum": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
-				}
-
-				if args[0].Type() != object.ARRAY_OBJ {
-					return util.NewError("argument to `first` must be ARRAY, got %s", args[0].Type())
+				err := validateArgs("args", args, 1, [][]string{{object.ARRAY_OBJ}})
+				if err != nil {
+					return err
 				}
 
 				arr := args[0].(*object.Array)
@@ -270,15 +273,9 @@ func getFns() map[string]*object.Builtin {
 		"map": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				if len(args) != 2 {
-					return util.NewError("wrong number of arguments. got=%d, want=2", len(args))
-				}
-
-				if args[0].Type() != object.ARRAY_OBJ {
-					return util.NewError("argument to `map` must be ARRAY, got %s", args[0].Type())
-				}
-				if args[1].Type() != object.FUNCTION_OBJ && args[1].Type() != object.BUILTIN_OBJ {
-					return util.NewError("argument to `map` must be FUNCTION, got %s", args[0].Type())
+				err := validateArgs("args", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+				if err != nil {
+					return err
 				}
 
 				arr := args[0].(*object.Array)
