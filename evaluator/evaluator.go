@@ -208,8 +208,25 @@ func evalInfixExpression(
 	left, right object.Object,
 ) object.Object {
 	switch {
+	// 1 && 2
+	// We will first verify left is truthy and,
+	// if so, proceed to check whether right is
+	// also truthy.
+	// At the end of the process we will return
+	// right, without any implicit bool conversion.
 	case operator == "&&":
 		if !isTruthy(left) {
+			return left
+		}
+
+		return right
+	// 1 || 2
+	// We will first verify left is truthy, and
+	// return it if so. If not, we will return
+	// right, without any implicit bool conversion
+	// (which allows short-circuiting).
+	case operator == "||":
+		if isTruthy(left) {
 			return left
 		}
 
@@ -268,6 +285,7 @@ func evalIntegerInfixExpression(
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
 	case "^":
+		// TODO this does not support floats
 		return &object.Integer{Value: int64(math.Pow(float64(leftVal), float64(rightVal)))}
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)

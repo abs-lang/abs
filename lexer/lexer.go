@@ -80,7 +80,17 @@ func (l *Lexer) NextToken() token.Token {
 	case '.':
 		tok = newToken(token.DOT, l.ch)
 	case '|':
-		tok = newToken(token.PIPE, l.ch)
+		// If the next character is a pipe,
+		// we're hitting a logical ||, so we
+		// need to reate the token and skip
+		// the next character (the 2nd |).
+		if l.peekChar() == '|' {
+			tok.Type = token.OR
+			tok.Literal = "||"
+			l.readChar()
+		} else {
+			tok = newToken(token.PIPE, l.ch)
+		}
 	case '{':
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':

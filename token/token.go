@@ -21,6 +21,7 @@ const (
 	SLASH    = "/"
 	CARET    = "^"
 	AND      = "&&"
+	OR       = "OR"
 
 	LT = "<"
 	GT = ">"

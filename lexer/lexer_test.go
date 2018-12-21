@@ -15,7 +15,7 @@ add = fn(x, y) {
 };
 
 result = add(five, ten);
-&&!-/*5;
+&&||!-/*5;
 5 < 10 > 5;
 
 if (5 < 10) {
@@ -89,6 +89,7 @@ one | two | tree
 		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
 		{token.AND, "&&"},
+		{token.OR, "||"},
 		{token.BANG, "!"},
 		{token.MINUS, "-"},
 		{token.SLASH, "/"},

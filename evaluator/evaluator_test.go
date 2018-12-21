@@ -449,7 +449,7 @@ func TestBuiltinFunctions(t *testing.T) {
 	}
 }
 
-func TestLocigalOperators(t *testing.T) {
+func TestLogicalOperators(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected interface{}
@@ -459,6 +459,16 @@ func TestLocigalOperators(t *testing.T) {
 		{`"hello" && 2`, 2},
 		{`"" && 2`, ""},
 		{`"hello" && ""`, ""},
+		{`len("hello") && 2`, 2},
+		{`1 || 0`, 1},
+		{`1 || 2`, 1},
+		{`"hello" || 2`, "hello"},
+		{`"" || 2`, 2},
+		{`"hello" || ""`, "hello"},
+		{`len("hello") || ""`, 5},
+		{`
+		(("") || ("") || (0 || 0 || 0)) || ""
+`, ""},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
