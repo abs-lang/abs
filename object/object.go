@@ -132,7 +132,8 @@ func (s *String) HashKey() HashKey {
 }
 
 type Builtin struct {
-	Fn BuiltinFunction
+	Fn    BuiltinFunction
+	Types []string
 }
 
 func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }

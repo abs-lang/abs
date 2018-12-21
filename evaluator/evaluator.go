@@ -12,17 +12,13 @@ import (
 )
 
 var (
-	NULL      = &object.Null{}
-	TRUE      = &object.Boolean{Value: true}
-	FALSE     = &object.Boolean{Value: false}
-	Fns       map[string]*object.Builtin
-	ArrayFns  map[string]*object.Builtin
-	StringFns map[string]*object.Builtin
+	NULL  = &object.Null{}
+	TRUE  = &object.Boolean{Value: true}
+	FALSE = &object.Boolean{Value: false}
+	Fns   map[string]*object.Builtin
 )
 
 func init() {
-	ArrayFns = getArrayFns()
-	StringFns = getStringFns()
 	Fns = getFns()
 }
 
@@ -417,25 +413,18 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 }
 
 func applyMethod(o object.Object, method string, args []object.Object) object.Object {
-	switch o.(type) {
+	f, ok := Fns[method]
 
-	case *object.Array:
-		if f, ok := ArrayFns[method]; ok {
-			args = append([]object.Object{o}, args...)
-			return f.Fn(args...)
-		}
+	if !ok {
+		return util.NewError("method '%s()' does not exist", method, o.Type())
+	}
 
-		return util.NewError("cannot call method '%s()' on type '%s'", method, o.Type())
-	case *object.String:
-		if f, ok := StringFns[method]; ok {
-			args = append([]object.Object{o}, args...)
-			return f.Fn(args...)
-		}
-
-		return util.NewError("cannot call method '%s()' on type '%s'", method, o.Type())
-	default:
+	if !util.Contains(f.Types, string(o.Type())) && len(f.Types) != 0 {
 		return util.NewError("cannot call method '%s()' on '%s'", method, o.Type())
 	}
+
+	args = append([]object.Object{o}, args...)
+	return f.Fn(args...)
 }
 
 func extendFunctionEnv(

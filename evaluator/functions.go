@@ -1,18 +1,24 @@
 package evaluator
 
 import (
+	"abs/ast"
+	"abs/lexer"
 	"abs/object"
+	"abs/parser"
 	"abs/util"
 	"crypto/rand"
 	"fmt"
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func getFns() map[string]*object.Builtin {
 	return map[string]*object.Builtin{
+		// len(var:"hello")
 		"len": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
@@ -31,6 +37,7 @@ func getFns() map[string]*object.Builtin {
 		},
 		// rand(max:20)
 		"rand": &object.Builtin{
+			Types: []string{object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
@@ -52,6 +59,7 @@ func getFns() map[string]*object.Builtin {
 		},
 		// exit(code:0)
 		"exit": &object.Builtin{
+			Types: []string{object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
@@ -66,7 +74,9 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
+		// echo(arg:"hello")
 		"echo": &object.Builtin{
+			Types: []string{},
 			Fn: func(args ...object.Object) object.Object {
 				var arguments []interface{} = make([]interface{}, len(args)-1)
 				for i, d := range args {
@@ -81,7 +91,9 @@ func getFns() map[string]*object.Builtin {
 				return NULL
 			},
 		},
+		// int(string:"123")
 		"int": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
@@ -103,7 +115,9 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
+		// env(variable:"PWD")
 		"env": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
@@ -117,7 +131,9 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
+		// args(position:1)
 		"args": &object.Builtin{
+			Types: []string{object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
@@ -137,13 +153,163 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
+		// type(variable:"hello")
 		"type": &object.Builtin{
+			Types: []string{},
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
 				}
 
 				return &object.String{Value: string(args[0].Type())}
+			},
+		},
+		// split(string:"hello")
+		"split": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				// TODO we're passing the wrong amount of args to these functions
+				if len(args) != 2 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+
+				if args[0].Type() != object.STRING_OBJ || args[1].Type() != object.STRING_OBJ {
+					return util.NewError("argument to `split` must be STRING, got %s", args[0].Type())
+				}
+
+				s := args[0].(*object.String)
+				sep := args[1].(*object.String)
+				parts := strings.Split(s.Value, sep.Value)
+				length := len(parts)
+				elements := make([]object.Object, length, length)
+
+				for k, v := range parts {
+					elements[k] = &object.String{Value: v}
+				}
+
+				return &object.Array{Elements: elements}
+			},
+		},
+		// cmd = $(ls -la)
+		// cmd.ok()
+		"ok": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				s := args[0].(*object.String)
+
+				return &object.Boolean{Value: s.Ok}
+			},
+		},
+		// "{}".json()
+		//
+		// Converts a valid JSON document to an ABS hash.
+		//
+		// One interesting thing here is that we're creating
+		// a new environment from scratch, whereas it might
+		// be interesting to use the existing one. That would
+		// allow to do things like:
+		//
+		// x = 10
+		// '{"key": x}'.json()["key"] // 10
+		//
+		// Also, we're instantiating a new lexer & parser from
+		// scratch, so this is a tad slow.
+		//
+		// This method is incomplete as it currently does not
+		// support most JSON types, but rather just objects,
+		// ie. "[1, 2, 3]".json() won't work.
+		"json": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+
+				if args[0].Type() != object.STRING_OBJ {
+					return util.NewError("argument to `split` must be STRING, got %s", args[0].Type())
+				}
+
+				s := args[0].(*object.String)
+				env := object.NewEnvironment()
+				l := lexer.New(s.Value)
+				p := parser.New(l)
+				hl, ok := p.ParseHashLiteral().(*ast.HashLiteral)
+
+				if ok {
+					return evalHashLiteral(hl, env)
+				}
+
+				return util.NewError("argument to `json` must be a valid JSON object, got '%s'", s.Value)
+			},
+		},
+		// first(array:[1, 2, 3])
+		"first": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+				if args[0].Type() != object.ARRAY_OBJ {
+					return util.NewError("argument to `first` must be ARRAY, got %s", args[0].Type())
+				}
+
+				arr := args[0].(*object.Array)
+				if len(arr.Elements) > 0 {
+					return arr.Elements[0]
+				}
+
+				return NULL
+			},
+		},
+		// sum(array:[1, 2, 3])
+		"sum": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return util.NewError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+
+				if args[0].Type() != object.ARRAY_OBJ {
+					return util.NewError("argument to `first` must be ARRAY, got %s", args[0].Type())
+				}
+
+				arr := args[0].(*object.Array)
+
+				var sum int64 = 0
+
+				for _, v := range arr.Elements {
+					elem := v.(*object.Integer)
+					sum += elem.Value
+				}
+
+				return &object.Integer{Value: int64(sum)}
+			},
+		},
+		// map(array:[1, 2, 3], function:f(x) { x + 1 })
+		"map": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 2 {
+					return util.NewError("wrong number of arguments. got=%d, want=2", len(args))
+				}
+
+				if args[0].Type() != object.ARRAY_OBJ {
+					return util.NewError("argument to `map` must be ARRAY, got %s", args[0].Type())
+				}
+				if args[1].Type() != object.FUNCTION_OBJ && args[1].Type() != object.BUILTIN_OBJ {
+					return util.NewError("argument to `map` must be FUNCTION, got %s", args[0].Type())
+				}
+
+				arr := args[0].(*object.Array)
+				length := len(arr.Elements)
+				newElements := make([]object.Object, length, length)
+				copy(newElements, arr.Elements)
+
+				for k, v := range arr.Elements {
+					newElements[k] = applyFunction(args[1], []object.Object{v})
+				}
+
+				return &object.Array{Elements: newElements}
 			},
 		},
 	}
