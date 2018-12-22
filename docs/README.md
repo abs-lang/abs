@@ -1,6 +1,16 @@
-# The abs programming language
+<p align="center">
+  <a href="https://abs-lang.org/">
+    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/ABS.png?raw=true" width="310">
+  </a>
+</p>
 
-Turn this:
+ABS is a scripting language that works best when you're on
+your terminal. It tries to combine the elegance of languages
+such as Python, or Ruby, to the convenience of Bash.
+
+Let's try to fetch our IP address and print the sum of its
+parts, if its higher than 100. Here's how you could do it
+in bash:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
@@ -10,11 +20,11 @@ ${IP##*-}
 EOF
 total=$((first + second + third + fourth))
 if [ $total -gt 100 ]
-    echo "The sum of [$IP] is $total."
+    echo "The sum of [$IP] is a large number, $total."
 fi
 ```
 
-into this:
+And here's how you would write the same code in ABS:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
@@ -22,22 +32,34 @@ ip = $(curl -s 'https://api.ipify.org?format=json' | jq -rj ".ip");
 
 total = ip.split(".").map(int).sum()
 if total > 100 {
-    echo("The sum of [%s] is %s.", ip, total)
+    echo("The sum of [%s] is a large number, %s.", ip, total)
 }
 ```
 
-## Why
+Wondering how you can run this code? Simply grab the latest
+[release](https://github.com/abs-lang/abs/releases) and run:
 
-## Status
+```
+abs script.abs
+```
 
-Early stage, so it could be that the language parser / evaluator might throw a bunch
-of errors if you feed it funny code.
+## Table of contents
 
-Open an issue and let's have fun!
-
-## Credits
-
-* [Terence Parr (ANTLR)](https://www.antlr.org/), for introducing me to parser generators
-* [Thorsten Ball (interpreter book)](https://interpreterbook.com/), for demystifying interpreters and providing the initial codebase for the abs interpreter
-* [Joe Jean](https://www.joejean.net/), for suggesting the interpreter book
-* [Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), for being terrible at control flow ;-)
+* Introduction
+    * Why another scripting language?
+* Types and function reference
+    * String
+    * Integer
+    * Array
+    * Hash
+    * Functions
+* Syntax
+    * Assignments
+    * return
+    * Operators
+    * if
+    * for
+    * while
+    * System commands
+* Running ABS code
+    * The ABS interpreter
