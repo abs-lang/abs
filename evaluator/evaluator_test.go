@@ -494,6 +494,22 @@ c")`, []string{"a", "b", "c"}},
 		{`["b", 1].sort()`, "argument to `sort` must be an homogeneous array (elements of the same type), got [b, 1]"},
 		{`[{}].sort()`, "cannot sort an array with given elements elements ([{}])"},
 		{`[[]].sort()`, "cannot sort an array with given elements elements ([[]])"},
+		{`[1, 2].some(f(x) {x == 2})`, true},
+		{`[].some(f(x) {x})`, false},
+		{`[1, 2].every(f(x) { return x == 2 || x == 1})`, true},
+		{`[].every(f(x) {x})`, true},
+		{`[1,2,3].every(f(x) {x == 1})`, false},
+		{`[1,2,3].filter(f(x) {x == 1})`, []int{1}},
+		{`[].shift()`, nil},
+		{`[1, 2].shift()`, 1},
+		{`a = [1, 2]; a.shift(); a`, []int{2}},
+		{`[1, 2].reverse();`, []int{2, 1}},
+		{`[1, 2].push("a");`, []interface{}{1, 2, "a"}},
+		{`[1, 2].pop();`, 2},
+		{`a = [1, 2]; a.pop(); a`, []int{1}},
+		{`[1, 2].keys()`, []int{0, 1}},
+		{`[1, 2].join("-")`, "1-2"},
+		{`["a", "b"].join("-")`, "a-b"},
 		{`"a".any("b")`, false},
 		{`"a".any("a")`, true},
 		{`"a".prefix("b")`, false},
@@ -517,6 +533,17 @@ c")`, []string{"a", "b", "c"}},
 		{`"abc".slice(-20, 2)`, "ab"},
 		{`"abc".slice(-1, 3)`, "c"},
 		{`"abc".slice(-1, 1)`, "c"},
+		{`[1,2,3].slice(0, 0)`, []int{1, 2, 3}},
+		{`[1,2,3].slice(1, 0)`, []int{2, 3}},
+		{`[1,2,3].slice(1, 2)`, []int{2}},
+		{`[1,2,3].slice(0, 6)`, []int{1, 2, 3}},
+		{`[1,2,3].slice(10, 10)`, []int{}},
+		{`[1,2,3].slice(10, 20)`, []int{}},
+		{`[1,2,3].slice(-1, 0)`, []int{3}},
+		{`[1,2,3].slice(-20, 0)`, []int{1, 2, 3}},
+		{`[1,2,3].slice(-20, 2)`, []int{1, 2}},
+		{`[1,2,3].slice(-1, 3)`, []int{3}},
+		{`[1,2,3].slice(-1, 1)`, []int{3}},
 		{`"a".replace("a", "b", -1)`, "b"},
 		{`"a".str()`, "a"},
 		{`1.str()`, "1"},
@@ -585,6 +612,17 @@ c")`, []string{"a", "b", "c"}},
 
 			for i, expectedElem := range expected {
 				testStringObject(t, array.Elements[i], expectedElem)
+			}
+		case []interface{}:
+			array, ok := evaluated.(*object.Array)
+			if !ok {
+				t.Errorf("obj not Array. got=%T (%+v)", evaluated, evaluated)
+				continue
+			}
+
+			if len(array.Elements) != len(expected) {
+				t.Errorf("wrong num of elements. want=%d, got=%d", len(expected), len(array.Elements))
+				continue
 			}
 		}
 	}

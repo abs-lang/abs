@@ -11,11 +11,11 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	AND         // && or ||
 	EQUALS      // == or !=
 	LESSGREATER // > or <
 	SUM         // + or -
 	PRODUCT     // * or / or ^
-	AND         // && or ||
 	RANGE       // ..
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
@@ -24,6 +24,8 @@ const (
 )
 
 var precedences = map[token.TokenType]int{
+	token.AND:      AND,
+	token.OR:       AND,
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
 	token.TILDE:    EQUALS,
@@ -36,8 +38,6 @@ var precedences = map[token.TokenType]int{
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
 	token.EXPONENT: PRODUCT,
-	token.AND:      AND,
-	token.OR:       AND,
 	token.RANGE:    RANGE,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,

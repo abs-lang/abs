@@ -365,6 +365,77 @@ func getFns() map[string]*object.Builtin {
 				return &object.Array{Elements: newElements}
 			},
 		},
+		// some(array:[1, 2, 3], function:f(x) { x == 2 })
+		"some": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("some", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				var result bool
+
+				arr := args[0].(*object.Array)
+
+				for _, v := range arr.Elements {
+					r := applyFunction(args[1], []object.Object{v})
+
+					if isTruthy(r) {
+						result = true
+					}
+				}
+
+				return &object.Boolean{Value: result}
+			},
+		},
+		// every(array:[1, 2, 3], function:f(x) { x == 2 })
+		"every": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("every", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				result := true
+
+				arr := args[0].(*object.Array)
+
+				for _, v := range arr.Elements {
+					r := applyFunction(args[1], []object.Object{v})
+
+					if !isTruthy(r) {
+						result = false
+					}
+				}
+
+				return &object.Boolean{Value: result}
+			},
+		},
+		// filter(array:[1, 2, 3], function:f(x) { x == 2 })
+		"filter": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("filter", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				result := []object.Object{}
+				arr := args[0].(*object.Array)
+
+				for _, v := range arr.Elements {
+					r := applyFunction(args[1], []object.Object{v})
+
+					if isTruthy(r) {
+						result = append(result, v)
+					}
+				}
+
+				return &object.Array{Elements: result}
+			},
+		},
 		// contains("str", "tr")
 		"contains": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
@@ -552,41 +623,166 @@ func getFns() map[string]*object.Builtin {
 		},
 		// slice("abcc", 0, -1)
 		"slice": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
+			Types: []string{object.STRING_OBJ, object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("slice", args, 3, [][]string{{object.STRING_OBJ}, {object.INTEGER_OBJ}, {object.INTEGER_OBJ}})
+				err := validateArgs("slice", args, 3, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.INTEGER_OBJ}, {object.INTEGER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				s := args[0].(*object.String).Value
-				l := len(s)
 				start := int(args[1].(*object.Integer).Value)
 				end := int(args[2].(*object.Integer).Value)
 
-				if end == 0 {
-					end = l
+				switch arg := args[0].(type) {
+				case *object.String:
+					s := arg.Value
+					start, end := sliceStartAndEnd(len(s), start, end)
+
+					return &object.String{Value: s[start:end]}
+				case *object.Array:
+					start, end := sliceStartAndEnd(len(arg.Elements), start, end)
+
+					return &object.Array{Elements: arg.Elements[start:end]}
 				}
 
-				if start > l {
-					start = l
+				return NULL
+			},
+		},
+		// shift([1,2,3])
+		"shift": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("shift", args, 1, [][]string{{object.ARRAY_OBJ}})
+				if err != nil {
+					return err
 				}
 
-				if start < 0 {
-					newStart := l + start
-					if newStart < 0 {
-						start = 0
-					} else {
-						start = newStart
-					}
+				array := args[0].(*object.Array)
+				if len(array.Elements) == 0 {
+					return NULL
+				}
+				e := array.Elements[0]
+				array.Elements = append(array.Elements[:0], array.Elements[1:]...)
+
+				return e
+			},
+		},
+		// reverse([1,2,3])
+		"reverse": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("reverse", args, 1, [][]string{{object.ARRAY_OBJ}})
+				if err != nil {
+					return err
 				}
 
-				if end > l || start > end {
-					end = l
+				array := args[0].(*object.Array)
+
+				for i, j := 0, len(array.Elements)-1; i < j; i, j = i+1, j-1 {
+					array.Elements[i], array.Elements[j] = array.Elements[j], array.Elements[i]
 				}
 
-				return &object.String{Value: s[start:end]}
+				return array
+			},
+		},
+		// push([1,2,3], 4)
+		"push": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("push", args, 2, [][]string{{object.ARRAY_OBJ}, {object.NULL_OBJ, object.ARRAY_OBJ, object.INTEGER_OBJ, object.STRING_OBJ, object.HASH_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				array := args[0].(*object.Array)
+				array.Elements = append(array.Elements, args[1])
+
+				return array
+			},
+		},
+		// pop([1,2,3], 4)
+		"pop": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("pop", args, 1, [][]string{{object.ARRAY_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				array := args[0].(*object.Array)
+				elem := array.Elements[len(array.Elements)-1]
+				array.Elements = array.Elements[0 : len(array.Elements)-1]
+
+				return elem
+			},
+		},
+		// keys([1,2,3])
+		"keys": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("keys", args, 1, [][]string{{object.ARRAY_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				arr := args[0].(*object.Array)
+				length := len(arr.Elements)
+				newElements := make([]object.Object, length, length)
+
+				for k, _ := range arr.Elements {
+					newElements[k] = &object.Integer{Value: int64(k)}
+				}
+
+				return &object.Array{Elements: newElements}
+			},
+		},
+		// join([1,2,3], "-")
+		"join": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("join", args, 2, [][]string{{object.ARRAY_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				arr := args[0].(*object.Array)
+				length := len(arr.Elements)
+				newElements := make([]string, length, length)
+
+				for k, v := range arr.Elements {
+					newElements[k] = v.Inspect()
+				}
+
+				return &object.String{Value: strings.Join(newElements, args[1].(*object.String).Value)}
 			},
 		},
 	}
+}
+
+// Clamps starts and end arguments to the slice
+// function. When you slice "abc" you can have
+// start=10 and end -20...
+func sliceStartAndEnd(l int, start int, end int) (int, int) {
+	if end == 0 {
+		end = l
+	}
+
+	if start > l {
+		start = l
+	}
+
+	if start < 0 {
+		newStart := l + start
+		if newStart < 0 {
+			start = 0
+		} else {
+			start = newStart
+		}
+	}
+
+	if end > l || start > end {
+		end = l
+	}
+
+	return start, end
 }
