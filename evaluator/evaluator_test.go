@@ -572,6 +572,7 @@ func TestRangesOperators(t *testing.T) {
 		{`-1..0`, []int{-1, 0}},
 		{`1..1`, []int{1}},
 		{`1..2`, []int{1, 2}},
+		{`len("a")..len("aa")`, []int{1, 2}},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
