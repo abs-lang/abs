@@ -289,6 +289,33 @@ func (fie *ForInExpression) String() string {
 	return out.String()
 }
 
+type ForExpression struct {
+	Token      token.Token     // The 'for' token
+	Identifier string          // "x"
+	Starter    Statement       // x = 0
+	Closer     Statement       // x++
+	Condition  Expression      // x < 1
+	Block      *BlockStatement // The block executed inside the for loop
+}
+
+func (fe *ForExpression) expressionNode()      {}
+func (fe *ForExpression) TokenLiteral() string { return fe.Token.Literal }
+func (fe *ForExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("for ")
+
+	out.WriteString(fe.Starter.String())
+	out.WriteString(";")
+	out.WriteString(fe.Condition.String())
+	out.WriteString(";")
+	out.WriteString(fe.Closer.String())
+	out.WriteString(";")
+	out.WriteString(fe.Block.String())
+
+	return out.String()
+}
+
 type CommandExpression struct {
 	Token token.Token // The command itself
 	Value string

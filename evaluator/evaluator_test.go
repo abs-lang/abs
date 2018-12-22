@@ -142,6 +142,39 @@ func TestForExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{"a = 0; for x = 0; x < 10; x = x + 1 { a = a + 1}; a", 10},
+		{"a = 0; for x = 0; x < y; x = x + 1 { a = a + 1}; a", "identifier not found: y"},
+		{"a = 0; increment = f(x) {x+1}; for x = 0; x < 10; x = increment(x) { a = a + 1}; a", 10},
+		{`a = 0; for k = 0; k < 10; k = k + 1 { a = a + 1}; k`, "identifier not found: k"},
+		{`k = 100; for k = 0; k < 10; k = k { k = k + 1}; k`, 100},
+		{`k = 100; for k = y; k < 10; k = k { k = 9 }; k`, "identifier not found: y"},
+		{`k = 100; for k = 0; k <= 10; k = k { k = y }; k`, "identifier not found: y"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+
+			if errObj.Message != tt.expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
+			}
+		}
+	}
+}
+
+func TestForInExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
 		{"a = 0; for k, x in 1 { a = a + 1}; a", "'1' is not an array, cannot be used in for loop"},
 		{"a = 0; for k, x in 1..10 { a = a + 1}; a", 10},
 		{"a = 0; for x in 1 { a = a + 1}; a", "'1' is not an array, cannot be used in for loop"},
@@ -151,6 +184,8 @@ func TestForExpressions(t *testing.T) {
 		{`for k, v in ["x", "y", "z"] {}; v`, "identifier not found: v"},
 		{`k = 100; for k, v in ["x", "y", "z"] {}; k`, 100},
 		{`v = 100; for k, v in ["x", "y", "z"] {}; v`, 100},
+		{`for k, v in ["x", "y", "z"] {k=y}; v`, "identifier not found: y"},
+		{`for k, v in ["x", "y", z] {k=y}; v`, "'ERROR: identifier not found: z' is not an array, cannot be used in for loop"},
 	}
 
 	for _, tt := range tests {

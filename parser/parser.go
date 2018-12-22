@@ -78,7 +78,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.WHILE, p.parseWhileExpression)
-	p.registerPrefix(token.FOR, p.parseForInExpression)
+	p.registerPrefix(token.FOR, p.parseForExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 	p.registerPrefix(token.LBRACKET, p.ParseArrayLiteral)
 	p.registerPrefix(token.LBRACE, p.ParseHashLiteral)
@@ -398,16 +398,55 @@ func (p *Parser) parseWhileExpression() ast.Expression {
 	return expression
 }
 
-// for x in [1,2,3] {
-// 	echo("true")
-// }
-func (p *Parser) parseForInExpression() ast.Expression {
-	expression := &ast.ForInExpression{Token: p.curToken}
+// We first try parsing the code as a regular for loop.
+// If we realize this is a for .. in we will then switch
+// around.
+func (p *Parser) parseForExpression() ast.Expression {
+	expression := &ast.ForExpression{Token: p.curToken}
 	p.nextToken()
 
 	if !p.curTokenIs(token.IDENT) {
 		return nil
+	}
 
+	if !p.peekTokenIs(token.ASSIGN) {
+		return p.parseForInExpression(expression)
+	}
+
+	expression.Identifier = p.curToken.Literal
+	expression.Starter = p.parseAssignStatement()
+
+	if expression.Starter == nil {
+		return nil
+	}
+	p.nextToken()
+	expression.Condition = p.parseExpression(LOWEST)
+	if expression.Condition == nil {
+		return nil
+	}
+	p.nextToken()
+	p.nextToken()
+	expression.Closer = p.parseAssignStatement()
+	if expression.Closer == nil {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+	expression.Block = p.parseBlockStatement()
+
+	return expression
+}
+
+// for x in [1,2,3] {
+// 	echo("true")
+// }
+func (p *Parser) parseForInExpression(initialExpression *ast.ForExpression) ast.Expression {
+	expression := &ast.ForInExpression{Token: initialExpression.Token}
+
+	if !p.curTokenIs(token.IDENT) {
+		return nil
 	}
 
 	val := p.curToken.Literal

@@ -561,6 +561,63 @@ while (x > y) {
 	}
 }
 
+func TestForExpression(t *testing.T) {
+	tests := []struct {
+		input string
+	}{
+		{`for x = 0; x < y; x = x + 1 {x}`},
+		{`for x = 0; x < y; k = increment(k) { x};`},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 1, len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.ForExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.ForExpression. got=%T", stmt.Expression)
+		}
+
+		if exp.Identifier != "x" {
+			t.Errorf("wrong identifier in for loop. got=%s\n", exp.Identifier)
+		}
+
+		_, ok = exp.Starter.(*ast.AssignStatement)
+		if !ok {
+			t.Fatalf("Starter is not ast.AssignStatement. got=%T", exp.Starter)
+		}
+
+		if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
+			continue
+		}
+
+		_, ok = exp.Closer.(*ast.AssignStatement)
+		if !ok {
+			t.Fatalf("Closer is not ast.AssignStatement. got=%T", exp.Closer)
+		}
+
+		block, ok := exp.Block.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Block.Statements[0])
+		}
+
+		if !testIdentifier(t, block.Expression, "x") {
+			continue
+		}
+	}
+}
+
 func TestForInExpression(t *testing.T) {
 	tests := []struct {
 		input string

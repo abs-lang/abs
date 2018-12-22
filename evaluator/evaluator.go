@@ -85,6 +85,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.WhileExpression:
 		return evalWhileExpression(node, env)
 
+	case *ast.ForExpression:
+		return evalForExpression(node, env)
+
 	case *ast.ForInExpression:
 		return evalForInExpression(node, env)
 
@@ -153,7 +156,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	var result object.Object
-
 	for _, statement := range program.Statements {
 		result = Eval(statement, env)
 
@@ -381,6 +383,66 @@ func evalWhileExpression(
 	return NULL
 }
 
+// for x = 0; x < 10; x++ {x}
+func evalForExpression(
+	fe *ast.ForExpression,
+	env *object.Environment,
+) object.Object {
+	// Let's figure out if the foor loop is using a variable that's
+	// already been declared. If so, let's keep it aside for now.
+	existingIdentifier, identifierExisted := env.Get(fe.Identifier)
+
+	// Eval the starter (x = 0)
+	err := Eval(fe.Starter, env)
+	if isError(err) {
+		return err
+	}
+
+	// This represents whether the for condition holds true
+	holds := true
+
+	// Final cleanup: we remove the x from the environment. If
+	// it was already declared before the foor loop, we restore
+	// it to its original value
+	defer func() {
+		if identifierExisted {
+			env.Set(fe.Identifier, existingIdentifier)
+		} else {
+			env.Delete(fe.Identifier)
+		}
+	}()
+
+	// When for is while...
+	for holds {
+		// Evaluate the for condition
+		evaluated := Eval(fe.Condition, env)
+		if isError(evaluated) {
+			return evaluated
+		}
+
+		// If truthy, execute the block and the closer
+		if isTruthy(evaluated) {
+			err = Eval(fe.Block, env)
+			if isError(err) {
+				return err
+			}
+
+			err = Eval(fe.Closer, env)
+			if isError(err) {
+				return err
+			}
+
+			continue
+		}
+
+		// If not, let's break out of the loop
+		holds = false
+	}
+
+	return NULL
+}
+
+// for k,v in 1..10 {v}
 func evalForInExpression(
 	fie *ast.ForInExpression,
 	env *object.Environment,
@@ -388,10 +450,31 @@ func evalForInExpression(
 	iterable := Eval(fie.Iterable, env)
 	switch i := iterable.(type) {
 	case *object.Array:
+		// If "k" and "v" were already declared, let's keep
+		// them aside...
 		existingKeyIdentifier, okk := env.Get(fie.Key)
 		existingValueIdentifier, okv := env.Get(fie.Value)
 
+		// ...so that we can restore them after the for
+		// loop is over
+		defer func() {
+			if okk {
+				env.Set(fie.Key, existingKeyIdentifier)
+			} else {
+				env.Delete(fie.Key)
+			}
+
+			if okv {
+				env.Set(fie.Value, existingValueIdentifier)
+			} else {
+				env.Delete(fie.Value)
+			}
+		}()
+
+		// Iterate through the array
 		for k, v := range i.Elements {
+			// set the special k v variables in the
+			// environment
 			env.Set(fie.Key, &object.Integer{Value: int64(k)})
 			env.Set(fie.Value, v)
 			err := Eval(fie.Block, env)
@@ -399,18 +482,6 @@ func evalForInExpression(
 			if isError(err) {
 				return err
 			}
-		}
-
-		if okk {
-			env.Set(fie.Key, existingKeyIdentifier)
-		} else {
-			env.Delete(fie.Key)
-		}
-
-		if okv {
-			env.Set(fie.Value, existingValueIdentifier)
-		} else {
-			env.Delete(fie.Value)
 		}
 
 		return NULL
