@@ -348,6 +348,49 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
+		// Compare
+		// Contains
+		// ContainsAny
+		// ContainsRune
+		// Count
+		// EqualFold
+		// Fields
+		// FieldsFunc
+		// HasPrefix
+		// HasSuffix
+		// Index
+		// IndexAny
+		// IndexByte
+		// IndexFunc
+		// IndexRune
+		// Join
+		// LastIndex
+		// LastIndexAny
+		// LastIndexByte
+		// LastIndexFunc
+		// Map
+		// Repeat
+		// Replace
+		// Split
+		// SplitAfter
+		// SplitAfterN
+		// SplitN
+		// Title
+		// ToLower
+		// ToLowerSpecial
+		// ToTitle
+		// ToTitleSpecial
+		// ToUpper
+		// ToUpperSpecial
+		// Trim
+		// TrimFunc
+		// TrimLeft
+		// TrimLeftFunc
+		// TrimPrefix
+		// TrimRight
+		// TrimRightFunc
+		// TrimSpace
+		// TrimSuffix
 	}
 
 }

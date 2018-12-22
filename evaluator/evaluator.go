@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -314,13 +315,21 @@ func evalStringInfixExpression(
 	operator string,
 	left, right object.Object,
 ) object.Object {
-	if operator != "+" {
-		return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	if operator == "+" {
+		leftVal := left.(*object.String).Value
+		rightVal := right.(*object.String).Value
+		return &object.String{Value: leftVal + rightVal}
 	}
 
-	leftVal := left.(*object.String).Value
-	rightVal := right.(*object.String).Value
-	return &object.String{Value: leftVal + rightVal}
+	if operator == "==" {
+		return &object.Boolean{Value: left.(*object.String).Value == right.(*object.String).Value}
+	}
+
+	if operator == "~" {
+		return &object.Boolean{Value: strings.ToLower(left.(*object.String).Value) == strings.ToLower(right.(*object.String).Value)}
+	}
+
+	return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 }
 
 func evalIfExpression(

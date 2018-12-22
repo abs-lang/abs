@@ -62,6 +62,10 @@ func TestEvalBooleanExpression(t *testing.T) {
 		input    string
 		expected bool
 	}{
+		{`"a" == "a"`, true},
+		{`"a" == "b"`, false},
+		{`"a" ~ "b"`, false},
+		{`"a" ~ "A"`, true},
 		{"true", true},
 		{"false", false},
 		{"1 < 2", true},

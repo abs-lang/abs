@@ -13,6 +13,7 @@ const (
 	COMMENT = "#"      // # Comment
 
 	// Operators
+	TILDE    = "~"
 	ASSIGN   = "="
 	PLUS     = "+"
 	MINUS    = "-"
