@@ -32,6 +32,10 @@ for x in xs {
 	x
 }
 
+for x = 0; x < 10; x = x + 1 {
+	x
+}
+
 10 == 10;
 10 != 9;
 "foobar"
@@ -149,6 +153,25 @@ one | two | tree
 		{token.LBRACE, "{"},
 		{token.IDENT, "x"},
 		{token.RBRACE, "}"},
+
+		{token.FOR, "for"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.INT, "0"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "x"},
+		{token.LT, "<"},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.INT, "1"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "x"},
+		{token.RBRACE, "}"},
+
 		{token.INT, "10"},
 		{token.EQ, "=="},
 		{token.INT, "10"},

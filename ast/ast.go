@@ -263,7 +263,7 @@ func (ie *WhileExpression) String() string {
 	return out.String()
 }
 
-type ForExpression struct {
+type ForInExpression struct {
 	Token    token.Token     // The 'for' token
 	Block    *BlockStatement // The block executed inside the for loop
 	Iterable Expression      // An expression that should return an iterable ([1, 2, 3] or x in 1..10)
@@ -271,20 +271,20 @@ type ForExpression struct {
 	Value    string
 }
 
-func (fe *ForExpression) expressionNode()      {}
-func (fe *ForExpression) TokenLiteral() string { return fe.Token.Literal }
-func (fe *ForExpression) String() string {
+func (fie *ForInExpression) expressionNode()      {}
+func (fie *ForInExpression) TokenLiteral() string { return fie.Token.Literal }
+func (fie *ForInExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("for ")
 
-	if fe.Key != "" {
-		out.WriteString(fe.Key + ", ")
+	if fie.Key != "" {
+		out.WriteString(fie.Key + ", ")
 	}
-	out.WriteString(fe.Value)
+	out.WriteString(fie.Value)
 	out.WriteString(" in ")
-	out.WriteString(fe.Iterable.String())
-	out.WriteString(fe.Block.String())
+	out.WriteString(fie.Iterable.String())
+	out.WriteString(fie.Block.String())
 
 	return out.String()
 }

@@ -561,99 +561,60 @@ while (x > y) {
 	}
 }
 
-func TestForExpression(t *testing.T) {
-	input := `
-for k, v in y {
+func TestForInExpression(t *testing.T) {
+	tests := []struct {
+		input string
+		key   string
+		val   string
+	}{
+		{`for k, v in y {
 	x
-}	
-`
-
-	l := lexer.New(input)
-	p := New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
-
-	if len(program.Statements) != 1 {
-		t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 1, len(program.Statements))
-	}
-
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
-	}
-
-	exp, ok := stmt.Expression.(*ast.ForExpression)
-	if !ok {
-		t.Fatalf("stmt.Expression is not ast.ForExpression. got=%T", stmt.Expression)
-	}
-
-	if exp.Key != "k" {
-		t.Errorf("wrong key in for loop. got=%s\n", exp.Key)
-	}
-
-	if exp.Value != "v" {
-		t.Errorf("wrong val in for loop. got=%s\n", exp.Value)
-	}
-
-	if len(exp.Block.Statements) != 1 {
-		t.Errorf("block is not 1 statements. got=%d\n", len(exp.Block.Statements))
-	}
-
-	block, ok := exp.Block.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Block.Statements[0])
-	}
-
-	if !testIdentifier(t, block.Expression, "x") {
-		return
-	}
-}
-
-func TestForWithoutKeyExpression(t *testing.T) {
-	input := `
-for v in y {
+}`, "k", "v"},
+		{`for v in y {
 	x
-}	
-`
-
-	l := lexer.New(input)
-	p := New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
-
-	if len(program.Statements) != 1 {
-		t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 1, len(program.Statements))
+}`, "", "v"},
 	}
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
-	}
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
 
-	exp, ok := stmt.Expression.(*ast.ForExpression)
-	if !ok {
-		t.Fatalf("stmt.Expression is not ast.ForExpression. got=%T", stmt.Expression)
-	}
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 1, len(program.Statements))
+		}
 
-	if exp.Key != "" {
-		t.Errorf("wrong key in for loop. got=%s\n", exp.Key)
-	}
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+		}
 
-	if exp.Value != "v" {
-		t.Errorf("wrong val in for loop. got=%s\n", exp.Value)
-	}
+		exp, ok := stmt.Expression.(*ast.ForInExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.ForExpression. got=%T", stmt.Expression)
+		}
 
-	if len(exp.Block.Statements) != 1 {
-		t.Errorf("block is not 1 statements. got=%d\n", len(exp.Block.Statements))
-	}
+		if exp.Key != tt.key {
+			t.Errorf("wrong key in for loop. got=%s\n", exp.Key)
+		}
 
-	block, ok := exp.Block.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Block.Statements[0])
-	}
+		if exp.Value != tt.val {
+			t.Errorf("wrong val in for loop. got=%s\n", exp.Value)
+		}
 
-	if !testIdentifier(t, block.Expression, "x") {
-		return
+		if len(exp.Block.Statements) != 1 {
+			t.Errorf("block is not 1 statements. got=%d\n", len(exp.Block.Statements))
+		}
+
+		block, ok := exp.Block.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Block.Statements[0])
+		}
+
+		if !testIdentifier(t, block.Expression, "x") {
+			return
+		}
 	}
 }
 

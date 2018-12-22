@@ -78,7 +78,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.WHILE, p.parseWhileExpression)
-	p.registerPrefix(token.FOR, p.parseForExpression)
+	p.registerPrefix(token.FOR, p.parseForInExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 	p.registerPrefix(token.LBRACKET, p.ParseArrayLiteral)
 	p.registerPrefix(token.LBRACE, p.ParseHashLiteral)
@@ -401,8 +401,8 @@ func (p *Parser) parseWhileExpression() ast.Expression {
 // for x in [1,2,3] {
 // 	echo("true")
 // }
-func (p *Parser) parseForExpression() ast.Expression {
-	expression := &ast.ForExpression{Token: p.curToken}
+func (p *Parser) parseForInExpression() ast.Expression {
+	expression := &ast.ForInExpression{Token: p.curToken}
 	p.nextToken()
 
 	if !p.curTokenIs(token.IDENT) {

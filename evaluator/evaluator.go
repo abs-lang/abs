@@ -85,8 +85,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.WhileExpression:
 		return evalWhileExpression(node, env)
 
-	case *ast.ForExpression:
-		return evalForExpression(node, env)
+	case *ast.ForInExpression:
+		return evalForInExpression(node, env)
 
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
@@ -381,20 +381,20 @@ func evalWhileExpression(
 	return NULL
 }
 
-func evalForExpression(
-	fe *ast.ForExpression,
+func evalForInExpression(
+	fie *ast.ForInExpression,
 	env *object.Environment,
 ) object.Object {
-	iterable := Eval(fe.Iterable, env)
+	iterable := Eval(fie.Iterable, env)
 	switch i := iterable.(type) {
 	case *object.Array:
-		existingKeyIdentifier, okk := env.Get(fe.Key)
-		existingValueIdentifier, okv := env.Get(fe.Value)
+		existingKeyIdentifier, okk := env.Get(fie.Key)
+		existingValueIdentifier, okv := env.Get(fie.Value)
 
 		for k, v := range i.Elements {
-			env.Set(fe.Key, &object.Integer{Value: int64(k)})
-			env.Set(fe.Value, v)
-			err := Eval(fe.Block, env)
+			env.Set(fie.Key, &object.Integer{Value: int64(k)})
+			env.Set(fie.Value, v)
+			err := Eval(fie.Block, env)
 
 			if isError(err) {
 				return err
@@ -402,15 +402,15 @@ func evalForExpression(
 		}
 
 		if okk {
-			env.Set(fe.Key, existingKeyIdentifier)
+			env.Set(fie.Key, existingKeyIdentifier)
 		} else {
-			env.Delete(fe.Key)
+			env.Delete(fie.Key)
 		}
 
 		if okv {
-			env.Set(fe.Value, existingValueIdentifier)
+			env.Set(fie.Value, existingValueIdentifier)
 		} else {
-			env.Delete(fe.Value)
+			env.Delete(fie.Value)
 		}
 
 		return NULL
