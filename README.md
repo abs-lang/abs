@@ -60,6 +60,5 @@ we're currently targeting the second iteration of ABS, [preview-2](https://githu
 ## Credits
 
 * [Terence Parr (ANTLR)](https://www.antlr.org/)
-* [Thorsten Ball (interpreter book)](https://interpreterbook.com/), for demystifying interpreters and providing the initial codebase for the ABS interpreter
-* [Joe Jean](https://www.joejean.net/), for suggesting the interpreter book
+* [Thorsten Ball (interpreter book)](https://interpreterbook.com/), for demystifying interpreters and providing the initial codebase for the ABS interpreter through [the interpreter book](https://interpreterbook.com/)
 * [Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), for being terrible at control flow ;-)
