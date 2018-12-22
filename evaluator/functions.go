@@ -413,6 +413,28 @@ func getFns() map[string]*object.Builtin {
 				return &object.Boolean{Value: result}
 			},
 		},
+		// find(array:[1, 2, 3], function:f(x) { x == 2 })
+		"find": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("find", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				arr := args[0].(*object.Array)
+
+				for _, v := range arr.Elements {
+					r := applyFunction(args[1], []object.Object{v})
+
+					if isTruthy(r) {
+						return v
+					}
+				}
+
+				return NULL
+			},
+		},
 		// filter(array:[1, 2, 3], function:f(x) { x == 2 })
 		"filter": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -440,17 +462,49 @@ func getFns() map[string]*object.Builtin {
 		"contains": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("contains", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ}})
+				err := validateArgs("contains", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ, object.INTEGER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				switch args[0].(type) {
+				switch arg := args[0].(type) {
 				case *object.String:
-					return &object.Boolean{Value: strings.Contains(args[0].(*object.String).Value, args[1].(*object.String).Value)}
-				default:
-					return &object.Boolean{Value: false}
+					needle, ok := args[1].(*object.String)
+
+					if ok {
+						return &object.Boolean{Value: strings.Contains(arg.Value, needle.Value)}
+					}
+				case *object.Array:
+					var found bool
+
+					switch needle := args[1].(type) {
+					case *object.String:
+						for _, v := range arg.Elements {
+							if v.Inspect() == needle.Value {
+								found = true
+								break // Let's get outta here!
+							}
+						}
+
+						return &object.Boolean{Value: found}
+					case *object.Integer:
+						for _, v := range arg.Elements {
+							// Quite ghetto but also the easiest way out
+							// Instead of doing type checking on the argument,
+							// we received back its string representation.
+							// If they match, we then check that its type was
+							// integer.
+							if v.Inspect() == strconv.Itoa(int(needle.Value)) && v.Type() == object.INTEGER_OBJ {
+								found = true
+								break // Let's get outta here!
+							}
+						}
+
+						return &object.Boolean{Value: found}
+					}
 				}
+
+				return &object.Boolean{Value: false}
 			},
 		},
 		// str(1)
