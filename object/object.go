@@ -144,6 +144,22 @@ type Array struct {
 }
 
 func (ao *Array) Type() ObjectType { return ARRAY_OBJ }
+func (ao *Array) Homogeneous() bool {
+	if len(ao.Elements) == 0 {
+		return true
+	}
+
+	t := ao.Elements[0].Type()
+	homogeneous := true
+
+	for _, v := range ao.Elements {
+		if v.Type() != t {
+			homogeneous = false
+		}
+	}
+
+	return homogeneous
+}
 func (ao *Array) Inspect() string {
 	var out bytes.Buffer
 

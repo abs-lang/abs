@@ -441,6 +441,19 @@ func TestStringConcatenation(t *testing.T) {
 	}
 }
 
+func TestArrayConcatenation(t *testing.T) {
+	input := `[1] + [2]`
+
+	evaluated := testEval(input)
+	arr, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("object is not Array. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	testIntegerObject(t, arr.Elements[0], 1)
+	testIntegerObject(t, arr.Elements[1], 2)
+}
+
 func TestBuiltinFunctions(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -476,6 +489,11 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`lines("a
 b
 c")`, []string{"a", "b", "c"}},
+		{`[1, 2].sort()`, []int{1, 2}},
+		{`["b", "a"].sort()`, []string{"a", "b"}},
+		{`["b", 1].sort()`, "argument to `sort` must be an homogeneous array (elements of the same type), got [b, 1]"},
+		{`[{}].sort()`, "cannot sort an array with given elements elements ([{}])"},
+		{`[[]].sort()`, "cannot sort an array with given elements elements ([[]])"},
 		{`"a".any("b")`, false},
 		{`"a".any("a")`, true},
 		{`"a".prefix("b")`, false},

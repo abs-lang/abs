@@ -238,6 +238,8 @@ func evalInfixExpression(
 		return evalIntegerInfixExpression(operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
 		return evalStringInfixExpression(operator, left, right)
+	case left.Type() == object.ARRAY_OBJ && right.Type() == object.ARRAY_OBJ:
+		return evalArrayInfixExpression(operator, left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
@@ -327,6 +329,19 @@ func evalStringInfixExpression(
 
 	if operator == "~" {
 		return &object.Boolean{Value: strings.ToLower(left.(*object.String).Value) == strings.ToLower(right.(*object.String).Value)}
+	}
+
+	return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+}
+
+func evalArrayInfixExpression(
+	operator string,
+	left, right object.Object,
+) object.Object {
+	if operator == "+" {
+		leftVal := left.(*object.Array).Elements
+		rightVal := right.(*object.Array).Elements
+		return &object.Array{Elements: append(leftVal, rightVal...)}
 	}
 
 	return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())

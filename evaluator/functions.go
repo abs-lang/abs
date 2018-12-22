@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -289,6 +290,58 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				return &object.Integer{Value: int64(sum)}
+			},
+		},
+		// sort(array:[1, 2, 3])
+		"sort": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("sort", args, 1, [][]string{{object.ARRAY_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				arr := args[0].(*object.Array)
+				elements := arr.Elements
+
+				if len(elements) == 0 {
+					return arr
+				}
+
+				if !arr.Homogeneous() {
+					return util.NewError("argument to `sort` must be an homogeneous array (elements of the same type), got %s", arr.Inspect())
+				}
+
+				switch elements[0].(type) {
+				case *object.Integer:
+					a := []int{}
+					for _, v := range elements {
+						a = append(a, int(v.(*object.Integer).Value))
+					}
+					sort.Ints(a)
+
+					o := []object.Object{}
+
+					for _, v := range a {
+						o = append(o, &object.Integer{Value: int64(v)})
+					}
+					return &object.Array{Elements: o}
+				case *object.String:
+					a := []string{}
+					for _, v := range elements {
+						a = append(a, v.(*object.String).Value)
+					}
+					sort.Strings(a)
+
+					o := []object.Object{}
+
+					for _, v := range a {
+						o = append(o, &object.String{Value: v})
+					}
+					return &object.Array{Elements: o}
+				default:
+					return util.NewError("cannot sort an array with given elements elements (%s)", arr.Inspect())
+				}
 			},
 		},
 		// map(array:[1, 2, 3], function:f(x) { x + 1 })
