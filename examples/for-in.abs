@@ -1,0 +1,4 @@
+for k, v in 1..10 {
+    echo("key is " + k.str())
+    echo("value is " + v.str())
+}

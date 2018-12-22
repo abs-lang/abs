@@ -28,6 +28,10 @@ while (1 > 0) {
 	echo("hello")
 }
 
+for x in xs {
+	x
+}
+
 10 == 10;
 10 != 9;
 "foobar"
@@ -136,6 +140,13 @@ one | two | tree
 		{token.LPAREN, "("},
 		{token.STRING, "hello"},
 		{token.RPAREN, ")"},
+		{token.RBRACE, "}"},
+		{token.FOR, "for"},
+		{token.IDENT, "x"},
+		{token.IN, "in"},
+		{token.IDENT, "xs"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "x"},
 		{token.RBRACE, "}"},
 		{token.INT, "10"},
 		{token.EQ, "=="},

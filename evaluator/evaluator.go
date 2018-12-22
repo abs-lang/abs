@@ -84,6 +84,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.WhileExpression:
 		return evalWhileExpression(node, env)
 
+	case *ast.ForExpression:
+		return evalForExpression(node, env)
+
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
 
@@ -352,6 +355,44 @@ func evalWhileExpression(
 		evalWhileExpression(we, env)
 	}
 	return NULL
+}
+
+func evalForExpression(
+	fe *ast.ForExpression,
+	env *object.Environment,
+) object.Object {
+	iterable := Eval(fe.Iterable, env)
+	switch i := iterable.(type) {
+	case *object.Array:
+		existingKeyIdentifier, okk := env.Get(fe.Key)
+		existingValueIdentifier, okv := env.Get(fe.Value)
+
+		for k, v := range i.Elements {
+			env.Set(fe.Key, &object.Integer{Value: int64(k)})
+			env.Set(fe.Value, v)
+			err := Eval(fe.Block, env)
+
+			if isError(err) {
+				return err
+			}
+		}
+
+		if okk {
+			env.Set(fe.Key, existingKeyIdentifier)
+		} else {
+			env.Delete(fe.Key)
+		}
+
+		if okv {
+			env.Set(fe.Value, existingValueIdentifier)
+		} else {
+			env.Delete(fe.Value)
+		}
+
+		return NULL
+	default:
+		return util.NewError("'%s' is not an array, cannot be used in for loop", i.Inspect())
+	}
 }
 
 func evalIdentifier(

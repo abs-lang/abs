@@ -263,6 +263,32 @@ func (ie *WhileExpression) String() string {
 	return out.String()
 }
 
+type ForExpression struct {
+	Token    token.Token     // The 'for' token
+	Block    *BlockStatement // The block executed inside the for loop
+	Iterable Expression      // An expression that should return an iterable ([1, 2, 3] or x in 1..10)
+	Key      string
+	Value    string
+}
+
+func (fe *ForExpression) expressionNode()      {}
+func (fe *ForExpression) TokenLiteral() string { return fe.Token.Literal }
+func (fe *ForExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("for ")
+
+	if fe.Key != "" {
+		out.WriteString(fe.Key + ", ")
+	}
+	out.WriteString(fe.Value)
+	out.WriteString(" in ")
+	out.WriteString(fe.Iterable.String())
+	out.WriteString(fe.Block.String())
+
+	return out.String()
+}
+
 type CommandExpression struct {
 	Token token.Token // The command itself
 	Value string

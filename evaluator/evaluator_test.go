@@ -133,6 +133,41 @@ func TestIfElseExpressions(t *testing.T) {
 	}
 }
 
+func TestForExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"a = 0; for k, x in 1 { a = a + 1}; a", "'1' is not an array, cannot be used in for loop"},
+		{"a = 0; for k, x in 1..10 { a = a + 1}; a", 10},
+		{"a = 0; for x in 1 { a = a + 1}; a", "'1' is not an array, cannot be used in for loop"},
+		{"a = 0; for x in 1..10 { a = a + 1}; a", 10},
+		{`a = 0; for k, v in ["x", "y", "z"] { a = a + k}; a`, 3},
+		{`for k, v in ["x", "y", "z"] {}; k`, "identifier not found: k"},
+		{`for k, v in ["x", "y", "z"] {}; v`, "identifier not found: v"},
+		{`k = 100; for k, v in ["x", "y", "z"] {}; k`, 100},
+		{`v = 100; for k, v in ["x", "y", "z"] {}; v`, 100},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+
+			if errObj.Message != tt.expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
+			}
+		}
+	}
+}
+
 func TestWhileExpressions(t *testing.T) {
 	tests := []struct {
 		input    string

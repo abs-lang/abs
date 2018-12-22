@@ -329,6 +329,25 @@ func getFns() map[string]*object.Builtin {
 				}
 			},
 		},
+		// str(1)
+		"str": &object.Builtin{
+			Types: []string{object.INTEGER_OBJ, object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ, object.INTEGER_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				switch arg := args[0].(type) {
+				case *object.String:
+					return &object.String{Value: arg.Value}
+				case *object.Integer:
+					return &object.String{Value: strconv.Itoa(int(arg.Value))}
+				default:
+					return NULL
+				}
+			},
+		},
 	}
 
 }

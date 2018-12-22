@@ -26,6 +26,8 @@ const (
 var precedences = map[token.TokenType]int{
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
+	token.IN:       EQUALS,
+	token.COMMA:    EQUALS,
 	token.LT:       LESSGREATER,
 	token.GT:       LESSGREATER,
 	token.PLUS:     SUM,
@@ -75,6 +77,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.WHILE, p.parseWhileExpression)
+	p.registerPrefix(token.FOR, p.parseForExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 	p.registerPrefix(token.LBRACKET, p.ParseArrayLiteral)
 	p.registerPrefix(token.LBRACE, p.ParseHashLiteral)
@@ -91,12 +94,12 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
 	p.registerInfix(token.EQ, p.parseInfixExpression)
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
+	p.registerInfix(token.IN, p.parseInfixExpression)
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
 	p.registerInfix(token.AND, p.parseInfixExpression)
 	p.registerInfix(token.OR, p.parseInfixExpression)
 	p.registerInfix(token.RANGE, p.parseInfixExpression)
-
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 
@@ -135,8 +138,7 @@ func (p *Parser) Errors() []string {
 }
 
 func (p *Parser) peekError(t token.TokenType) {
-	msg := fmt.Sprintf("expected next token to be %s, got %s instead",
-		t, p.peekToken.Type)
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
 }
 
@@ -390,6 +392,53 @@ func (p *Parser) parseWhileExpression() ast.Expression {
 	}
 
 	expression.Consequence = p.parseBlockStatement()
+
+	return expression
+}
+
+// for x in [1,2,3] {
+// 	echo("true")
+// }
+func (p *Parser) parseForExpression() ast.Expression {
+	expression := &ast.ForExpression{Token: p.curToken}
+	p.nextToken()
+
+	if !p.curTokenIs(token.IDENT) {
+		return nil
+
+	}
+
+	val := p.curToken.Literal
+	var key string
+	p.nextToken()
+
+	if p.curTokenIs(token.COMMA) {
+		p.nextToken()
+
+		if !p.curTokenIs(token.IDENT) {
+			return nil
+		}
+
+		key = val
+		val = p.curToken.Literal
+		p.nextToken()
+	}
+
+	expression.Key = key
+	expression.Value = val
+
+	if !p.curTokenIs(token.IN) {
+		return nil
+	}
+	p.nextToken()
+
+	expression.Iterable = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	expression.Block = p.parseBlockStatement()
 
 	return expression
 }
