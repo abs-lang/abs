@@ -18,7 +18,7 @@ import (
 // functions.
 func validateArgs(name string, args []object.Object, size int, types [][]string) object.Object {
 	if len(args) != size {
-		return util.NewError("wrong number of arguments to %s(...): got=%d, want=1", name, len(args))
+		return util.NewError("wrong number of arguments to %s(...): got=%d, want=%d", name, len(args), size)
 	}
 
 	for i, t := range types {
@@ -164,7 +164,7 @@ func getFns() map[string]*object.Builtin {
 		"type": &object.Builtin{
 			Types: []string{},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 1, [][]string{})
+				err := validateArgs("type", args, 1, [][]string{})
 				if err != nil {
 					return err
 				}
@@ -176,7 +176,7 @@ func getFns() map[string]*object.Builtin {
 		"split": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				err := validateArgs("split", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -199,7 +199,7 @@ func getFns() map[string]*object.Builtin {
 		"lines": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ}})
+				err := validateArgs("lines", args, 1, [][]string{{object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -221,7 +221,7 @@ func getFns() map[string]*object.Builtin {
 		"ok": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ}})
+				err := validateArgs("ok", args, 1, [][]string{{object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -252,7 +252,7 @@ func getFns() map[string]*object.Builtin {
 		"json": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ}})
+				err := validateArgs("json", args, 1, [][]string{{object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -274,7 +274,7 @@ func getFns() map[string]*object.Builtin {
 		"sum": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 1, [][]string{{object.ARRAY_OBJ}})
+				err := validateArgs("sum", args, 1, [][]string{{object.ARRAY_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -295,7 +295,7 @@ func getFns() map[string]*object.Builtin {
 		"map": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+				err := validateArgs("map", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -316,7 +316,7 @@ func getFns() map[string]*object.Builtin {
 		"contains": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ}})
+				err := validateArgs("contains", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -331,66 +331,209 @@ func getFns() map[string]*object.Builtin {
 		},
 		// str(1)
 		"str": &object.Builtin{
-			Types: []string{object.INTEGER_OBJ, object.STRING_OBJ},
+			Types: []string{object.INTEGER_OBJ, object.STRING_OBJ, object.ARRAY_OBJ, object.HASH_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 1, [][]string{{object.STRING_OBJ, object.INTEGER_OBJ}})
+				err := validateArgs("str", args, 1, [][]string{{object.STRING_OBJ, object.INTEGER_OBJ, object.ARRAY_OBJ, object.HASH_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				switch arg := args[0].(type) {
-				case *object.String:
-					return &object.String{Value: arg.Value}
-				case *object.Integer:
-					return &object.String{Value: strconv.Itoa(int(arg.Value))}
-				default:
-					return NULL
-				}
+				return &object.String{Value: args[0].Inspect()}
 			},
 		},
-		// Compare
-		// Contains
-		// ContainsAny
-		// ContainsRune
-		// Count
-		// EqualFold
-		// Fields
-		// FieldsFunc
-		// HasPrefix
-		// HasSuffix
-		// Index
-		// IndexAny
-		// IndexByte
-		// IndexFunc
-		// IndexRune
-		// Join
-		// LastIndex
-		// LastIndexAny
-		// LastIndexByte
-		// LastIndexFunc
-		// Map
-		// Repeat
-		// Replace
-		// Split
-		// SplitAfter
-		// SplitAfterN
-		// SplitN
-		// Title
-		// ToLower
-		// ToLowerSpecial
-		// ToTitle
-		// ToTitleSpecial
-		// ToUpper
-		// ToUpperSpecial
-		// Trim
-		// TrimFunc
-		// TrimLeft
-		// TrimLeftFunc
-		// TrimPrefix
-		// TrimRight
-		// TrimRightFunc
-		// TrimSpace
-		// TrimSuffix
-	}
+		// any("abc", "b")
+		"any": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("any", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
 
+				return &object.Boolean{Value: strings.ContainsAny(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+			},
+		},
+		// prefix("abc", "a")
+		"prefix": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("prefix", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.Boolean{Value: strings.HasPrefix(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+			},
+		},
+		// suffix("abc", "a")
+		"suffix": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("suffix", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.Boolean{Value: strings.HasSuffix(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+			},
+		},
+		// repeat("abc", 3)
+		"repeat": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("repeat", args, 2, [][]string{{object.STRING_OBJ}, {object.INTEGER_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.String{Value: strings.Repeat(args[0].(*object.String).Value, int(args[1].(*object.Integer).Value))}
+			},
+		},
+		// replace("abc", "b", "f", -1)
+		"replace": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("replace", args, 4, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ}, {object.INTEGER_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.String{Value: strings.Replace(args[0].(*object.String).Value, args[1].(*object.String).Value, args[2].(*object.String).Value, int(args[3].(*object.Integer).Value))}
+			},
+		},
+		// title("some thing")
+		"title": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("title", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.String{Value: strings.Title(args[0].(*object.String).Value)}
+			},
+		},
+		// lower("ABC")
+		"lower": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("lower", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.String{Value: strings.ToLower(args[0].(*object.String).Value)}
+			},
+		},
+		// upper("abc")
+		"upper": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("upper", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.String{Value: strings.ToUpper(args[0].(*object.String).Value)}
+			},
+		},
+		// trim("abc")
+		"trim": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("trim", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.String{Value: strings.Trim(args[0].(*object.String).Value, " ")}
+			},
+		},
+		// trim_by("abc", "c")
+		"trim_by": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("trim_by", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				return &object.String{Value: strings.Trim(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+			},
+		},
+		// index("abc", "c")
+		"index": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("index", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				i := strings.Index(args[0].(*object.String).Value, args[1].(*object.String).Value)
+
+				if i == -1 {
+					return NULL
+				}
+
+				return &object.Integer{Value: int64(i)}
+			},
+		},
+		// last_index("abcc", "c")
+		"last_index": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("last_index", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				i := strings.LastIndex(args[0].(*object.String).Value, args[1].(*object.String).Value)
+
+				if i == -1 {
+					return NULL
+				}
+
+				return &object.Integer{Value: int64(i)}
+			},
+		},
+		// slice("abcc", 0, -1)
+		"slice": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("slice", args, 3, [][]string{{object.STRING_OBJ}, {object.INTEGER_OBJ}, {object.INTEGER_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				s := args[0].(*object.String).Value
+				l := len(s)
+				start := int(args[1].(*object.Integer).Value)
+				end := int(args[2].(*object.Integer).Value)
+
+				if end == 0 {
+					end = l
+				}
+
+				if start > l {
+					start = l
+				}
+
+				if start < 0 {
+					newStart := l + start
+					if newStart < 0 {
+						start = 0
+					} else {
+						start = newStart
+					}
+				}
+
+				if end > l || start > end {
+					end = l
+				}
+
+				return &object.String{Value: s[start:end]}
+			},
+		},
+	}
 }

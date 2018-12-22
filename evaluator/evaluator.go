@@ -529,11 +529,25 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalArrayIndexExpression(left, index)
-	case left.Type() == object.HASH_OBJ:
+	case left.Type() == object.HASH_OBJ && index.Type() == object.STRING_OBJ:
 		return evalHashIndexExpression(left, index)
+	case left.Type() == object.STRING_OBJ && index.Type() == object.INTEGER_OBJ:
+		return evalStringIndexExpression(left, index)
 	default:
-		return util.NewError("index operator not supported: %s", left.Type())
+		return util.NewError("index operator not supported: %s on %s", index.Inspect(), left.Type())
 	}
+}
+
+func evalStringIndexExpression(array, index object.Object) object.Object {
+	stringObject := array.(*object.String)
+	idx := index.(*object.Integer).Value
+	max := int64(len(stringObject.Value) - 1)
+
+	if idx < 0 || idx > max {
+		return NULL
+	}
+
+	return &object.String{Value: string(stringObject.Value[idx])}
 }
 
 func evalArrayIndexExpression(array, index object.Object) object.Object {

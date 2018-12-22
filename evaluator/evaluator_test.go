@@ -298,11 +298,13 @@ if (10 > 1) {
 		},
 		{
 			`{"name": "Abs"}[f(x) { x }];`,
-			"unusable as hash key: FUNCTION",
+			`index operator not supported: f(x) {
+x
+} on HASH`,
 		},
 		{
 			`999[1]`,
-			"index operator not supported: INTEGER",
+			"index operator not supported: 1 on INTEGER",
 		},
 	}
 
@@ -474,6 +476,39 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`lines("a
 b
 c")`, []string{"a", "b", "c"}},
+		{`"a".any("b")`, false},
+		{`"a".any("a")`, true},
+		{`"a".prefix("b")`, false},
+		{`"a".prefix("a")`, true},
+		{`"a".suffix("b")`, false},
+		{`"a".suffix("a")`, true},
+		{`"ab".index("b")`, 1},
+		{`"a".index("b")`, nil},
+		{`"abb".last_index("b")`, 2},
+		{`"a".last_index("b")`, nil},
+		{`"a".repeat(3)`, "aaa"},
+		{`"a".repeat(3)`, "aaa"},
+		{`"abc".slice(0, 0)`, "abc"},
+		{`"abc".slice(1, 0)`, "bc"},
+		{`"abc".slice(1, 2)`, "b"},
+		{`"abc".slice(0, 6)`, "abc"},
+		{`"abc".slice(10, 10)`, ""},
+		{`"abc".slice(10, 20)`, ""},
+		{`"abc".slice(-1, 0)`, "c"},
+		{`"abc".slice(-20, 0)`, "abc"},
+		{`"abc".slice(-20, 2)`, "ab"},
+		{`"abc".slice(-1, 3)`, "c"},
+		{`"abc".slice(-1, 1)`, "c"},
+		{`"a".replace("a", "b", -1)`, "b"},
+		{`"a".str()`, "a"},
+		{`1.str()`, "1"},
+		{`[1].str()`, "[1]"},
+		{`{"a": 10}.str()`, `{a: 10}`},
+		{`"a great movie".title()`, "A Great Movie"},
+		{`"A great movie".lower()`, "a great movie"},
+		{`"A great movie".upper()`, "A GREAT MOVIE"},
+		{`"  A great movie  ".trim()`, "A great movie"},
+		{`"  A great movie  ".trim_by(" A")`, "great movie"},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -909,6 +944,33 @@ func TestHashIndexExpressions(t *testing.T) {
 		}
 	}
 }
+
+func TestStringIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			`"123"[10]`,
+			nil,
+		},
+		{
+			`"123"[1]`,
+			"2",
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		s, ok := tt.expected.(string)
+		if ok {
+			testStringObject(t, evaluated, s)
+		} else {
+			testNullObject(t, evaluated)
+		}
+	}
+}
+
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
