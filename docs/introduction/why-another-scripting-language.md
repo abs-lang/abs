@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="/bin/abs-horizontal.png?raw=true">
+    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
   </a>
 </p>
 
@@ -15,7 +15,7 @@ good old `.sh` script.
 
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="termina;" src="/bin/terminal.png?raw=true">
+    <img alt="terminal" src="https://github.com/odino/abs/blob/master/bin/terminal.png?raw=true">
   </a>
 </p>
 
@@ -115,4 +115,4 @@ and some more opinionated language features:
 ```
 
 That's about it for the intro, we don't want to spoil the rest.
-You can now head over to the [introduction to ABS' syntax!](/syntax)
+You can now head over to read [how to run ABS code!](/introduction/run-abs-code)
