@@ -1,13 +1,13 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
+    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
   </a>
 </p>
 
 # Builtin function
 
-There are many functions that are "native", or built-in, in ABS.
-Take `type` for example:
+There are many builtin functions in ABS.
+Take `type`, for example:
 
 ``` bash
 type(1) # INTEGER
@@ -18,7 +18,7 @@ We'll reveal you a secret now: all string, array, integer, hash functions
 are actually "generic", but the syntax you see makes you think those are
 specific to the string, integer, etc object.
 
-The trick is very simple; whenever ABS' interpreter seem a method call
+The trick is very simple; whenever the ABS' interpreter seem a method call
 such as `object.func(arg)` it will actually translate it to `func(object, arg)`.
 
 Don't believe us? Try with these examples:
@@ -32,7 +32,7 @@ len("abc") # 3
 
 At the same time, there are some builtin functions that doesn't really
 make sense to call with the method notation, so we've kept them in a
-"special" location in the documentation. `exit(99)`, for example, exists
+"special" location in the documentation. `exit(99)`, for example, exits
 the program with the status code `99`, but it would definitely look
 strange to see something such as `99.exit()`.
 

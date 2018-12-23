@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/ABS.png?raw=true" width="310">
+    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/ABS.png?raw=true" width="310">
   </a>
 </p>
 
@@ -47,7 +47,7 @@ abs script.abs
 
 ## Documentation
 
-Visit [abs-lang.org](https://abs-lang.org)
+Visit [abs-lang.org](https://www.abs-lang.org)
 
 ## Status
 

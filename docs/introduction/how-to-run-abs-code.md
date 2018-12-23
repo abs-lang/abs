@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
+    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
   </a>
 </p>
 
@@ -20,9 +20,9 @@ Scripts do not have to have a specific extension,
 although it's recommended to use `.abs` as a
 convention.
 
-A bit lost right now? We'd suggest to clone [ABS' main repository](https://github.com/odino/abs) as you can already
+A bit lost right now? We'd suggest to clone [ABS' main repository](https://github.com/abs-lang/abs) as you can already
 start testing some code with the scripts in the
-[examples](https://github.com/odino/abs/tree/master/examples) directory.
+[examples](https://github.com/abs-lang/abs/tree/master/examples) directory.
 
 ## REPL
 

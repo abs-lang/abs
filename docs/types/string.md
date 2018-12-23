@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
+    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
   </a>
 </p>
 
@@ -96,8 +96,8 @@ Parses the string as JSON, returning an [hash](/types/hash):
 
 Note that currently only JSON objects are supported,
 and if the objects contain floats this method will
-return an error. Support for floats is coming (see [#29](https://github.com/odino/abs/issues/29))
-as well as being able to parse all valid JSON expressions (see [#54](https://github.com/odino/abs/issues/54)).
+return an error. Support for floats is coming (see [#29](https://github.com/abs-lang/abs/issues/29))
+as well as being able to parse all valid JSON expressions (see [#54](https://github.com/abs-lang/abs/issues/54)).
 
 ### contains(str)
 

@@ -50,7 +50,7 @@ do
     platform_split=(${platform//\// })
     GOOS=${platform_split[0]}
     GOARCH=${platform_split[1]}
-    output_name='abs-preview-1-'$GOOS'-'$GOARCH
+    output_name='abs-preview-0-'$GOOS'-'$GOARCH
     if [ $GOOS = "windows" ]; then
         output_name+='.exe'
     fi  

@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
+    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
   </a>
 </p>
 
@@ -14,7 +14,7 @@ you most likely had to use Bash to automate some task with a
 good old `.sh` script.
 
 <p align="center">
-    <img alt="terminal" src="https://github.com/odino/abs/blob/master/bin/terminal.png?raw=true">
+    <img alt="terminal" src="https://github.com/abs-lang/abs/blob/master/bin/terminal.png?raw=true">
 </p>
 
 You might have felt, though, that Bash was a fairly strange

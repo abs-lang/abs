@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
+    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
   </a>
 </p>
 
@@ -57,16 +57,16 @@ $(sleep 10); echo("hello world")
 ```
 
 Note that this is currently a limitation that will likely
-be removed in the future (see [#41](https://github.com/odino/abs/issues/41)).
+be removed in the future (see [#41](https://github.com/abs-lang/abs/issues/41)).
 
 Commands are blocking and cannot be run in parallel, although
 we're planning to support background execution in the future
-(see [#70](https://github.com/odino/abs/issues/70)).
+(see [#70](https://github.com/abs-lang/abs/issues/70)).
 
 Also note that, currently, the implementation of system commands
-requires the `bash` executable to [be available on the system](https://github.com/odino/abs/blob/5b5b0abf3115a5dd4dfe8485501f8765985ad0db/evaluator/evaluator.go#L696-L722).
+requires the `bash` executable to [be available on the system](https://github.com/abs-lang/abs/blob/5b5b0abf3115a5dd4dfe8485501f8765985ad0db/evaluator/evaluator.go#L696-L722).
 Future work will make it possible to select which shell to use,
-as well as bypassing the shell altogether (see [#73](https://github.com/odino/abs/issues/73)).
+as well as bypassing the shell altogether (see [#73](https://github.com/abs-lang/abs/issues/73)).
 
 ## Next
 

@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
+    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
   </a>
 </p>
 
@@ -34,7 +34,7 @@ if (x > 0) {
 ```
 
 Note that `else if` clauses are not supported,
-although they are planned (see [#27](https://github.com/odino/abs/issues/27)).
+although they are planned (see [#27](https://github.com/abs-lang/abs/issues/27)).
 
 ## Next
 
