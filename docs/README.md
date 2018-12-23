@@ -68,7 +68,7 @@ $ abs script.abs
 
 ## Types and functions
 
-* [String](/types/string/)
+* [String](/types/string)
 * [Integer](/types/integer)
 * [Array](/types/array)
 * [Hash](/types/hash)
