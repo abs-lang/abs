@@ -18,7 +18,13 @@ Strings are enclosed by double quotes:
 "hello world"
 ```
 
-and their individual characters can be accessed
+You can escape quotes with a simple backslash:
+
+``` bash
+"I said: \"hello world\""
+```
+
+Their individual characters can be accessed
 with the index notation:
 
 ``` bash
