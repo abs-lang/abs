@@ -45,25 +45,6 @@ abs script.abs
 
 ## Table of contents
 
-<<<<<<< 3ee09ff936a3f004f80751a0faaf734210e55268
-* Introduction
-    * [Why another scripting language?](/introduction/why-another-scripting-language)
-    * [How to run ABS code](/introduction/how-to-run-abs-code)
-* Syntax
-    * [Assignments](/syntax/assignments/)
-    * return
-    * Operators
-    * if
-    * for
-    * while
-    * System commands
-* Types and function reference
-    * String
-    * Integer
-    * Array
-    * Hash
-    * Functions
-=======
 ## Introduction
 
 * [Why another scripting language?](/introduction/why-another-scripting-language)
@@ -72,12 +53,12 @@ abs script.abs
 ## Syntax
 
 * [Assignments](/syntax/assignments)
-* return
-* Operators
-* if
-* for
-* while
-* System commands
+* [return]((/syntax/return))
+* [Operators]((/syntax/operators))
+* [if]((/syntax/if))
+* [for]((/syntax/for))
+* [while]((/syntax/while))
+* [System commands]((/syntax/system-commands))
 
 ## Types and functions
 
@@ -86,4 +67,3 @@ abs script.abs
 * Array
 * Hash
 * Functions
->>>>>>> switch links for abs-lang.org
