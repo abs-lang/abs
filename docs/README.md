@@ -46,9 +46,10 @@ abs script.abs
 ## Table of contents
 
 * Introduction
-    * Why another scripting language?
+    * [Why another scripting language?](/abs/introduction/why-another-scripting-language)
+    * [How to run ABS code](/abs/introduction/how-to-run-abs-code)
 * Syntax
-    * Assignments
+    * [Assignments](/abs/syntax/assignments/)
     * return
     * Operators
     * if
@@ -61,5 +62,3 @@ abs script.abs
     * Array
     * Hash
     * Functions
-* Running ABS code
-    * The ABS interpreter
