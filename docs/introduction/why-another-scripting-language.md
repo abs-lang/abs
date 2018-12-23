@@ -115,4 +115,4 @@ and some more opinionated language features:
 ## Next
 
 That's about it for the intro, we don't want to spoil the rest.
-You can now head over to read [how to run ABS code!](/abs/introduction/run-abs-code)
+You can now head over to read [how to run ABS code!](/introduction/run-abs-code)

@@ -60,4 +60,4 @@ it took to run a Bash script?
 That's about it for this section!
 
 You can now head over to read about ABS's syntax,
-starting with [assignments](/abs/syntax/assignments)!
+starting with [assignments](/syntax/assignments)!
