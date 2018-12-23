@@ -1,0 +1,64 @@
+# Platforms commented out seem
+# to be a PITA to compile without
+# too much tooling, we'll have a 
+# look at those later on.
+#
+# "linux/mips"
+#"linux/mipsle"
+# "linux/mips64"
+# "linux/mips64le"
+# "darwin/arm"
+# "plan9/386"
+# "plan9/amd64"
+# "openbsd/386"
+# "openbsd/amd64"
+# "openbsd/arm"
+# "dragonfly/amd64"
+# "android/arm"
+# "solaris/amd64"
+platforms = [
+    "linux/386",
+    "linux/amd64",
+    "linux/arm",
+    "linux/arm64",
+    "linux/ppc64",
+    "linux/ppc64le",
+    "linux/arm",
+    "linux/arm64",
+    "windows/amd64",
+    "windows/386",
+    "darwin/amd64",
+    "darwin/386",
+    "freebsd/386",
+    "freebsd/amd64",
+    "freebsd/arm",
+    "netbsd/386",
+    "netbsd/amd64",
+    "netbsd/arm"
+]
+
+echo("Deleting previous builds...")
+rm = $(rm -rf builds/abs-*)
+
+if !rm.ok() {
+    return echo("error: " + rm)
+}
+
+for platform in platforms {
+    parts = platform.split("/")
+    goos = parts[0]
+    goarch = parts[1]
+    output_name = "abs-preview-0-" + goos + "-" + goarch
+
+    if (goos == "windows") {
+        output_name = output_name + ".exe"
+    }
+
+    echo("Building %s %s", goos, goarch)
+    build = $(GOOS=$goos GOARCH=$goarch go build -o builds/$output_name main.go)
+
+    if !build.ok() {
+        echo("error: " + build)
+        exit(1)
+    }
+}
