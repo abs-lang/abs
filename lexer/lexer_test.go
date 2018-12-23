@@ -3,7 +3,7 @@ package lexer
 import (
 	"testing"
 
-	"abs/token"
+	"github.com/abs-lang/abs/token"
 )
 
 func TestNextToken(t *testing.T) {

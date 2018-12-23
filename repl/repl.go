@@ -1,13 +1,14 @@
 package repl
 
 import (
-	"abs/evaluator"
-	"abs/lexer"
-	"abs/object"
-	"abs/parser"
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/abs-lang/abs/evaluator"
+	"github.com/abs-lang/abs/lexer"
+	"github.com/abs-lang/abs/object"
+	"github.com/abs-lang/abs/parser"
 
 	prompt "github.com/c-bata/go-prompt"
 )

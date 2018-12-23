@@ -1,11 +1,12 @@
 package main
 
 import (
-	"abs/repl"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/user"
+
+	"github.com/abs-lang/abs/repl"
 )
 
 // The ABS interpreter

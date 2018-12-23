@@ -1,8 +1,9 @@
 package ast
 
 import (
-	"abs/token"
 	"testing"
+
+	"github.com/abs-lang/abs/token"
 )
 
 func TestString(t *testing.T) {

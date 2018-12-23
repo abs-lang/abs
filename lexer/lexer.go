@@ -1,8 +1,9 @@
 package lexer
 
 import (
-	"abs/token"
 	"strings"
+
+	"github.com/abs-lang/abs/token"
 )
 
 type Lexer struct {

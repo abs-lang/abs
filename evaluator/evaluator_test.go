@@ -1,10 +1,11 @@
 package evaluator
 
 import (
-	"abs/lexer"
-	"abs/object"
-	"abs/parser"
 	"testing"
+
+	"github.com/abs-lang/abs/lexer"
+	"github.com/abs-lang/abs/object"
+	"github.com/abs-lang/abs/parser"
 )
 
 func TestEvalIntegerExpression(t *testing.T) {
@@ -523,8 +524,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len([1, 2, 3])`, 3},
 		{`len([])`, 0},
 		{`echo("hello", "world!")`, nil},
-		{`env("PWD")`, "/go/src/abs/evaluator"},
-		{`type("PWD")`, "STRING"},
+		{`env("TERM")`, "xterm"},
+		{`type("TERM")`, "STRING"},
 		{`type(1)`, "INTEGER"},
 		{`type({})`, "HASH"},
 		{`type([])`, "ARRAY"},

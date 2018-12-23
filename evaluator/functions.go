@@ -1,11 +1,6 @@
 package evaluator
 
 import (
-	"abs/ast"
-	"abs/lexer"
-	"abs/object"
-	"abs/parser"
-	"abs/util"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -13,6 +8,12 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/abs-lang/abs/ast"
+	"github.com/abs-lang/abs/lexer"
+	"github.com/abs-lang/abs/object"
+	"github.com/abs-lang/abs/parser"
+	"github.com/abs-lang/abs/util"
 )
 
 // Utility function that validates arguments passed to builtin

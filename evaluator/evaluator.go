@@ -1,9 +1,6 @@
 package evaluator
 
 import (
-	"abs/ast"
-	"abs/object"
-	"abs/util"
 	"bytes"
 	"fmt"
 	"math"
@@ -11,6 +8,10 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/abs-lang/abs/ast"
+	"github.com/abs-lang/abs/object"
+	"github.com/abs-lang/abs/util"
 )
 
 var (
