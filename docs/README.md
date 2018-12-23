@@ -4,6 +4,12 @@
   </a>
 </p>
 
+<p align="center">
+  <a href="https://travis-ci.com/abs-lang/abs"><img alt="Travis Status" src="https://travis-ci.com/abs-lang/abs.svg?branch=master"></a>
+  <a href="https://github.com/abs-lang/abs"><img alt="License" src="https://img.shields.io/github/license/abs-lang/abs.svg"></a>
+  <a href="https://github.com/abs-lang/abs"><img alt="Version" src="https://img.shields.io/github/release-pre/abs-lang/abs.svg"></a>
+</p>
+
 ABS is a scripting language that works best when you're on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
@@ -53,9 +59,9 @@ $ abs script.abs
 ## Syntax
 
 * [Assignments](/syntax/assignments)
-* [return]((/syntax/return))
-* [if]((/syntax/if))
-* [for]((/syntax/for))
+* [return](/syntax/return)
+* [if](/syntax/if)
+* [for](/syntax/for)
 * [while](/syntax/while)
 * [System commands](/syntax/system-commands)
 * [Operators](/syntax/operators)
