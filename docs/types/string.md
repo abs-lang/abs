@@ -214,8 +214,23 @@ Returns the last index at which `str` is found:
 "string string".last_index("g") # 13
 ```
 
+### slice(start, end)
+
+Returns a portion of the string, from `start` to `end`:
+
+``` bash
+"string".slice(0, 3) # "str"
+```
+
+If `start` is negative, it slices from the end of the string,
+back as many characters as the value of `start`:
+
+``` bash
+"string".slice(-3, 0) # "ing"
+```
+
 ## Next
 
 That's about it for this section!
 
-You can now head over to read about [system (or shell) commands](/syntax/system-commands).
+You can now head over to read about [integers](/types/int).
