@@ -25,6 +25,8 @@ with the index notation:
 "hello world"[1] # e
 ```
 
+Accessing an index that does not exist returns null.
+
 To concatenate strings, "sum" them:
 
 ``` bash

@@ -387,6 +387,7 @@ func getFns() map[string]*object.Builtin {
 
 					if isTruthy(r) {
 						result = true
+						break
 					}
 				}
 
