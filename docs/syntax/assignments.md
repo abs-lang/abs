@@ -26,7 +26,6 @@ echo(x) # "hello world"
 
 Variables declared in native expressions, such as for loops, are the only exception to the rule,
 as they get "cleared" as soon as the expression is over:
-When an expression
 
 ``` bash
 for x in 1..10 {

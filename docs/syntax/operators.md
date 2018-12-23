@@ -68,20 +68,6 @@ Division:
 5 / 5 # 1
 ```
 
-## &&
-
-Logical AND, which supports [short-circuiting](https://en.wikipedia.org/wiki/Short-circuit_evaluation):
-
-``` bash
-true && true # true
-true && false # false
-1 && 2 # 2
-1 && 0 # 0
-0 && 2 # 0
-"" && "hello world" # ""
-"hello" && "world" # "world"
-```
-
 ## >
 
 Greater than:
@@ -98,6 +84,20 @@ Lower than:
 ``` bash
 10 < 0 # false
 0 < 10 # true
+```
+
+## &&
+
+Logical AND, which supports [short-circuiting](https://en.wikipedia.org/wiki/Short-circuit_evaluation):
+
+``` bash
+true && true # true
+true && false # false
+1 && 2 # 2
+1 && 0 # 0
+0 && 2 # 0
+"" && "hello world" # ""
+"hello" && "world" # "world"
 ```
 
 ## ||

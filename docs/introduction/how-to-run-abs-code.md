@@ -20,14 +20,14 @@ Scripts do not have to have a specific extension,
 although it's recommended to use `.abs` as a
 convention.
 
-A bit lost right now? We'd suggest to clone [ABS' main repository](https://github.com/odino/abs), you can already
+A bit lost right now? We'd suggest to clone [ABS' main repository](https://github.com/odino/abs) as you can already
 start testing some code with the scripts in the
 [examples](https://github.com/odino/abs/tree/master/examples) directory.
 
 ## REPL
 
 If you want to get a more *live* feeling of ABS, you can
-also simply run the interpreter; without any argument, it
+also simply run the interpreter; without any argument. It
 will launch ABS' REPL, and you will be able to test code on
 the fly:
 

@@ -6,7 +6,7 @@
 
 # Returning values
 
-Promise, this is going to be short!
+We promise, this is going to be short!
 
 Returning values is done through the
 `return` keyword:
@@ -30,4 +30,4 @@ func(9) # 10
 
 That's about it for this section!
 
-You can now head over to read about [returning values](/syntax/return).
+You can now head over to read about [if expressions](/syntax/if).

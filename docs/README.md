@@ -40,7 +40,7 @@ Wondering how you can run this code? Simply grab the latest
 [release](https://github.com/abs-lang/abs/releases) and run:
 
 ```
-abs script.abs
+$ abs script.abs
 ```
 
 ## Table of contents

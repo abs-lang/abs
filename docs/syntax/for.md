@@ -37,7 +37,7 @@ for x = 0; x < 10; x = x + 1 {
 echo(x) # "hello world"
 ```
 
-Similarly, a variable declared on the `loop` (not inside)
+Similarly, a variable declared on the loop (not inside)
 will cease to exist after the loop is done:
 
 ``` bash
@@ -61,7 +61,7 @@ echo(y) # 9
 
 ## In form
 
-The "in" form of `for` loops allows you to iterate over
+The "in" form of the `for` loops allows you to iterate over
 an array:
 
 ``` bash
@@ -85,17 +85,17 @@ as the standard one, meaning that:
 ``` bash
 k = "hello world"
 
-for k, v in [1, 2, 3] {
+for v in [1, 2, 3] {
     # k is 0, 1, 2
     # v is 1, 2, 3
 }
 
-echo(k) # "hello world"
-echo(v) # v is not defined
+echo(v) # "hello world"
+echo(k) # v is not defined
 ```
 
 ## Next
 
 That's about it for this section!
 
-You can now head over to read about [for loops](/syntax/while).
+You can now head over to read about [while loops](/syntax/while).
