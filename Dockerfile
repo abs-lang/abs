@@ -8,8 +8,8 @@ RUN go get github.com/c-bata/go-prompt
 RUN go get -v github.com/mattn/go-colorable
 RUN go get -v github.com/mattn/go-tty
 
-COPY . /go/src/abs
-WORKDIR /go/src/abs
+COPY . /go/src/github.com/abs-lang/abs
+WORKDIR /go/src/github.com/abs-lang/abs
 RUN go get -d -v ./...
 
 RUN chmod +x scripts/release.sh

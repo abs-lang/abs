@@ -1,6 +1,6 @@
 .PHONY: repl
 run:
-	docker run -tiv $$(pwd):/go/src/abs --name abs --rm abs
+	docker run -tiv $$(pwd):/go/src/github.com/abs-lang/abs --name abs --rm abs
 fmt:
 	go fmt ./...
 build:
@@ -14,3 +14,9 @@ build_simple:
 	go build -o builds/abs main.go
 release:
 	./scripts/release.sh
+install:
+	go get github.com/c-bata/go-prompt
+	go get -v github.com/mattn/go-colorable
+	go get -v github.com/mattn/go-tty
+	go get -d -v ./...
+travis: install test

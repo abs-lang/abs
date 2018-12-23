@@ -1,10 +1,11 @@
 package object
 
 import (
-	"abs/ast"
 	"bytes"
 	"fmt"
 	"strings"
+
+	"github.com/abs-lang/abs/ast"
 )
 
 type BuiltinFunction func(args ...Object) Object

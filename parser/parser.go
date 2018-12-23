@@ -1,11 +1,12 @@
 package parser
 
 import (
-	"abs/ast"
-	"abs/lexer"
-	"abs/token"
 	"fmt"
 	"strconv"
+
+	"github.com/abs-lang/abs/ast"
+	"github.com/abs-lang/abs/lexer"
+	"github.com/abs-lang/abs/token"
 )
 
 const (

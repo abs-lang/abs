@@ -1,9 +1,10 @@
 package ast
 
 import (
-	"abs/token"
 	"bytes"
 	"strings"
+
+	"github.com/abs-lang/abs/token"
 )
 
 // The base Node interface
