@@ -12,8 +12,8 @@ repl:
 	go run main.go
 build_simple:
 	go build -o builds/abs main.go
-release:
-	./scripts/release.sh
+release: build_simple
+	./builds/abs ./scripts/release.abs
 install:
 	go get github.com/c-bata/go-prompt
 	go get -v github.com/mattn/go-colorable
