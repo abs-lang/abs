@@ -1,4 +1,4 @@
-FROM golang:1.10
+FROM golang:1.11
 
 RUN apt-get update
 RUN apt-get install bash make git curl jq -y

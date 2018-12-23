@@ -5,6 +5,7 @@ import (
 	"abs/object"
 	"abs/util"
 	"bytes"
+	"fmt"
 	"math"
 	"os"
 	"os/exec"
@@ -21,6 +22,10 @@ var (
 
 func init() {
 	Fns = getFns()
+}
+
+func newError(format string, a ...interface{}) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }
 
 func Eval(node ast.Node, env *object.Environment) object.Object {
@@ -204,7 +209,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
 	default:
-		return util.NewError("unknown operator: %s%s", operator, right.Type())
+		return newError("unknown operator: %s%s", operator, right.Type())
 	}
 }
 
@@ -247,9 +252,9 @@ func evalInfixExpression(
 	case operator == "!=":
 		return nativeBoolToBooleanObject(left != right)
 	case left.Type() != right.Type():
-		return util.NewError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
+		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
 	default:
-		return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -283,7 +288,7 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
-		return util.NewError("unknown operator: -%s", right.Type())
+		return newError("unknown operator: -%s", right.Type())
 	}
 
 	value := right.(*object.Integer).Value
@@ -326,7 +331,7 @@ func evalIntegerInfixExpression(
 		}
 		return &object.Array{Elements: a}
 	default:
-		return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -348,7 +353,7 @@ func evalStringInfixExpression(
 		return &object.Boolean{Value: strings.ToLower(left.(*object.String).Value) == strings.ToLower(right.(*object.String).Value)}
 	}
 
-	return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 }
 
 func evalArrayInfixExpression(
@@ -361,7 +366,7 @@ func evalArrayInfixExpression(
 		return &object.Array{Elements: append(leftVal, rightVal...)}
 	}
 
-	return util.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 }
 
 func evalIfExpression(
@@ -501,7 +506,7 @@ func evalForInExpression(
 
 		return NULL
 	default:
-		return util.NewError("'%s' is not an array, cannot be used in for loop", i.Inspect())
+		return newError("'%s' is not an array, cannot be used in for loop", i.Inspect())
 	}
 }
 
@@ -517,7 +522,7 @@ func evalIdentifier(
 		return builtin
 	}
 
-	return util.NewError("identifier not found: " + node.Value)
+	return newError("identifier not found: " + node.Value)
 }
 
 // This is the core of ABS's logical
@@ -586,7 +591,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		return fn.Fn(args...)
 
 	default:
-		return util.NewError("not a function: %s", fn.Type())
+		return newError("not a function: %s", fn.Type())
 	}
 }
 
@@ -594,11 +599,11 @@ func applyMethod(o object.Object, method string, args []object.Object) object.Ob
 	f, ok := Fns[method]
 
 	if !ok {
-		return util.NewError("method '%s()' does not exist", method, o.Type())
+		return newError("method '%s()' does not exist", method, o.Type())
 	}
 
 	if !util.Contains(f.Types, string(o.Type())) && len(f.Types) != 0 {
-		return util.NewError("cannot call method '%s()' on '%s'", method, o.Type())
+		return newError("cannot call method '%s()' on '%s'", method, o.Type())
 	}
 
 	args = append([]object.Object{o}, args...)
@@ -635,7 +640,7 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	case left.Type() == object.STRING_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalStringIndexExpression(left, index)
 	default:
-		return util.NewError("index operator not supported: %s on %s", index.Inspect(), left.Type())
+		return newError("index operator not supported: %s on %s", index.Inspect(), left.Type())
 	}
 }
 
@@ -677,7 +682,7 @@ func evalHashLiteral(
 
 		hashKey, ok := key.(object.Hashable)
 		if !ok {
-			return util.NewError("unusable as hash key: %s", key.Type())
+			return newError("unusable as hash key: %s", key.Type())
 		}
 
 		value := Eval(valueNode, env)
@@ -697,7 +702,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 	key, ok := index.(object.Hashable)
 	if !ok {
-		return util.NewError("unusable as hash key: %s", index.Type())
+		return newError("unusable as hash key: %s", index.Type())
 	}
 
 	pair, ok := hashObject.Pairs[key.HashKey()]

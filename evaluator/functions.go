@@ -19,12 +19,12 @@ import (
 // functions.
 func validateArgs(name string, args []object.Object, size int, types [][]string) object.Object {
 	if len(args) != size {
-		return util.NewError("wrong number of arguments to %s(...): got=%d, want=%d", name, len(args), size)
+		return newError("wrong number of arguments to %s(...): got=%d, want=%d", name, len(args), size)
 	}
 
 	for i, t := range types {
 		if !util.Contains(t, string(args[i].Type())) {
-			return util.NewError("argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
+			return newError("argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
 		}
 	}
 
@@ -48,7 +48,7 @@ func getFns() map[string]*object.Builtin {
 				case *object.String:
 					return &object.Integer{Value: int64(len(arg.Value))}
 				default:
-					return util.NewError("argument to `len` not supported, got %s",
+					return newError("argument to `len` not supported, got %s",
 						args[0].Type())
 				}
 			},
@@ -66,7 +66,7 @@ func getFns() map[string]*object.Builtin {
 				r, e := rand.Int(rand.Reader, big.NewInt(arg.Value))
 
 				if e != nil {
-					return util.NewError("error occurred while calling 'rand(%d)': %s", arg.Value, e.Error())
+					return newError("error occurred while calling 'rand(%d)': %s", arg.Value, e.Error())
 				}
 
 				return &object.Integer{Value: r.Int64()}
@@ -119,13 +119,13 @@ func getFns() map[string]*object.Builtin {
 					i, err := strconv.Atoi(arg.Value)
 
 					if err != nil {
-						return util.NewError("int(...) can only be called on strings which represent integers, '%s' given", arg.Value)
+						return newError("int(...) can only be called on strings which represent integers, '%s' given", arg.Value)
 					}
 
 					return &object.Integer{Value: int64(i)}
 				default:
 					// we will never reach here
-					return util.NewError("argument to `int` not supported, got %s", args[0].Type())
+					return newError("argument to `int` not supported, got %s", args[0].Type())
 				}
 			},
 		},
@@ -272,7 +272,7 @@ func getFns() map[string]*object.Builtin {
 					return evalHashLiteral(hl, env)
 				}
 
-				return util.NewError("argument to `json` must be a valid JSON object, got '%s'", s.Value)
+				return newError("argument to `json` must be a valid JSON object, got '%s'", s.Value)
 			},
 		},
 		// sum(array:[1, 2, 3])
@@ -313,7 +313,7 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				if !arr.Homogeneous() {
-					return util.NewError("argument to `sort` must be an homogeneous array (elements of the same type), got %s", arr.Inspect())
+					return newError("argument to `sort` must be an homogeneous array (elements of the same type), got %s", arr.Inspect())
 				}
 
 				switch elements[0].(type) {
@@ -344,7 +344,7 @@ func getFns() map[string]*object.Builtin {
 					}
 					return &object.Array{Elements: o}
 				default:
-					return util.NewError("cannot sort an array with given elements elements (%s)", arr.Inspect())
+					return newError("cannot sort an array with given elements elements (%s)", arr.Inspect())
 				}
 			},
 		},

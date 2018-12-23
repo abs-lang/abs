@@ -6,7 +6,7 @@ fmt:
 build:
 	docker build -t abs .
 test:
-	go test ./...
+	go test ./... -vet=off
 repl:
 	go run main.go
 build_simple:
