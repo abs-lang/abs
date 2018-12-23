@@ -14,9 +14,7 @@ you most likely had to use Bash to automate some task with a
 good old `.sh` script.
 
 <p align="center">
-  <a href="https://abs-lang.org/">
     <img alt="terminal" src="https://github.com/odino/abs/blob/master/bin/terminal.png?raw=true">
-  </a>
 </p>
 
 You might have felt, though, that Bash was a fairly strange
@@ -31,7 +29,7 @@ fi
 (*if you're wondering, the above snippet would check whether the variable
 `$STRING` is an empty string*)
 
-Far for bashing Bash, or the generic [shell command language](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html),
+Far for bashing Bash (pun intended) or the generic [shell command language](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html),
 we believe there should be a more straightforward alternative
 to automating tasks, something that [Bash excels at](https://www.quora.com/What-are-the-main-advantages-of-Bash-as-a-programming-language): if there's reason why the pragmatic Python or the elegant Ruby haven't been able to overcome Bash as the *de-facto* standard
 for shell scripting, that would be the inner simplicity of bash.
@@ -40,31 +38,31 @@ ease of portability...   ...these are quick and easy wins when you're
 writing those `.sh` files.
 
 As both general-purpose programming languages fans and shell lovers,
-we believe there could be an alternative where a programmer could
+we believe there could be an alternative where a programmer would
 combine the syntax and flexibility of general-purpose languages
 (Python, Ruby and JS, to name a few) with the benefits of Bash.
 
 This is why we developed the ABS programming language: a
-language that is a joy to work with in the context of shell scripting.
-ABS isn't here to replace the likes of PHP, Java or Python,
+language that is a joy to work with in the context of shell scripting:
+it isn't here to replace the likes of PHP, Java or Python,
 neither it wants to diminish the importance of Bash.
 
-ABS tries to mix a more modern language with the universal-inness
-(is that even a word?) of Bash.
+ABS tries to mix a more modern language with the
+simplicity of Bash.
 
 Let's take a look a look at some practical ABS code. We will now
 call the API of nba.com in order to retrieve the stats for
 one of last year's NBA games:
 
 ``` bash
-r = $(curl "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json" -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, sdch' -H 'Accept-Language: en' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36' -H 'Accept: */*' -H 'Referer: http://stats.nba.com/' -H 'Connection: keep-alive' --compressed);
+res = $(curl "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json" -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, sdch' -H 'Accept-Language: en' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36' -H 'Accept: */*' -H 'Referer: http://stats.nba.com/' -H 'Connection: keep-alive' --compressed);
 
-if !r.ok() {
+if !res.ok() {
     echo("Could not fetch game data. Bummer!")
     exit(1)
 }
 
-doc = r.json()
+doc = res.json()
 
 arena = doc["basicGameData"]["arena"]["name"]
 city = doc["basicGameData"]["arena"]["city"]
@@ -115,4 +113,4 @@ and some more opinionated language features:
 ```
 
 That's about it for the intro, we don't want to spoil the rest.
-You can now head over to read [how to run ABS code!](/introduction/run-abs-code)
+You can now head over to read [how to run ABS code!](/abs/introduction/run-abs-code)
