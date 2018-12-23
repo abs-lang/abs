@@ -67,6 +67,7 @@ $ abs script.abs
 * Array
 * Hash
 * Functions
+* Builtin functions
 
 ## Miscellaneous
 

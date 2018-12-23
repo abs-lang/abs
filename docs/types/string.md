@@ -1,0 +1,173 @@
+<p align="center">
+  <a href="https://abs-lang.org/">
+    <img alt="abs language logo" src="https://github.com/odino/abs/blob/master/bin/abs-horizontal.png?raw=true">
+  </a>
+</p>
+
+# String
+
+Strings are probably the most basic data type
+in all languages, yet they hold a very important
+value in ABS: considering that shell scripting
+is all about working around command outputs,
+we assume you will likely work a lot with them.
+
+Strings are enclosed by double quotes:
+
+``` bash
+"hello world"
+```
+
+and their individual characters can be accessed
+with the index notation:
+
+``` bash
+"hello world"[1] # e
+```
+
+To concatenate strings, "sum" them:
+
+``` bash
+"hello" + " " + "world" # "hello world"
+```
+
+Note that strings have what we call a "zero value":
+a value that evaluates to `false` when casted to boolean:
+
+``` bash
+!!"" # false
+```
+
+## Supported functions
+
+### len()
+
+Returns the length of a string:
+
+``` bash
+"hello world".len() # 11
+```
+
+### int()
+
+Converts a string to integer, if possible:
+
+``` bash
+"99".len() # 99
+```
+
+### int(separator)
+
+Splits a string by separator:
+
+``` bash
+"1.2.3.4".split(".") # ["1", "2", "3", "4"]
+```
+
+### lines()
+
+Splits a string by newline:
+
+``` bash
+"first\nsecond".lines() # ["first", "second"]
+```
+
+### ok()
+
+Used to check whether a command executed successfully (a
+command always returns a string, the output of the
+command itself). On "regular" strings it will default
+to `false`:
+
+``` bash
+"string".ok() # false
+"$(pwd)".ok() # true
+```
+
+### json()
+
+Parses the string as JSON, returning an [hash](/types/hash):
+
+``` bash
+"{}".json() # {}
+```
+
+Note that currently only JSON objects are supported,
+and if the objects contain floats this method will
+return an error. Support for floats is coming (see [#29](https://github.com/odino/abs/issues/29))
+as well as being able to parse all valid JSON expressions (see [#54](https://github.com/odino/abs/issues/54)).
+
+### contains(str)
+
+Checks whether `str` is present in the string:
+
+``` bash
+"string".contains("ing") # true
+"string".contains("ong") # false
+```
+
+### str()
+
+Identity:
+
+``` bash
+"string".str() # "string"
+```
+
+### any(str)
+
+Checks whether any of the characters in `str` are present in the string:
+
+``` bash
+"string".any("abc") # true
+"string".any("xyz") # false
+```
+
+### prefix(str)
+
+Checks whether the string has the given prefix:
+
+``` bash
+"string".prefix("str") # true
+"string".prefix("abc") # false
+```
+
+### suffix(str)
+
+Checks whether the string has the given suffix:
+
+``` bash
+"string".suffix("ing") # true
+"string".suffix("ong") # false
+```
+
+### repeat(i)
+
+Creates a new string, repeating the original one `i` times:
+
+``` bash
+"string".repeat(2) # "stringstring"
+```
+
+### replace(x, y, n)
+
+Replaces occurrences of `x` with `y`, `n` times.
+If `n` is negative it will replace all occurrencies:
+
+``` bash
+"string".replace("i", "o", -1) # "strong"
+```
+
+### title()
+
+Applies TitleCase:
+
+``` bash
+"hello world".title() # "Hello World"
+```
+
+## Next
+
+That's about it for this section!
+
+You can now head over to read about [system (or shell) commands](/syntax/system-commands).
