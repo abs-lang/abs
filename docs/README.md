@@ -62,12 +62,12 @@ $ abs script.abs
 
 ## Types and functions
 
-* String
-* Integer
-* Array
-* Hash
-* Functions
-* Builtin functions
+* [String](/types/string/)
+* [Integer](/types/integer)
+* [Array](/types/array)
+* [Hash](/types/hash)
+* [Functions](/types/functions)
+* [Builtin functions](/types/builtin-functions)
 
 ## Miscellaneous
 

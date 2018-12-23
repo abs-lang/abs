@@ -35,7 +35,7 @@ func getFns() map[string]*object.Builtin {
 	return map[string]*object.Builtin{
 		// len(var:"hello")
 		"len": &object.Builtin{
-			Types: []string{object.STRING_OBJ, object.INTEGER_OBJ},
+			Types: []string{object.STRING_OBJ, object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
 				err := validateArgs("len", args, 1, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}})
 				if err != nil {
