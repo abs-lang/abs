@@ -122,7 +122,7 @@ func (f *Function) Inspect() string {
 // cmd.ok() // FALSE
 type String struct {
 	Value string
-	Ok    bool // A special property to check whether a command exited correctly
+	Ok    *Boolean // A special property to check whether a command exited correctly
 }
 
 func (s *String) Type() ObjectType { return STRING_OBJ }

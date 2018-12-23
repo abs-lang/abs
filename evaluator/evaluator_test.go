@@ -100,6 +100,7 @@ func TestBangOperator(t *testing.T) {
 	}{
 		{"!true", false},
 		{"!false", true},
+		{`a = "hello"; !a.ok()`, true},
 		{"!5", false},
 		{"!!true", true},
 		{"!!false", false},

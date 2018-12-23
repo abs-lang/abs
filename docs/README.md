@@ -47,12 +47,6 @@ abs script.abs
 
 * Introduction
     * Why another scripting language?
-* Types and function reference
-    * String
-    * Integer
-    * Array
-    * Hash
-    * Functions
 * Syntax
     * Assignments
     * return
@@ -61,5 +55,11 @@ abs script.abs
     * for
     * while
     * System commands
+* Types and function reference
+    * String
+    * Integer
+    * Array
+    * Hash
+    * Functions
 * Running ABS code
     * The ABS interpreter

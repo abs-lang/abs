@@ -715,8 +715,8 @@ func evalCommandExpression(cmd string, env *object.Environment) object.Object {
 	err := c.Run()
 
 	if err != nil {
-		return &object.String{Value: stderr.String()}
+		return &object.String{Value: stderr.String(), Ok: FALSE}
 	}
 
-	return &object.String{Value: out.String(), Ok: true}
+	return &object.String{Value: out.String(), Ok: TRUE}
 }

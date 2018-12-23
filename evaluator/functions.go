@@ -229,7 +229,11 @@ func getFns() map[string]*object.Builtin {
 
 				s := args[0].(*object.String)
 
-				return &object.Boolean{Value: s.Ok}
+				if s.Ok != nil {
+					return s.Ok
+				}
+
+				return FALSE
 			},
 		},
 		// "{}".json()
