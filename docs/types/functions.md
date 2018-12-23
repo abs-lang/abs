@@ -59,7 +59,7 @@ a = 20
 f(1) # 21
 ```
 
-ABS supports closure just like mainstream languages:
+ABS supports closures just like mainstream languages:
 
 ``` bash
 func = f(x) {
@@ -94,4 +94,4 @@ f(x){}.str()
 
 That's about it for this section!
 
-You can now head over to read about [hashes](/types/hash).
+You can now head over to read about [builtin functions](/types/builtin-function).

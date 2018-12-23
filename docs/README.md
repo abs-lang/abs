@@ -71,5 +71,5 @@ $ abs script.abs
 
 ## Miscellaneous
 
-* A few technical details...
+* [A few technical details...](/misc/technical-details)
 * Credits

@@ -142,11 +142,11 @@ func getFns() map[string]*object.Builtin {
 				return &object.String{Value: os.Getenv(arg.Value)}
 			},
 		},
-		// args(position:1)
-		"args": &object.Builtin{
+		// arg(position:1)
+		"arg": &object.Builtin{
 			Types: []string{object.INTEGER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("args", args, 1, [][]string{{object.INTEGER_OBJ}})
+				err := validateArgs("arg", args, 1, [][]string{{object.INTEGER_OBJ}})
 				if err != nil {
 					return err
 				}
