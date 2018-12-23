@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://abs-lang.org/">
+  <a href="https://www.abs-lang.org/">
     <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/ABS.png?raw=true" width="310">
   </a>
 </p>
