@@ -25,6 +25,10 @@ will probably work perfectly).
 With `make run` you can get inside a container built for ABS'
 development, and `make test` will run all tests.
 
+## Roadmap
+
+We're currently working on the [preview-1 milestone](https://github.com/abs-lang/abs/milestone/1).
+
 ## Next
 
 That's about it for this section!
