@@ -514,9 +514,9 @@ func getFns() map[string]*object.Builtin {
 		},
 		// str(1)
 		"str": &object.Builtin{
-			Types: []string{object.INTEGER_OBJ, object.STRING_OBJ, object.ARRAY_OBJ, object.HASH_OBJ},
+			Types: []string{},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("str", args, 1, [][]string{{object.STRING_OBJ, object.INTEGER_OBJ, object.ARRAY_OBJ, object.HASH_OBJ}})
+				err := validateArgs("str", args, 1, [][]string{})
 				if err != nil {
 					return err
 				}
