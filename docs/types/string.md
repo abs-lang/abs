@@ -160,10 +160,58 @@ If `n` is negative it will replace all occurrencies:
 
 ### title()
 
-Applies TitleCase:
+Titlecases the string:
 
 ``` bash
 "hello world".title() # "Hello World"
+```
+
+### lower()
+
+Lowercases the string:
+
+``` bash
+"STRING".lower() # "string"
+```
+
+### upper()
+
+Uppercases the string:
+
+``` bash
+"string".upper() # "STRING"
+```
+
+### trim()
+
+Removes empty spaces from the beginning and end of the string:
+
+``` bash
+" string     ".trim() # "string"
+```
+
+### trim_by(str)
+
+Removes `str` from the beginning and end of the string:
+
+``` bash
+"string".trim_by("g") # "strin"
+```
+
+### index(str)
+
+Returns the index at which `str` is found:
+
+``` bash
+"string".index("t") # 1
+```
+
+### last_index(str)
+
+Returns the last index at which `str` is found:
+
+``` bash
+"string string".last_index("g") # 13
 ```
 
 ## Next
