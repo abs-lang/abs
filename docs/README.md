@@ -72,8 +72,8 @@ $ abs script.abs
 * [Integer](/types/integer)
 * [Array](/types/array)
 * [Hash](/types/hash)
-* [Functions](/types/functions)
-* [Builtin functions](/types/builtin-functions)
+* [Functions](/types/function)
+* [Builtin functions](/types/builtin-function)
 
 ## Miscellaneous
 
