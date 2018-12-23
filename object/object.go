@@ -48,6 +48,7 @@ type Integer struct {
 
 func (i *Integer) Type() ObjectType { return INTEGER_OBJ }
 func (i *Integer) Inspect() string  { return fmt.Sprintf("%d", i.Value) }
+func (i *Integer) ZeroValue() int64 { return int64(0) }
 
 type Boolean struct {
 	Value bool
@@ -125,8 +126,9 @@ type String struct {
 	Ok    *Boolean // A special property to check whether a command exited correctly
 }
 
-func (s *String) Type() ObjectType { return STRING_OBJ }
-func (s *String) Inspect() string  { return s.Value }
+func (s *String) Type() ObjectType  { return STRING_OBJ }
+func (s *String) Inspect() string   { return s.Value }
+func (s *String) ZeroValue() string { return "" }
 func (s *String) HashKey() HashKey {
 	return HashKey{Type: s.Type(), Value: s.Value}
 }

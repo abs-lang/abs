@@ -262,7 +262,22 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 	case NULL:
 		return TRUE
 	default:
-		return FALSE
+		switch o := right.(type) {
+		case *object.String:
+			if o.Value == o.ZeroValue() {
+				return TRUE
+			}
+
+			return FALSE
+		case *object.Integer:
+			if o.Value == o.ZeroValue() {
+				return TRUE
+			}
+
+			return FALSE
+		default:
+			return FALSE
+		}
 	}
 }
 
@@ -519,11 +534,11 @@ func isTruthy(obj object.Object) bool {
 	// An integer is truthy
 	// unless it's 0
 	case *object.Integer:
-		return v.Value != 0
+		return v.Value != v.ZeroValue()
 	// A string is truthy
 	// unless is empty
 	case *object.String:
-		return v.Value != ""
+		return v.Value != v.ZeroValue()
 	// Everything else is truthy
 	//
 	// NOTE: we might regret this

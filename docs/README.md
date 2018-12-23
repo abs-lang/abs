@@ -54,11 +54,11 @@ abs script.abs
 
 * [Assignments](/syntax/assignments)
 * [return]((/syntax/return))
-* [Operators]((/syntax/operators))
 * [if]((/syntax/if))
 * [for]((/syntax/for))
-* [while]((/syntax/while))
-* [System commands]((/syntax/system-commands))
+* [while](/syntax/while)
+* [System commands](/syntax/system-commands)
+* [Operators](/syntax/operators)
 
 ## Types and functions
 
@@ -67,3 +67,8 @@ abs script.abs
 * Array
 * Hash
 * Functions
+
+## Miscellaneous
+
+* A few technical details...
+* Credits

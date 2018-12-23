@@ -18,7 +18,7 @@ return "hello world"
 Note that functions allow implicit returns,
 so you don't need to explicitely use a `return`:
 
-```
+``` bash
 func = f(x) {
     x + 1
 }
