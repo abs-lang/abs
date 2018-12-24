@@ -25,27 +25,28 @@ const (
 )
 
 var precedences = map[token.TokenType]int{
-	token.AND:      AND,
-	token.OR:       AND,
-	token.EQ:       EQUALS,
-	token.NOT_EQ:   EQUALS,
-	token.TILDE:    EQUALS,
-	token.IN:       EQUALS,
-	token.COMMA:    EQUALS,
-	token.LT:       LESSGREATER,
-	token.LT_EQ:    LESSGREATER,
-	token.GT:       LESSGREATER,
-	token.GT_EQ:    LESSGREATER,
-	token.PLUS:     SUM,
-	token.MINUS:    SUM,
-	token.SLASH:    PRODUCT,
-	token.ASTERISK: PRODUCT,
-	token.EXPONENT: PRODUCT,
-	token.RANGE:    RANGE,
-	token.LPAREN:   CALL,
-	token.LBRACKET: INDEX,
-	token.DOT:      DOT,
-	token.PIPE:     DOT,
+	token.AND:           AND,
+	token.OR:            AND,
+	token.EQ:            EQUALS,
+	token.NOT_EQ:        EQUALS,
+	token.TILDE:         EQUALS,
+	token.IN:            EQUALS,
+	token.COMMA:         EQUALS,
+	token.LT:            LESSGREATER,
+	token.LT_EQ:         LESSGREATER,
+	token.GT:            LESSGREATER,
+	token.GT_EQ:         LESSGREATER,
+	token.COMBINED_COMP: LESSGREATER,
+	token.PLUS:          SUM,
+	token.MINUS:         SUM,
+	token.SLASH:         PRODUCT,
+	token.ASTERISK:      PRODUCT,
+	token.EXPONENT:      PRODUCT,
+	token.RANGE:         RANGE,
+	token.LPAREN:        CALL,
+	token.LBRACKET:      INDEX,
+	token.DOT:           DOT,
+	token.PIPE:          DOT,
 }
 
 type (
@@ -104,6 +105,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
 	p.registerInfix(token.GT_EQ, p.parseInfixExpression)
+	p.registerInfix(token.COMBINED_COMP, p.parseInfixExpression)
 	p.registerInfix(token.AND, p.parseInfixExpression)
 	p.registerInfix(token.OR, p.parseInfixExpression)
 	p.registerInfix(token.RANGE, p.parseInfixExpression)

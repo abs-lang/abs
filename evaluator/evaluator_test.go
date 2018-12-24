@@ -35,6 +35,9 @@ func TestEvalIntegerExpression(t *testing.T) {
 		{"10 && 1", 1},
 		{"0 && 3", 0},
 		{`"hello" && 10`, 10},
+		{"0 <=> 1", -1},
+		{"1 <=> 1", 0},
+		{"2 <=> 1", 1},
 	}
 
 	for _, tt := range tests {

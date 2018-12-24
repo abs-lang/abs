@@ -357,6 +357,18 @@ func evalIntegerInfixExpression(
 		return nativeBoolToBooleanObject(leftVal <= rightVal)
 	case ">=":
 		return nativeBoolToBooleanObject(leftVal >= rightVal)
+	case "<=>":
+		i := &object.Integer{}
+
+		if leftVal == rightVal {
+			i.Value = 0
+		} else if leftVal > rightVal {
+			i.Value = 1
+		} else {
+			i.Value = -1
+		}
+
+		return i
 	case "==":
 		return nativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":

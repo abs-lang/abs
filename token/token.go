@@ -26,10 +26,11 @@ const (
 	AND = "&&"
 	OR  = "OR"
 
-	LT    = "<"
-	LT_EQ = "<="
-	GT    = ">"
-	GT_EQ = ">="
+	LT            = "<"
+	LT_EQ         = "<="
+	GT            = ">"
+	GT_EQ         = ">="
+	COMBINED_COMP = "<=>"
 
 	EQ     = "=="
 	NOT_EQ = "!="
