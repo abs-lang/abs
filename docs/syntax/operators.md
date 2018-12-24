@@ -46,11 +46,11 @@ Addition, can be used to merge arrays and combine strings as well:
 
 ## +=
 
-Compound sum:
+Compound addition:
 
 ``` bash
 a = 10
-a += 1 # 11
+a += 1 # a is now 11
 ```
 
 ## -
@@ -67,7 +67,7 @@ Compound subtraction:
 
 ``` bash
 a = 10
-a -= 1 # 9
+a -= 1 # a is now 9
 ```
 
 ## *
@@ -84,7 +84,7 @@ Compound multiplication:
 
 ``` bash
 a = 10
-a *= 10 # 100
+a *= 10 # a is now 100
 ```
 
 ## /
@@ -101,7 +101,7 @@ Compound division:
 
 ``` bash
 a = 10
-a /= 2 # 5
+a /= 2 # a is now 5
 ```
 
 ## **
@@ -119,7 +119,7 @@ Compound exponentiation:
 
 ``` bash
 a = 10
-a **= 0 # 1
+a **= 0 # a is now 1
 ```
 
 ## %
@@ -136,7 +136,7 @@ Compound modulo:
 
 ``` bash
 a = 19
-a %= 5 # 4
+a %= 5 # a is now 4
 ```
 
 ## >
