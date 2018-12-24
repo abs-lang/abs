@@ -131,6 +131,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		return applyMethod(o, node.Method.String(), args)
 
+	case *ast.PropertyExpression:
+		return evalPropertyExpression(node, env)
 	case *ast.ArrayLiteral:
 		elements := evalExpressions(node.Elements, env)
 		if len(elements) == 1 && isError(elements[0]) {
@@ -164,7 +166,6 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	var result object.Object
 	for _, statement := range program.Statements {
 		result = Eval(statement, env)
-
 		switch result := result.(type) {
 		case *object.ReturnValue:
 			return result.Value
@@ -580,6 +581,40 @@ func evalExpressions(
 	return result
 }
 
+// Property expression (x.y) evaluator.
+//
+// Here we have a special case, as strings
+// have an .ok property when they're the result
+// of a command.
+//
+// Else we will try to parse the property
+// as an index of an hash.
+//
+// If that doesn't work, we'll spectacularly
+// give up.
+func evalPropertyExpression(pe *ast.PropertyExpression, env *object.Environment) object.Object {
+	o := Eval(pe.Object, env)
+	if isError(o) {
+		return o
+	}
+
+	switch obj := o.(type) {
+	case *object.String:
+		// Special .ok property of commands
+		if pe.Property.String() == "ok" {
+			if obj.Ok != nil {
+				return obj.Ok
+			}
+
+			return FALSE
+		}
+	case *object.Hash:
+		return evalHashIndexExpression(obj, &object.String{Value: pe.Property.String()})
+	}
+
+	return newError("invalid property '%s' on type %s", pe.Property.String(), o.Type())
+}
+
 func applyFunction(fn object.Object, args []object.Object) object.Object {
 	switch fn := fn.(type) {
 
@@ -600,7 +635,7 @@ func applyMethod(o object.Object, method string, args []object.Object) object.Ob
 	f, ok := Fns[method]
 
 	if !ok {
-		return newError("method '%s()' does not exist", method, o.Type())
+		return newError("%s does not have method '%s()'", o.Type(), method)
 	}
 
 	if !util.Contains(f.Types, string(o.Type())) && len(f.Types) != 0 {

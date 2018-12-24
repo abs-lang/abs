@@ -80,18 +80,6 @@ Splits a string by newline:
 "first\nsecond".lines() # ["first", "second"]
 ```
 
-### ok()
-
-Used to check whether a command executed successfully (a
-command always returns a string, the output of the
-command itself). On "regular" strings it will default
-to `false`:
-
-``` bash
-"string".ok() # false
-"$(pwd)".ok() # true
-```
-
 ### json()
 
 Parses the string as JSON, returning an [hash](/types/hash):

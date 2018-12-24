@@ -1,7 +1,7 @@
 # Simple program that fetches your IP and sums it up
 ip = $(curl -s 'https://api.ipify.org?format=json')
 
-if ip.ok() {
+if ip.ok {
     total = ip.json()["ip"].split(".").map(int).sum()
 
     if total > 100 {

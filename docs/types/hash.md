@@ -12,8 +12,12 @@ cost:
 
 ``` bash
 h = {"key": "val"}
+h.key # "val"
 h["key"] # "val"
 ```
+
+Note that the `x.y` form is the preferred one, as it's more coincise
+and mimics other programming languages.
 
 Accessing an index that does not exist returns null.
 

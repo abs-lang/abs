@@ -431,6 +431,26 @@ func (ie *IndexExpression) String() string {
 	return out.String()
 }
 
+type PropertyExpression struct {
+	Token    token.Token // The . token
+	Object   Expression
+	Property Expression
+}
+
+func (pe *PropertyExpression) expressionNode()      {}
+func (pe *PropertyExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *PropertyExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(pe.Object.String())
+	out.WriteString(".")
+	out.WriteString(pe.Property.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
 type HashLiteral struct {
 	Token token.Token // the '{' token
 	Pairs map[Expression]Expression

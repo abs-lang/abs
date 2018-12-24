@@ -48,6 +48,7 @@ $(curl icanhazip.com -X POST)
 $(ls *.go);
 a = [1]
 a.first()
+a.prop
 # Comment
 // Comment
 hello
@@ -206,6 +207,9 @@ one | two | tree
 		{token.IDENT, "first"},
 		{token.LPAREN, "("},
 		{token.RPAREN, ")"},
+		{token.IDENT, "a"},
+		{token.DOT, "."},
+		{token.IDENT, "prop"},
 		{token.COMMENT, "# Comment"},
 		{token.COMMENT, "// Comment"},
 		{token.IDENT, "hello"},

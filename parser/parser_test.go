@@ -27,8 +27,7 @@ func TestAssignStatements(t *testing.T) {
 		checkParserErrors(t, p)
 
 		if len(program.Statements) != 1 {
-			t.Fatalf("program.Statements does not contain 1 statements. got=%d",
-				len(program.Statements))
+			t.Fatalf("program.Statements does not contain 1 statements. got=%d", len(program.Statements))
 		}
 
 		stmt := program.Statements[0]
@@ -1021,6 +1020,30 @@ func TestParsingIndexExpressions(t *testing.T) {
 	}
 
 	if !testInfixExpression(t, indexExp.Index, 1, "+", 1) {
+		return
+	}
+}
+
+func TestParsingProperty(t *testing.T) {
+	input := "var.prop"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	propExpr, ok := stmt.Expression.(*ast.PropertyExpression)
+
+	if !ok {
+		t.Fatalf("exp not *ast.PropertyExpression. got=%T", stmt.Expression)
+	}
+
+	if !testIdentifier(t, propExpr.Object, "var") {
+		return
+	}
+
+	if !testIdentifier(t, propExpr.Property, "prop") {
 		return
 	}
 }

@@ -109,18 +109,6 @@ Returns a new array with only the elements that returned
 ["hello", 0, 1, 2].filter(f(x){type(x) == "INTEGER"}) # [0, 1, 2]
 ```
 
-### ok()
-
-Used to check whether a command executed successfully (a
-command always returns a string, the output of the
-command itself). On "regular" strings it will default
-to `false`:
-
-``` bash
-"string".ok() # false
-"$(pwd)".ok() # true
-```
-
 ### json()
 
 Parses the string as JSON, returning an [hash](/types/hash):

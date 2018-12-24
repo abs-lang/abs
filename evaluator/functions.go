@@ -218,25 +218,6 @@ func getFns() map[string]*object.Builtin {
 				return &object.Array{Elements: elements}
 			},
 		},
-		// cmd = $(ls -la)
-		// cmd.ok()
-		"ok": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("ok", args, 1, [][]string{{object.STRING_OBJ}})
-				if err != nil {
-					return err
-				}
-
-				s := args[0].(*object.String)
-
-				if s.Ok != nil {
-					return s.Ok
-				}
-
-				return FALSE
-			},
-		},
 		// "{}".json()
 		//
 		// Converts a valid JSON document to an ABS hash.

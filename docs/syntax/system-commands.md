@@ -28,13 +28,13 @@ date = $(dat) # "bash: dat: command not found"
 
 It would be fairly painful to have to parse strings
 manually to understand if a command executed without errors;
-in ABS, the returned string has a special method `ok` that
+in ABS, the returned string has a special property `ok` that
 checks whether the command was successful:
 
 ``` bash
 ls = $(ls -la)
 
-if ls.ok() {
+if ls.ok {
     echo("hello world")
 }
 ```

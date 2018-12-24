@@ -26,7 +26,6 @@ Don't believe us? Try with these examples:
 ``` bash
 map(["1"], int) # [1]
 cmd = $(date)
-ok(cmd) # true
 len("abc") # 3
 ```
 

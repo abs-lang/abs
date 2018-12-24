@@ -40,7 +40,7 @@ platforms = [
 echo("Deleting previous builds...")
 rm = $(rm -rf builds/abs-*)
 
-if !rm.ok() {
+if !rm.ok {
     return echo("error: " + rm)
 }
 
@@ -57,7 +57,7 @@ for platform in platforms {
     echo("Building %s %s", goos, goarch)
     build = $(GOOS=$goos GOARCH=$goarch go build -o builds/$output_name main.go)
 
-    if !build.ok() {
+    if !build.ok {
         echo("error: " + build)
         exit(1)
     }

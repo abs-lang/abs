@@ -101,7 +101,7 @@ func TestBangOperator(t *testing.T) {
 	}{
 		{"!true", false},
 		{"!false", true},
-		{`a = "hello"; !a.ok()`, true},
+		{`a = "hello"; !a.ok`, true},
 		{"!5", false},
 		{"!!true", true},
 		{"!!false", false},
@@ -796,17 +796,18 @@ func TestRangesOperators(t *testing.T) {
 	}
 }
 
-func TestBuiltinMethods(t *testing.T) {
+func TestBuiltinProperties(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected interface{}
 	}{
-		{`"a.b.c".split(".")`, []string{"a", "b", "c"}},
-		{`"1.2.3".split(".").map(len)`, []int{1, 1, 1}},
-		{`[1,2,3].map(f(x) { x + 1})`, []int{2, 3, 4}},
-		{`[1,2,3] | map(f(x) { x + 1})`, []int{2, 3, 4}},
-		{`"ok".ok()`, false},
-		{`"ok" | ok()`, false},
+		{`"a".ok`, false},
+		{`"a".inv`, "invalid property 'inv' on type STRING"},
+		{"a = $(date);\na.ok", true},
+		{`{}.a`, nil},
+		{`{"a": 1}.a`, 1},
+		{`{1: 1}.1`, "unusable as hash key: INTEGER"},
+		{`[].a`, "invalid property 'a' on type ARRAY"},
 	}
 
 	for _, tt := range tests {
@@ -1025,6 +1026,10 @@ func TestHashIndexExpressions(t *testing.T) {
 			5,
 		},
 		{
+			`{"foo": 5}.foo`,
+			5,
+		},
+		{
 			`{"foo": 5}["bar"]`,
 			nil,
 		},
@@ -1034,6 +1039,10 @@ func TestHashIndexExpressions(t *testing.T) {
 		},
 		{
 			`{}["foo"]`,
+			nil,
+		},
+		{
+			`{}.foo`,
 			nil,
 		},
 	}

@@ -21,7 +21,7 @@ const (
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
 	INDEX       // array[index]
-	DOT         // some.function() or some | function()
+	DOT         // some.function() or some | function() or some.property
 )
 
 var precedences = map[token.TokenType]int{
@@ -88,7 +88,7 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
-	p.registerInfix(token.DOT, p.parseMethodExpression)
+	p.registerInfix(token.DOT, p.parseDottedExpression)
 	p.registerInfix(token.PIPE, p.parseMethodExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
 	p.registerInfix(token.SLASH, p.parseInfixExpression)
@@ -322,6 +322,39 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression.Right = p.parseExpression(precedence)
 
 	return expression
+}
+
+// some.function() or some.property
+func (p *Parser) parseDottedExpression(object ast.Expression) ast.Expression {
+	t := p.curToken
+	precedence := p.curPrecedence()
+	p.nextToken()
+
+	// Here we try to figure out if
+	// we're in front of a method or
+	// a property accessor.
+	//
+	// If the token after the identifier
+	// is a (, then we're expecting this
+	// to me a method (x.f()), else we'll
+	// assume it's a property (x.p).
+	if p.peekTokenIs(token.LPAREN) {
+		exp := &ast.MethodExpression{Token: t, Object: object}
+		exp.Method = p.parseExpression(precedence)
+		p.nextToken()
+		exp.Arguments = p.parseExpressionList(token.RPAREN)
+
+		return exp
+	} else {
+		exp := &ast.PropertyExpression{Token: t, Object: object}
+
+		if !p.curTokenIs(token.IDENT) {
+			p.errors = append(p.errors, fmt.Sprintf("property needs to be an identifier, got '%s'", p.curToken.Literal))
+		}
+
+		exp.Property = p.parseIdentifier()
+		return exp
+	}
 }
 
 // some.function()

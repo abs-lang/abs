@@ -57,7 +57,7 @@ one of last year's NBA games:
 ``` bash
 res = $(curl "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json" -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, sdch' -H 'Accept-Language: en' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36' -H 'Accept: */*' -H 'Referer: http://stats.nba.com/' -H 'Connection: keep-alive' --compressed);
 
-if !res.ok() {
+if !res.ok {
     echo("Could not fetch game data. Bummer!")
     exit(1)
 }

@@ -117,11 +117,11 @@ func (f *Function) Inspect() string {
 //
 // cmd = $(ls -la)
 // type(cmd) // STRING
-// cmd.ok() // TRUE
+// cmd.ok // TRUE
 //
 // cmd = $(curlzzzzz)
 // type(cmd) // STRING
-// cmd.ok() // FALSE
+// cmd.ok // FALSE
 type String struct {
 	Value string
 	Ok    *Boolean // A special property to check whether a command exited correctly
