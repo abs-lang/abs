@@ -104,6 +104,17 @@ Lower or equal than:
 1 <= 2 # true
 ```
 
+## <=>
+
+The combined comparison operator allows to test whether a number
+is lower, equal or higher than another one with one statement:
+
+``` bash
+5 <=> 5 # 0
+5 <=> 6 # -1
+6 <=> 5 # 1
+```
+
 ## &&
 
 Logical AND, which supports [short-circuiting](https://en.wikipedia.org/wiki/Short-circuit_evaluation):
