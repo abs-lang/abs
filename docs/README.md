@@ -74,7 +74,7 @@ $ abs script.abs
 You can also install ABS with the 1-command installer:
 
 ``` bash
-curl https://www.abs-lang.org/installer.sh | sh
+sh <(curl https://www.abs-lang.org/installer.sh)
 ```
 
 ## Table of contents

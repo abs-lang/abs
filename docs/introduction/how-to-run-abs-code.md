@@ -10,6 +10,13 @@ In order to run programs written in abs, you can simply download
 the latest release of ABS from Github, and dump the ABS executable
 in your `PATH`.
 
+We provide a 1-command installer that should work across
+platforms:
+
+``` bash
+sh <(curl https://www.abs-lang.org/installer.sh)
+```
+
 Afterwards, you can run ABS scripts with:
 
 ``` bash

@@ -8,7 +8,7 @@ elif [ "$OSTYPE" = "win32" ]; then
         OS="windows"
 elif [ "$OSTYPE" = "msys" ]; then
         OS="windows"
-elif [ "$OSTYPE" = "freebsd"* ]; then
+elif [ "$OSTYPE" = "freebsd" ]; then
         OS="freebds"
 fi
 
@@ -32,10 +32,7 @@ while read line
 do
   INPUT=$(echo $line | awk '{print toupper($0)}')
   if [ $INPUT = "Y" ]; then
-    break;
-  fi
-  if [ $INPUT = "YES" ]; then
-    break;
+    break
   fi
   echo Exited
   exit 1
