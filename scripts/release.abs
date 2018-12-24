@@ -46,7 +46,7 @@ if !rm.ok {
 
 for platform in platforms {
     [goos, goarch] = platform.split("/")
-    output_name = "abs-preview-0-" + goos + "-" + goarch
+    output_name = "abs-preview-1-" + goos + "-" + goarch
 
     if (goos == "windows") {
         output_name = output_name + ".exe"

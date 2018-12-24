@@ -42,7 +42,7 @@ development, and `make test` will run all tests.
 
 ## Roadmap
 
-We're currently working on the [preview-1 milestone](https://github.com/abs-lang/abs/milestone/1).
+We're currently working on the [preview-2 milestone](https://github.com/abs-lang/abs/milestone/3).
 
 ## Next
 

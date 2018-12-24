@@ -39,9 +39,9 @@ do
 done < "/dev/stdin"
 
 INSTALLER_PATH=$(dirname $(mktemp -u))
-BIN=abs-preview-0-$OS-amd64
+BIN=abs-preview-1-$OS-amd64
 cd $INSTALLER_PATH && \
-wget https://github.com/abs-lang/abs/releases/download/preview-0/$BIN && \
+wget https://github.com/abs-lang/abs/releases/download/preview-1/$BIN && \
 chmod +x $BIN && \
 mv $BIN /usr/local/bin/abs && \
 echo "installation completed"
