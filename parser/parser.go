@@ -43,6 +43,12 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK:      PRODUCT,
 	token.EXPONENT:      PRODUCT,
 	token.MODULO:        PRODUCT,
+	token.COMP_PLUS:     SUM,
+	token.COMP_MINUS:    SUM,
+	token.COMP_SLASH:    PRODUCT,
+	token.COMP_ASTERISK: PRODUCT,
+	token.COMP_EXPONENT: PRODUCT,
+	token.COMP_MODULO:   PRODUCT,
 	token.RANGE:         RANGE,
 	token.LPAREN:        CALL,
 	token.LBRACKET:      INDEX,
@@ -91,13 +97,20 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.COMMENT, p.parseComment)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
-	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.DOT, p.parseDottedExpression)
 	p.registerInfix(token.PIPE, p.parseMethodExpression)
+	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
 	p.registerInfix(token.SLASH, p.parseInfixExpression)
 	p.registerInfix(token.EXPONENT, p.parseInfixExpression)
+	p.registerInfix(token.MODULO, p.parseInfixExpression)
 	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfix(token.COMP_PLUS, p.parseCompoundAssignment)
+	p.registerInfix(token.COMP_MINUS, p.parseCompoundAssignment)
+	p.registerInfix(token.COMP_SLASH, p.parseCompoundAssignment)
+	p.registerInfix(token.COMP_EXPONENT, p.parseCompoundAssignment)
+	p.registerInfix(token.COMP_MODULO, p.parseCompoundAssignment)
+	p.registerInfix(token.COMP_ASTERISK, p.parseCompoundAssignment)
 	p.registerInfix(token.EQ, p.parseInfixExpression)
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.TILDE, p.parseInfixExpression)
@@ -110,7 +123,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.AND, p.parseInfixExpression)
 	p.registerInfix(token.OR, p.parseInfixExpression)
 	p.registerInfix(token.RANGE, p.parseInfixExpression)
-	p.registerInfix(token.MODULO, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 
@@ -357,6 +369,21 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 // x * x
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression := &ast.InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+
+	precedence := p.curPrecedence()
+	p.nextToken()
+	expression.Right = p.parseExpression(precedence)
+
+	return expression
+}
+
+// x += x
+func (p *Parser) parseCompoundAssignment(left ast.Expression) ast.Expression {
+	expression := &ast.CompoundAssignment{
 		Token:    p.curToken,
 		Operator: p.curToken.Literal,
 		Left:     left,

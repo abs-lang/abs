@@ -85,6 +85,19 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		return evalInfixExpression(node.Operator, left, right)
 
+	case *ast.CompoundAssignment:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+
+		right := Eval(node.Right, env)
+		if isError(right) {
+			return right
+		}
+
+		expr := evalInfixExpression(node.Operator[:len(node.Operator)-1], left, right)
+		env.Set(node.Left.String(), expr)
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 
@@ -276,6 +289,9 @@ func evalInfixExpression(
 		}
 
 		return right
+	case operator == "+=":
+		fmt.Printf("%s %s %s", operator, left, right)
+		return nil
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:

@@ -39,11 +39,29 @@ func (l *Lexer) NextToken() token.Token {
 			tok = newToken(token.ASSIGN, l.ch)
 		}
 	case '+':
-		tok = newToken(token.PLUS, l.ch)
+		if l.peekChar() == '=' {
+			tok.Type = token.COMP_PLUS
+			tok.Literal = "+="
+			l.readChar()
+		} else {
+			tok = newToken(token.PLUS, l.ch)
+		}
 	case '-':
-		tok = newToken(token.MINUS, l.ch)
+		if l.peekChar() == '=' {
+			tok.Type = token.COMP_MINUS
+			tok.Literal = "-="
+			l.readChar()
+		} else {
+			tok = newToken(token.MINUS, l.ch)
+		}
 	case '%':
-		tok = newToken(token.MODULO, l.ch)
+		if l.peekChar() == '=' {
+			tok.Type = token.COMP_MODULO
+			tok.Literal = "%="
+			l.readChar()
+		} else {
+			tok = newToken(token.MODULO, l.ch)
+		}
 	case '!':
 		if l.peekChar() == '=' {
 			ch := l.ch
@@ -57,6 +75,10 @@ func (l *Lexer) NextToken() token.Token {
 		if l.peekChar() == '/' {
 			tok.Type = token.COMMENT
 			tok.Literal = l.readComment()
+		} else if l.peekChar() == '=' {
+			tok.Type = token.COMP_SLASH
+			tok.Literal = "/="
+			l.readChar()
 		} else {
 			tok = newToken(token.SLASH, l.ch)
 		}
@@ -72,8 +94,18 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '*':
 		if l.peekChar() == '*' {
-			tok.Type = token.EXPONENT
-			tok.Literal = "**"
+			l.readChar()
+			if l.peekChar() == '=' {
+				tok.Type = token.COMP_EXPONENT
+				tok.Literal = "**="
+				l.readChar()
+			} else {
+				tok.Type = token.EXPONENT
+				tok.Literal = "**"
+			}
+		} else if l.peekChar() == '=' {
+			tok.Type = token.COMP_ASTERISK
+			tok.Literal = "*="
 			l.readChar()
 		} else {
 			tok = newToken(token.ASTERISK, l.ch)

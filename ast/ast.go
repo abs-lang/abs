@@ -197,6 +197,27 @@ func (ie *InfixExpression) String() string {
 	return out.String()
 }
 
+type CompoundAssignment struct {
+	Token    token.Token // The operator token, e.g. +
+	Left     Expression
+	Operator string
+	Right    Expression
+}
+
+func (ca *CompoundAssignment) expressionNode()      {}
+func (ca *CompoundAssignment) TokenLiteral() string { return ca.Token.Literal }
+func (ca *CompoundAssignment) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ca.Left.String())
+	out.WriteString(" " + ca.Operator + " ")
+	out.WriteString(ca.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
 type MethodExpression struct {
 	Token     token.Token // The operator token, e.g. .
 	Object    Expression

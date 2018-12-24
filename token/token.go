@@ -13,16 +13,22 @@ const (
 	COMMENT = "#"      // # Comment
 
 	// Operators
-	TILDE    = "~"
-	ASSIGN   = "="
-	PLUS     = "+"
-	MINUS    = "-"
-	BANG     = "!"
-	ASTERISK = "*"
-	SLASH    = "/"
-	EXPONENT = "**"
-	MODULO   = "%"
-	RANGE    = ".."
+	TILDE         = "~"
+	BANG          = "!"
+	ASSIGN        = "="
+	PLUS          = "+"
+	MINUS         = "-"
+	ASTERISK      = "*"
+	SLASH         = "/"
+	EXPONENT      = "**"
+	MODULO        = "%"
+	COMP_PLUS     = "+="
+	COMP_MINUS    = "-="
+	COMP_ASTERISK = "*="
+	COMP_SLASH    = "/="
+	COMP_EXPONENT = "**="
+	COMP_MODULO   = "%="
+	RANGE         = ".."
 
 	AND = "&&"
 	OR  = "OR"
@@ -52,7 +58,7 @@ const (
 	COMMAND  = "$()"
 
 	// Keywords
-	FUNCTION = "FUNCTION"
+	FUNCTION = ""
 	TRUE     = "TRUE"
 	FALSE    = "FALSE"
 	IF       = "IF"

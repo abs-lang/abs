@@ -60,6 +60,12 @@ one | two | tree
 **
 1..10
 ~%
++=
+-=
+*=
+/=
+**=
+%=
 `
 
 	tests := []struct {
@@ -155,7 +161,6 @@ one | two | tree
 		{token.LBRACE, "{"},
 		{token.IDENT, "x"},
 		{token.RBRACE, "}"},
-
 		{token.FOR, "for"},
 		{token.IDENT, "x"},
 		{token.ASSIGN, "="},
@@ -173,7 +178,6 @@ one | two | tree
 		{token.LBRACE, "{"},
 		{token.IDENT, "x"},
 		{token.RBRACE, "}"},
-
 		{token.INT, "10"},
 		{token.EQ, "=="},
 		{token.INT, "10"},
@@ -235,6 +239,12 @@ one | two | tree
 		{token.INT, "10"},
 		{token.TILDE, "~"},
 		{token.MODULO, "%"},
+		{token.COMP_PLUS, "+="},
+		{token.COMP_MINUS, "-="},
+		{token.COMP_ASTERISK, "*="},
+		{token.COMP_SLASH, "/="},
+		{token.COMP_EXPONENT, "**="},
+		{token.COMP_MODULO, "%="},
 		{token.EOF, ""},
 	}
 

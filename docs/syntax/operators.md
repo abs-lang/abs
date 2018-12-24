@@ -44,12 +44,30 @@ Addition, can be used to merge arrays and combine strings as well:
 [1] + [2] # [1, 2]
 ```
 
+## +=
+
+Compound sum:
+
+``` bash
+a = 10
+a += 1 # 11
+```
+
 ## -
 
 Subtraction:
 
 ``` bash
 0 - 1 # -1
+```
+
+## -=
+
+Compound subtraction:
+
+``` bash
+a = 10
+a -= 1 # 9
 ```
 
 ## *
@@ -60,12 +78,65 @@ Multiplication:
 1 * 2 # 2
 ```
 
+## *=
+
+Compound multiplication:
+
+``` bash
+a = 10
+a *= 10 # 100
+```
+
 ## /
 
 Division:
 
 ``` bash
 5 / 5 # 1
+```
+
+## /=
+
+Compound division:
+
+``` bash
+a = 10
+a /= 2 # 5
+```
+
+## **
+
+Mathematical exponentiation:
+
+``` bash
+2 ** 2 # 4
+2 ** 0 # 1
+```
+
+## **=
+
+Compound exponentiation:
+
+``` bash
+a = 10
+a **= 0 # 1
+```
+
+## %
+
+Modulo:
+
+``` bash
+19 % 5 # 4
+```
+
+## %=
+
+Compound modulo:
+
+``` bash
+a = 19
+a %= 5 # 4
 ```
 
 ## >
@@ -148,15 +219,6 @@ Range operator, which creates an array from start to end:
 
 ``` bash
 1..10 # [1, 2, 3, 4, 5, 6, 7, 8, 9]
-```
-
-## **
-
-Mathematical exponentiation:
-
-``` bash
-2 ** 2 # 4
-2 ** 0 # 1
 ```
 
 ## ~

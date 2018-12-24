@@ -40,6 +40,12 @@ func TestEvalIntegerExpression(t *testing.T) {
 		{"2 <=> 1", 1},
 		{"2 % 1", 0},
 		{"3 % 2", 1},
+		{"a = 5; a += 1; a", 6},
+		{"a = 5; a -= 1; a", 4},
+		{"a = 10; a /= 2; a", 5},
+		{"a = 5; a *= 2; a", 10},
+		{"a = 5; a **= 2; a", 25},
+		{"a = 5; a %= 3; a", 2},
 	}
 
 	for _, tt := range tests {
