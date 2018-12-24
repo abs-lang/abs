@@ -257,6 +257,24 @@ func getFns() map[string]*object.Builtin {
 				return newError("argument to `json` must be a valid JSON object, got '%s'", s.Value)
 			},
 		},
+		// "a %s".fmt(b)
+		"fmt": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				// err := validateArgs("fmt", args, 1, [][]string{{object.STRING_OBJ}})
+				// if err != nil {
+				// return err
+				// }
+
+				list := []interface{}{}
+
+				for _, s := range args[1:] {
+					list = append(list, s.Inspect())
+				}
+
+				return &object.String{Value: fmt.Sprintf(args[0].(*object.String).Value, list...)}
+			},
+		},
 		// sum(array:[1, 2, 3])
 		"sum": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},

@@ -56,15 +56,23 @@ Returns the length of a string:
 "hello world".len() # 11
 ```
 
+### fmt()
+
+Formats a string ([sprintf convention](https://linux.die.net/man/3/sprintf)):
+
+``` bash
+"hello %s".fmt("world") # "hello world"
+```
+
 ### int()
 
 Converts a string to integer, if possible:
 
 ``` bash
-"99".len() # 99
+"99".int() # 99
 ```
 
-### int(separator)
+### split(separator)
 
 Splits a string by separator:
 
