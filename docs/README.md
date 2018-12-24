@@ -71,6 +71,12 @@ Wondering how you can run this code? Simply grab the latest
 $ abs script.abs
 ```
 
+You can also install ABS with the 1-command installer:
+
+``` bash
+curl https://www.abs-lang.org/installer.sh | sh
+```
+
 ## Table of contents
 
 ## Introduction

@@ -1,22 +1,20 @@
-#!/usr/bin/env bash
-# Let's grab the latest release
 OS="linux"
 
-if [[ "$OSTYPE" == "darwin" ]]; then
+if [ "$OSTYPE" = "darwin" ]; then
         OS="darwin"
-elif [[ "$OSTYPE" == "cygwin"* ]]; then
+elif [ "$OSTYPE" = "cygwin"* ]; then
         OS="windows"
-elif [[ "$OSTYPE" == "win32" ]]; then
+elif [ "$OSTYPE" = "win32" ]; then
         OS="windows"
-elif [[ "$OSTYPE" == "msys" ]]; then
+elif [ "$OSTYPE" = "msys" ]; then
         OS="windows"
-elif [[ "$OSTYPE" == "freebsd"* ]]; then
+elif [ "$OSTYPE" = "freebsd"* ]; then
         OS="freebds"
 fi
 
 ARCH="386"
 MACHINE_TYPE=`uname -m`
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+if [ ${MACHINE_TYPE} = 'x86_64' ]; then
   ARCH="amd64"
 fi
 
@@ -33,10 +31,10 @@ echo "Are these correct? [y/N]"
 while read line
 do
   INPUT=$(echo $line | awk '{print toupper($0)}')
-  if [[ $INPUT == "Y" ]]; then
+  if [ $INPUT = "Y" ]; then
     break;
   fi
-  if [[ $INPUT == "YES" ]]; then
+  if [ $INPUT = "YES" ]; then
     break;
   fi
   echo Exited
