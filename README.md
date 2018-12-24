@@ -18,7 +18,7 @@ such as Python, or Ruby, to the convenience of Bash.
 
 ``` bash
 # Let's try to see if a particular domain is in our hostfile
-matches = $(cat /etc/hosts | grep domain.com | wc -l | tr -d "\n")
+matches = $(cat /etc/hosts | grep domain.com | wc -l)
 
 if matches.int() > 0 {
   echo("We got ya!")

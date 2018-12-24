@@ -16,7 +16,7 @@ such as Python, or Ruby, to the convenience of Bash.
 
 ``` bash
 # Let's try to see if a particular domain is in our hostfile
-matches = $(cat /etc/hosts | grep domain.com | wc -l | tr -d "\n")
+matches = $(cat /etc/hosts | grep domain.com | wc -l)
 
 if matches.int() > 0 {
   echo("We got ya!")
@@ -24,25 +24,8 @@ if matches.int() > 0 {
 ```
 
 Let's try to fetch our IP address and print the sum of its
-parts, if its higher than 100. Here's how you would do it
-in ABS:
-
-``` bash
-# Simple program that fetches your IP and sums it up
-res = $(curl -s 'https://api.ipify.org?format=json');
-
-if !res.ok {
-  echo("An error occurred: %s", res)
-  exit(1)
-}
-
-total = ip.json().split(".").map(int).sum()
-if total > 100 {
-    echo("The sum of [%s] is a large number, %s.", ip, total)
-}
-```
-
-And here's how you could write the same code in ABS:
+parts, if its higher than 100. Here's how you could do it
+in Bash:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
@@ -64,7 +47,24 @@ if [ $total -gt 100 ]; then
 fi
 ```
 
-Wondering how you can run ABS code? Simply grab the latest
+And here's how you could write the same code in ABS:
+
+``` bash
+# Simple program that fetches your IP and sums it up
+res = $(curl -s 'https://api.ipify.org?format=json');
+
+if !res.ok {
+  echo("An error occurred: %s", res)
+  exit(1)
+}
+
+total = ip.json().split(".").map(int).sum()
+if total > 100 {
+    echo("The sum of [%s] is a large number, %s.", ip, total)
+}
+```
+
+Wondering how you can run this code? Simply grab the latest
 [release](https://github.com/abs-lang/abs/releases) and run:
 
 ```

@@ -811,5 +811,5 @@ func evalCommandExpression(cmd string, env *object.Environment) object.Object {
 		return &object.String{Value: stderr.String(), Ok: FALSE}
 	}
 
-	return &object.String{Value: out.String(), Ok: TRUE}
+	return &object.String{Value: strings.Trim(out.String(), "\n"), Ok: TRUE}
 }
