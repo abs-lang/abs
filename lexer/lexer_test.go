@@ -17,6 +17,7 @@ add = f(x, y) {
 result = add(five, ten);
 &&||!-/*5;
 5 < 10 > 5;
+1 <= 1 >= 1;
 
 if (5 < 10) {
 	return true;
@@ -117,6 +118,12 @@ one | two | tree
 		{token.INT, "10"},
 		{token.GT, ">"},
 		{token.INT, "5"},
+		{token.SEMICOLON, ";"},
+		{token.INT, "1"},
+		{token.LT_EQ, "<="},
+		{token.INT, "1"},
+		{token.GT_EQ, ">="},
+		{token.INT, "1"},
 		{token.SEMICOLON, ";"},
 		{token.IF, "if"},
 		{token.LPAREN, "("},

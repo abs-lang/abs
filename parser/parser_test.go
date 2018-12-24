@@ -197,7 +197,9 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"5 * 5;", 5, "*", 5},
 		{"5 / 5;", 5, "/", 5},
 		{"5 > 5;", 5, ">", 5},
+		{"5 >= 5;", 5, ">=", 5},
 		{"5 < 5;", 5, "<", 5},
+		{"5 <= 5;", 5, "<=", 5},
 		{"5 == 5;", 5, "==", 5},
 		{"5 ~ 5;", 5, "~", 5},
 		{"5 != 5;", 5, "!=", 5},
@@ -502,14 +504,12 @@ func TestIfElseExpression(t *testing.T) {
 	}
 
 	if len(exp.Alternative.Statements) != 1 {
-		t.Errorf("exp.Alternative.Statements does not contain 1 statements. got=%d\n",
-			len(exp.Alternative.Statements))
+		t.Errorf("exp.Alternative.Statements does not contain 1 statements. got=%d\n", len(exp.Alternative.Statements))
 	}
 
 	alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
-			exp.Alternative.Statements[0])
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Alternative.Statements[0])
 	}
 
 	if !testIdentifier(t, alternative.Expression, "y") {

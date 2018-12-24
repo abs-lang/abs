@@ -77,6 +77,15 @@ Greater than:
 0 > 10 # false
 ```
 
+## >=
+
+Greater or equal than:
+
+``` bash
+1 >= 1 # true
+2 >= 1 # true
+```
+
 ## <
 
 Lower than:
@@ -84,6 +93,15 @@ Lower than:
 ``` bash
 10 < 0 # false
 0 < 10 # true
+```
+
+## <=
+
+Lower or equal than:
+
+``` bash
+1 <= 1 # true
+1 <= 2 # true
 ```
 
 ## &&
