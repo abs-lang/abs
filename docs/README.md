@@ -77,5 +77,6 @@ $ abs script.abs
 
 ## Miscellaneous
 
+* [Errors](/misc/error)
 * [A few technical details...](/misc/technical-details)
 * [Credits](/misc/credits)

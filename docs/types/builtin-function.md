@@ -96,4 +96,4 @@ type({}) # "HASH"
 
 That's about it for this section!
 
-You can now head over to read a little bit about [the technical details behind ABS](/misc/technical-details).
+You can now head over to read a little bit about [errors](/misc/error).

@@ -88,14 +88,14 @@ func executor(line string) {
 		return
 	}
 
-	Run(line, true, true)
+	Run(line, true)
 }
 
 // Core of the REPL.
 //
 // This function takes code and evaluates
 // it, spitting out the result.
-func Run(code string, printEvaluated bool, addNewline bool) {
+func Run(code string, interactive bool) {
 	l := lexer.New(code)
 	p := parser.New(l)
 
@@ -106,11 +106,23 @@ func Run(code string, printEvaluated bool, addNewline bool) {
 	}
 
 	evaluated := evaluator.Eval(program, env)
-	if evaluated != nil && (printEvaluated || evaluated.Type() == object.ERROR_OBJ) {
-		fmt.Printf("%s", evaluated.Inspect())
 
-		if addNewline {
-			fmt.Printf("%s", "\n")
+	if evaluated != nil {
+		isError := evaluated.Type() == object.ERROR_OBJ
+
+		if isError {
+			fmt.Printf("%s", evaluated.Inspect())
+			fmt.Println("")
+
+			if !interactive {
+				os.Exit(99)
+			}
+			return
+		}
+
+		if interactive {
+			fmt.Printf("%s", evaluated.Inspect())
+			fmt.Println("")
 		}
 	}
 }

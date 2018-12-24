@@ -1,0 +1,2 @@
+1 + "hello"
+echo("should not reach here")

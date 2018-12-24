@@ -14,6 +14,21 @@ ABS is extremely different from Monkey, the "fictional" language the reader
 builds throughout the book, but the base structure (lexer, parser, evaluator)
 are still very much based on Thorsten's work.
 
+## Why Go?
+
+There are multiple rasons Go's the ideal choice for ABS, in no
+particular order:
+
+* portability, as our goal is to be able to deliver ABS to
+multiple platforms without any hassle
+* performance, as ABS' itself is not big on performance: having the
+interpreter based on a fast platform allows us to recover
+something back
+* "strict" language, suitable for the purpose of making sure
+syntax / parser errors are easily caught
+* rich standard library, which allows to ship most of the ABS'
+interpreter without relying on many external dependencies
+
 ## Development & contributing
 
 The best way to start developing *for* ABS is to clone the repository
