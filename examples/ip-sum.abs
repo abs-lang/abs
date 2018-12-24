@@ -1,10 +1,11 @@
-# Simple program that fetches your IP and sums it up
-ip = $(curl -s 'https://api.ipify.org?format=json')
+res = $(curl -s 'https://api.ipify.org?format=json');
 
-if ip.ok {
-    total = ip.json()["ip"].split(".").map(int).sum()
+if !res.ok {
+  echo("An error occurred: %s", res)
+}
 
-    if total > 100 {
-        echo("The sum of [%s] is %s.", ip, total)
-    }
+ip = res.json().ip
+total = ip.split(".").map(int).sum()
+if total > 100 {
+    echo("The sum of [%s] is a large number, %s.", ip, total)
 }
