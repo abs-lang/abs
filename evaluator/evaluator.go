@@ -49,11 +49,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.ReturnValue{Value: val}
 
 	case *ast.AssignStatement:
-		val := Eval(node.Value, env)
-		if isError(val) {
-			return val
+		err := evalAssignment(node, env)
+
+		if isError(err) {
+			return err
 		}
-		env.Set(node.Name.Value, val)
 
 	// Expressions
 	case *ast.IntegerLiteral:
@@ -195,6 +195,39 @@ func evalBlockStatement(
 	}
 
 	return result
+}
+
+func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Object {
+	val := Eval(as.Value, env)
+	if isError(val) {
+		return val
+	}
+
+	// regular assignment x = 0
+	if as.Name != nil {
+		env.Set(as.Name.Value, val)
+	}
+
+	// destructuring [x] = [1]
+	if len(as.Names) > 0 {
+		if val.Type() != object.ARRAY_OBJ {
+			return newError("wrong assignment, expected identifier or array destructuring, got %s (%s)", val.Type(), val.Inspect())
+		}
+
+		elements := val.(*object.Array).Elements
+
+		for i, name := range as.Names {
+			if i < len(elements) {
+				env.Set(name.String(), elements[i])
+				continue
+			}
+
+			env.Set(name.String(), NULL)
+		}
+
+	}
+
+	return nil
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {

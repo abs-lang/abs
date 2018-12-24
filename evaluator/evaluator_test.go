@@ -370,16 +370,33 @@ x
 func TestAssignStatements(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected interface{}
 	}{
 		{"a = 5; a;", 5},
 		{"a = 5 * 5; a;", 25},
 		{"a = 5; b = a; b;", 5},
 		{"a = 5; b = a; c = a + b + 5; c;", 15},
+		{"[a] = [10]; a;", 10},
+		{"[a] = 10; a;", "wrong assignment, expected identifier or array destructuring, got INTEGER (10)"},
+		{"[a, b, c] = [1]; a;", 1},
+		{"[a, b, c] = [1]; b;", nil},
 	}
 
 	for _, tt := range tests {
-		testIntegerObject(t, testEval(tt.input), tt.expected)
+		evaluated := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case int:
+			testIntegerObject(t, testEval(tt.input), int64(expected))
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
+				continue
+			}
+			if errObj.Message != expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
+			}
+		}
 	}
 }
 

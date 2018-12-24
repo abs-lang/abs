@@ -18,6 +18,7 @@ func TestAssignStatements(t *testing.T) {
 		{"x = 5;", "x", 5},
 		{"y = true;", "y", true},
 		{"foobar = y;", "foobar", "y"},
+		{"[x, y] = [1, 2];", "", nil},
 	}
 
 	for _, tt := range tests {
@@ -31,13 +32,21 @@ func TestAssignStatements(t *testing.T) {
 		}
 
 		stmt := program.Statements[0]
-		if !testAssignStatement(t, stmt, tt.expectedIdentifier) {
-			return
-		}
 
-		val := stmt.(*ast.AssignStatement).Value
-		if !testLiteralExpression(t, val, tt.expectedValue) {
-			return
+		switch tt.expectedValue.(type) {
+		case string:
+			if !testAssignStatement(t, stmt, tt.expectedIdentifier) {
+				continue
+			}
+
+			val := stmt.(*ast.AssignStatement).Value
+			if !testLiteralExpression(t, val, tt.expectedValue) {
+				continue
+			}
+		case nil:
+			if len(stmt.(*ast.AssignStatement).Names) == 0 {
+				t.Fatalf("stmt.Names does not have any value")
+			}
 		}
 	}
 }
@@ -1228,20 +1237,20 @@ func testAssignStatement(t *testing.T, s ast.Statement, name string) bool {
 		return false
 	}
 
-	letStmt, ok := s.(*ast.AssignStatement)
+	stmt, ok := s.(*ast.AssignStatement)
 	if !ok {
 		t.Errorf("s not *ast.AssignStatement. got=%T", s)
 		return false
 	}
 
-	if letStmt.Name.Value != name {
-		t.Errorf("letStmt.Name.Value not '%s'. got=%s", name, letStmt.Name.Value)
+	if stmt.Name.Value != name {
+		t.Errorf("stmt.Name.Value not '%s'. got=%s", name, stmt.Name.Value)
 		return false
 	}
 
-	if letStmt.Name.TokenLiteral() != name {
-		t.Errorf("letStmt.Name.TokenLiteral() not '%s'. got=%s",
-			name, letStmt.Name.TokenLiteral())
+	if stmt.Name.TokenLiteral() != name {
+		t.Errorf("stmt.Name.TokenLiteral() not '%s'. got=%s",
+			name, stmt.Name.TokenLiteral())
 		return false
 	}
 

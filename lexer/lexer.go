@@ -19,6 +19,10 @@ func New(input string) *Lexer {
 	return l
 }
 
+func (l *Lexer) CurrentPosition() int {
+	return l.position
+}
+
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
@@ -164,6 +168,16 @@ func (l *Lexer) readChar() {
 	}
 	l.position = l.readPosition
 	l.readPosition += 1
+}
+
+func (l *Lexer) Rewind(pos int) {
+	l.ch = l.input[0]
+	l.position = 0
+	l.readPosition = l.position + 1
+
+	for l.position < pos {
+		l.NextToken()
+	}
 }
 
 func (l *Lexer) peekChar() byte {

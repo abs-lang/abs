@@ -174,21 +174,58 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseReturnStatement()
 	}
 
-	if statement := p.parseAssignStatement(); statement != nil {
+	statement := p.parseAssignStatement()
+	if statement != nil {
 		return statement
 	}
 
 	return p.parseExpressionStatement()
 }
 
-// x = y
-func (p *Parser) parseAssignStatement() *ast.AssignStatement {
-	stmt := &ast.AssignStatement{}
-	if !p.curTokenIs(token.IDENT) {
-		return nil
-	}
+// Rewinds the parser. This method
+// is fairly inefficient as it starts
+// from scratch.
+//
+// In the context of scripting, though,
+// it won't cause a crazy delay as we're
+// not parsing a book.
+func (p *Parser) Rewind(pos int) {
+	p.l.Rewind(0)
 
-	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	for p.l.CurrentPosition() < pos {
+		p.nextToken()
+	}
+}
+
+// x = y
+// [x] = [y]
+func (p *Parser) parseAssignStatement() ast.Statement {
+	stmt := &ast.AssignStatement{}
+
+	// Is this a regular x = y assignment?
+	if !p.curTokenIs(token.IDENT) {
+		lexerPosition := p.l.CurrentPosition()
+		// Let's figure out if we are destructuring [x] = [y]
+		if !p.curTokenIs(token.LBRACKET) {
+			return nil
+		}
+
+		arr := p.ParseArrayLiteral()
+
+		if arr != nil && len(arr.(*ast.ArrayLiteral).Elements) == 0 {
+			p.Rewind(lexerPosition)
+			return nil
+		}
+
+		stmt.Names = arr.(*ast.ArrayLiteral).Elements
+
+		if !p.peekTokenIs(token.ASSIGN) {
+			p.Rewind(lexerPosition)
+			return nil
+		}
+	} else {
+		stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	}
 
 	if !p.peekTokenIs(token.ASSIGN) {
 		return nil

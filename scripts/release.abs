@@ -45,9 +45,7 @@ if !rm.ok {
 }
 
 for platform in platforms {
-    parts = platform.split("/")
-    goos = parts[0]
-    goarch = parts[1]
+    [goos, goarch] = platform.split("/")
     output_name = "abs-preview-0-" + goos + "-" + goarch
 
     if (goos == "windows") {

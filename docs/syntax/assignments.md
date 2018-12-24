@@ -13,6 +13,25 @@ straightforward:
 x = "hello world"
 ```
 
+Array destructuring is supported, meaning you can
+set multiple variables based on an array:
+
+``` bash
+[x, y, z] = ["hello world", 99, {}]
+x # "hello world"
+y # 99
+z # {}
+```
+
+If the number of variables you're trying to set is longer
+than the array, the extra variables will be set to
+null:
+
+``` bash
+[x] = []
+x # null
+```
+
 ABS doesn't have block-specific scopes, so any new variable
 declared in a block is automatically available outside as well:
 
