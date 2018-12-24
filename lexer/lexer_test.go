@@ -59,7 +59,7 @@ one | two | tree
 "\\\\hello"
 **
 1..10
-~
+~%
 `
 
 	tests := []struct {
@@ -234,6 +234,7 @@ one | two | tree
 		{token.RANGE, ".."},
 		{token.INT, "10"},
 		{token.TILDE, "~"},
+		{token.MODULO, "%"},
 		{token.EOF, ""},
 	}
 

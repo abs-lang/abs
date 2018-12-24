@@ -16,7 +16,7 @@ Most mathematical operators are designed to work
 with them
 
 ``` bash
-2 ** 5 / 1 / 3 + 19
+2 ** 5 / 1 / 3 + 19 % 5
 ```
 
 Note that integers have what we call a "zero value":

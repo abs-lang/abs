@@ -21,6 +21,7 @@ const (
 	ASTERISK = "*"
 	SLASH    = "/"
 	EXPONENT = "**"
+	MODULO   = "%"
 	RANGE    = ".."
 
 	AND = "&&"
