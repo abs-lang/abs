@@ -78,9 +78,16 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '<':
 		if l.peekChar() == '=' {
-			tok.Type = token.LT_EQ
-			tok.Literal = "<="
 			l.readChar()
+
+			if l.peekChar() == '>' {
+				tok.Type = token.COMBINED_COMP
+				tok.Literal = "<=>"
+				l.readChar()
+			} else {
+				tok.Type = token.LT_EQ
+				tok.Literal = "<="
+			}
 		} else {
 			tok = newToken(token.LT, l.ch)
 		}
