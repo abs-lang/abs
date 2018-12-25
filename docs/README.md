@@ -78,6 +78,8 @@ You can also install ABS with the 1-command installer:
 sh <(curl https://www.abs-lang.org/installer.sh)
 ```
 
+*(you might need to sudo right before that)*
+
 ## Table of contents
 
 ## Introduction

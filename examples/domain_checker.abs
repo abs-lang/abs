@@ -1,0 +1,18 @@
+# Usage $ abs script.abs domain.com
+# Check if a domain is in your hostfile
+domain = arg(2)
+
+if !domain {
+    echo("Supply a valid domain name to this script (abs domain_checker.abs example.com)")
+    exit(1)
+}
+matches = $(cat /etc/hosts | grep $domain | wc -l)
+
+if !matches.ok {
+    echo("How do you even...")
+}
+
+# If so, print an awesome string
+if matches.int() > 0 {
+  echo("We got %s!", domain)
+}

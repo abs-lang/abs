@@ -17,6 +17,8 @@ platforms:
 sh <(curl https://www.abs-lang.org/installer.sh)
 ```
 
+*(you might need to sudo right before that)*
+
 Afterwards, you can run ABS scripts with:
 
 ``` bash
