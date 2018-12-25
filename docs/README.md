@@ -98,7 +98,7 @@ sh <(curl https://www.abs-lang.org/installer.sh)
 ## Types and functions
 
 * [String](/types/string)
-* [Integer](/types/integer)
+* [Integer](/types/int)
 * [Array](/types/array)
 * [Hash](/types/hash)
 * [Functions](/types/function)
