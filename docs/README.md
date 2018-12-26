@@ -16,11 +16,17 @@ such as Python, or Ruby, to the convenience of Bash.
 
 ``` bash
 # Let's try to see if a particular domain is in our hostfile
-matches = $(cat /etc/hosts | grep domain.com | wc -l)
+echo("What domain are we looking for today?")
+domain = stdin()
+matches = $(cat /etc/hosts | grep $domain | wc -l)
 
 if matches.int() > 0 {
-  echo("We got ya!")
+  echo("We got %s!", domain)
 }
+
+# $ echo "localhost" | abs script.abs
+# What domain are we looking for today?
+# We got localhost!
 ```
 
 Let's try to fetch our IP address and print the sum of its

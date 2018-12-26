@@ -51,6 +51,36 @@ You can use use placeholders in your strings:
 echo("hello %s", "world")
 ```
 
+### stdin()
+
+Reads from the `stdin`:
+
+``` bash
+echo("What do you like?")
+echo("Oh, you like %s!", stdin()) # This line will block until user enters some text
+```
+
+Worth to note that you can read
+the `stdin` indefinitely with:
+
+``` bash
+# Will read all input to the
+# stdin and output it back
+for input in stdin {
+    echo(input)
+}
+
+# Or from the REPL:
+
+⧐  for input in stdin { echo((input.int() / 2).str() + "...try again:")  }
+10
+5...try again:
+5
+2.5...try again:
+
+...
+```
+
 ### exit(code)
 
 Exists the script with status `code`:
