@@ -1,9 +1,3 @@
-<p align="center">
-  <a href="https://www.abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
-  </a>
-</p>
-
 # How to run ABS code
 
 In order to run programs written in abs, you can simply download

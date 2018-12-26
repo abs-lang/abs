@@ -1,9 +1,3 @@
-<p align="center">
-  <a href="https://www.abs-lang.org/">
-    <img alt="abs language logo" src="https://github.com/abs-lang/abs/blob/master/bin/abs-horizontal.png?raw=true">
-  </a>
-</p>
-
 # A few technical details...
 
 The ABS interpreter is built with Golang version `1.11`, and is mostly based
