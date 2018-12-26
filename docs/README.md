@@ -14,7 +14,22 @@ ABS is a scripting language that works best when you're on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
 
-[![asciicast](https://asciinema.org/a/IfwJpCuTEF58PvqvIvFzoR56B.svg)](https://asciinema.org/a/IfwJpCuTEF58PvqvIvFzoR56B)
+``` bash
+tz = $(cat /etc/timezone);
+[cont, city] = tz.split("/")
+
+echo("Best city in the world?")
+
+selection = stdin()
+
+if selection == city {
+  echo("You might be biased...")
+}
+```
+
+See it in action:
+
+[![asciicast](https://asciinema.org/a/218451.svg)](https://asciinema.org/a/218451)
 
 Let's now try to fetch our IP address and print the sum of its
 parts, if its higher than 100. Here's how you could do it
