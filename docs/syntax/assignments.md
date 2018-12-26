@@ -32,6 +32,21 @@ null:
 x # null
 ```
 
+Note that when using destructuring, the previous line
+should end with a semicolon:
+
+``` bash
+# Ok
+x = "10";
+[a] = [100]
+
+# Not ok, the parser reads this `x = "10"[a]`
+x = "10"
+[a] = [100]
+```
+
+This behavior will be fixed soon (see [#83](https://github.com/abs-lang/abs/issues/83)).
+
 ABS doesn't have block-specific scopes, so any new variable
 declared in a block is automatically available outside as well:
 
