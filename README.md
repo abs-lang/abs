@@ -84,4 +84,4 @@ ABS is fresh and under active development, meaning exciting
 things happen on a weekly basis.
 
 Have a look at the roadmaps [here](https://github.com/abs-lang/abs/milestones):
-we're currently working on the 2nd iteration of ABS, [preview-2](https://github.com/abs-lang/abs/milestone/3).
+we're currently working on the 3nd iteration of ABS, [preview-3](https://github.com/abs-lang/abs/milestone/4).
