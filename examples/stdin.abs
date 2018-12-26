@@ -1,0 +1,6 @@
+for i, input in stdin {
+    echo(i.str() + input)
+}
+
+#echo("What do you like?")
+#echo("Oh, you like %s!", stdin())

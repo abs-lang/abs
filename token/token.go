@@ -58,7 +58,7 @@ const (
 	COMMAND  = "$()"
 
 	// Keywords
-	FUNCTION = ""
+	FUNCTION = "F"
 	TRUE     = "TRUE"
 	FALSE    = "FALSE"
 	IF       = "IF"

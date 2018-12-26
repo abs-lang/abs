@@ -43,6 +43,10 @@ type Object interface {
 	Inspect() string
 }
 
+type Iterable interface {
+	Next(int) (int, Object)
+}
+
 type Number struct {
 	Value float64
 }
@@ -136,8 +140,10 @@ func (s *String) HashKey() HashKey {
 }
 
 type Builtin struct {
-	Fn    BuiltinFunction
-	Types []string
+	Fn       BuiltinFunction
+	Next     func(int) (int, Object)
+	Types    []string
+	Iterable bool
 }
 
 func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
@@ -145,9 +151,19 @@ func (b *Builtin) Inspect() string  { return "builtin function" }
 
 type Array struct {
 	Elements []Object
+	position int
 }
 
 func (ao *Array) Type() ObjectType { return ARRAY_OBJ }
+func (ao *Array) Next(pos int) (int, Object) {
+	position := ao.position
+	if len(ao.Elements) > position {
+		ao.position = position + 1
+		return position, ao.Elements[position]
+	}
+
+	return -1, nil
+}
 func (ao *Array) Homogeneous() bool {
 	if len(ao.Elements) == 0 {
 		return true

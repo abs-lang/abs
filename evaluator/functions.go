@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"bufio"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -15,6 +16,13 @@ import (
 	"github.com/abs-lang/abs/parser"
 	"github.com/abs-lang/abs/util"
 )
+
+var scanner *bufio.Scanner
+
+func init() {
+	scanner = bufio.NewScanner(os.Stdin)
+
+}
 
 // Utility function that validates arguments passed to builtin
 // functions.
@@ -154,6 +162,28 @@ func getFns() map[string]*object.Builtin {
 					// we will never reach here
 					return newError("argument to `int` not supported, got %s", args[0].Type())
 				}
+			},
+		},
+		// stdin()
+		"stdin": &object.Builtin{
+			Next: func(pos int) (int, object.Object) {
+				v := scanner.Scan()
+
+				if !v {
+					return pos, EOF
+				}
+
+				return pos, &object.String{Value: scanner.Text()}
+			},
+			Types: []string{},
+			Fn: func(args ...object.Object) object.Object {
+				v := scanner.Scan()
+
+				if !v {
+					return EOF
+				}
+
+				return &object.String{Value: scanner.Text()}
 			},
 		},
 		// env(variable:"PWD")

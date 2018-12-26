@@ -16,6 +16,7 @@ import (
 
 var (
 	NULL  = &object.Null{}
+	EOF   = &object.Error{Message: "EOF"}
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
 	Fns   map[string]*object.Builtin
@@ -537,46 +538,63 @@ func evalForInExpression(
 	env *object.Environment,
 ) object.Object {
 	iterable := Eval(fie.Iterable, env)
-	switch i := iterable.(type) {
-	case *object.Array:
-		// If "k" and "v" were already declared, let's keep
-		// them aside...
-		existingKeyIdentifier, okk := env.Get(fie.Key)
-		existingValueIdentifier, okv := env.Get(fie.Value)
+	// If "k" and "v" were already declared, let's keep
+	// them aside...
+	existingKeyIdentifier, okk := env.Get(fie.Key)
+	existingValueIdentifier, okv := env.Get(fie.Value)
 
-		// ...so that we can restore them after the for
-		// loop is over
-		defer func() {
-			if okk {
-				env.Set(fie.Key, existingKeyIdentifier)
-			} else {
-				env.Delete(fie.Key)
-			}
-
-			if okv {
-				env.Set(fie.Value, existingValueIdentifier)
-			} else {
-				env.Delete(fie.Value)
-			}
-		}()
-
-		// Iterate through the array
-		for k, v := range i.Elements {
-			// set the special k v variables in the
-			// environment
-			env.Set(fie.Key, &object.Number{Value: float64(k)})
-			env.Set(fie.Value, v)
-			err := Eval(fie.Block, env)
-
-			if isError(err) {
-				return err
-			}
+	// ...so that we can restore them after the for
+	// loop is over
+	defer func() {
+		if okk {
+			env.Set(fie.Key, existingKeyIdentifier)
+		} else {
+			env.Delete(fie.Key)
 		}
 
-		return NULL
+		if okv {
+			env.Set(fie.Value, existingValueIdentifier)
+		} else {
+			env.Delete(fie.Value)
+		}
+	}()
+
+	switch i := iterable.(type) {
+	case object.Iterable:
+		return loopIterable(i.Next, env, fie, 0)
+	case *object.Builtin:
+		if i.Next == nil {
+			return newError("builtin function cannot be used in loop")
+		}
+
+		return loopIterable(i.Next, env, fie, 0)
 	default:
-		return newError("'%s' is not an array, cannot be used in for loop", i.Inspect())
+		return newError("'%s' is a %s, not an iterable, cannot be used in for loop", i.Inspect(), i.Type())
 	}
+}
+
+func loopIterable(next func(int) (int, object.Object), env *object.Environment, fie *ast.ForInExpression, pos int) object.Object {
+	k, v := next(pos)
+
+	if k < 0 || v == EOF {
+		return NULL
+	}
+
+	// set the special k v variables in the
+	// environment
+	env.Set(fie.Key, &object.Number{Value: float64(k)})
+	env.Set(fie.Value, v)
+	err := Eval(fie.Block, env)
+
+	if isError(err) {
+		return err
+	}
+
+	if k >= 0 {
+		return loopIterable(next, env, fie, pos+1)
+	}
+
+	return NULL
 }
 
 func evalIdentifier(
@@ -833,6 +851,7 @@ func evalCommandExpression(cmd string, env *object.Environment) object.Object {
 	c.Env = os.Environ()
 	var out bytes.Buffer
 	var stderr bytes.Buffer
+	c.Stdout = os.Stdin
 	c.Stdout = &out
 	c.Stderr = &stderr
 	err := c.Run()

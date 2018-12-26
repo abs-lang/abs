@@ -213,9 +213,9 @@ func TestForInExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{"a = 0; for k, x in 1 { a = a + 1}; a", "'1' is not an array, cannot be used in for loop"},
+		{"a = 0; for k, x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
 		{"a = 0; for k, x in 1..10 { a = a + 1}; a", 10},
-		{"a = 0; for x in 1 { a = a + 1}; a", "'1' is not an array, cannot be used in for loop"},
+		{"a = 0; for x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
 		{"a = 0; for x in 1..10 { a = a + 1}; a", 10},
 		{`a = 0; for k, v in ["x", "y", "z"] { a = a + k}; a`, 3},
 		{`for k, v in ["x", "y", "z"] {}; k`, "identifier not found: k"},
@@ -223,7 +223,7 @@ func TestForInExpressions(t *testing.T) {
 		{`k = 100; for k, v in ["x", "y", "z"] {}; k`, 100},
 		{`v = 100; for k, v in ["x", "y", "z"] {}; v`, 100},
 		{`for k, v in ["x", "y", "z"] {k=y}; v`, "identifier not found: y"},
-		{`for k, v in ["x", "y", z] {k=y}; v`, "'ERROR: identifier not found: z' is not an array, cannot be used in for loop"},
+		{`for k, v in ["x", "y", z] {k=y}; v`, "'ERROR: identifier not found: z' is a ERROR, not an iterable, cannot be used in for loop"},
 	}
 
 	for _, tt := range tests {
