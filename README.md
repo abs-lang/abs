@@ -16,14 +16,7 @@ ABS is a scripting language that works best when you're on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
 
-``` bash
-# Let's try to see if a particular domain is in our hostfile
-matches = $(cat /etc/hosts | grep domain.com | wc -l)
-
-if matches.int() > 0 {
-  echo("We got ya!")
-}
-```
+[![asciicast](https://asciinema.org/a/IfwJpCuTEF58PvqvIvFzoR56B.svg)](https://asciinema.org/a/IfwJpCuTEF58PvqvIvFzoR56B)
 
 Let's try to fetch our IP address and print the sum of its
 parts, if its higher than 100. Here's how you could do it
