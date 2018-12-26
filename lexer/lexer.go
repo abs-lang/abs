@@ -355,7 +355,17 @@ func (l *Lexer) readCommand() string {
 			break
 		}
 	}
-	return l.input[position : l.position-subtract]
+
+	ret := l.input[position : l.position-subtract]
+
+	// Let's make sure the semicolo is the next token, without
+	// "cutting" it out...
+	if subtract == 2 {
+		l.position = l.position - 1
+		l.readPosition = l.position
+	}
+
+	return ret
 }
 
 func isLetter(ch byte) bool {

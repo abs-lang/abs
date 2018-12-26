@@ -411,6 +411,11 @@ func TestAssignStatements(t *testing.T) {
 		{"[a] = 10; a;", "wrong assignment, expected identifier or array destructuring, got NUMBER (10)"},
 		{"[a, b, c] = [1]; a;", 1},
 		{"[a, b, c] = [1]; b;", nil},
+		{`
+tz = $(echo "10/20");
+[a, b] = tz.split("/")
+a.int()
+		`, 10},
 	}
 
 	for _, tt := range tests {
