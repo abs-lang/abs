@@ -45,9 +45,9 @@ func getFns() map[string]*object.Builtin {
 
 				switch arg := args[0].(type) {
 				case *object.Array:
-					return &object.Integer{Value: int64(len(arg.Elements))}
+					return &object.Number{Value: float64(len(arg.Elements))}
 				case *object.String:
-					return &object.Integer{Value: int64(len(arg.Value))}
+					return &object.Number{Value: float64(len(arg.Value))}
 				default:
 					return newError("argument to `len` not supported, got %s",
 						args[0].Type())
@@ -56,33 +56,33 @@ func getFns() map[string]*object.Builtin {
 		},
 		// rand(max:20)
 		"rand": &object.Builtin{
-			Types: []string{object.INTEGER_OBJ},
+			Types: []string{object.NUMBER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("rand", args, 1, [][]string{{object.INTEGER_OBJ}})
+				err := validateArgs("rand", args, 1, [][]string{{object.NUMBER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				arg := args[0].(*object.Integer)
-				r, e := rand.Int(rand.Reader, big.NewInt(arg.Value))
+				arg := args[0].(*object.Number)
+				r, e := rand.Int(rand.Reader, big.NewInt(int64(arg.Value)))
 
 				if e != nil {
-					return newError("error occurred while calling 'rand(%d)': %s", arg.Value, e.Error())
+					return newError("error occurred while calling 'rand(%v)': %s", arg.Value, e.Error())
 				}
 
-				return &object.Integer{Value: r.Int64()}
+				return &object.Number{Value: float64(r.Int64())}
 			},
 		},
 		// exit(code:0)
 		"exit": &object.Builtin{
-			Types: []string{object.INTEGER_OBJ},
+			Types: []string{object.NUMBER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("exit", args, 1, [][]string{{object.INTEGER_OBJ}})
+				err := validateArgs("exit", args, 1, [][]string{{object.NUMBER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				arg := args[0].(*object.Integer)
+				arg := args[0].(*object.Number)
 				os.Exit(int(arg.Value))
 				return arg
 			},
@@ -106,24 +106,50 @@ func getFns() map[string]*object.Builtin {
 		},
 		// int(string:"123")
 		"int": &object.Builtin{
-			Types: []string{object.STRING_OBJ, object.INTEGER_OBJ},
+			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("int", args, 1, [][]string{{object.INTEGER_OBJ, object.STRING_OBJ}})
+				err := validateArgs("int", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
 
 				switch arg := args[0].(type) {
-				case *object.Integer:
-					return &object.Integer{Value: int64(arg.Value)}
+				case *object.Number:
+					return &object.Number{Value: float64(int64(arg.Value))}
 				case *object.String:
-					i, err := strconv.Atoi(arg.Value)
+					i, err := strconv.ParseFloat(arg.Value, 64)
 
 					if err != nil {
-						return newError("int(...) can only be called on strings which represent integers, '%s' given", arg.Value)
+						return newError("int(...) can only be called on strings which represent numbers, '%s' given", arg.Value)
 					}
 
-					return &object.Integer{Value: int64(i)}
+					return &object.Number{Value: float64(int64(i))}
+				default:
+					// we will never reach here
+					return newError("argument to `int` not supported, got %s", args[0].Type())
+				}
+			},
+		},
+		// number(string:"1.23456")
+		"number": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("number", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				switch arg := args[0].(type) {
+				case *object.Number:
+					return arg
+				case *object.String:
+					i, err := strconv.ParseFloat(arg.Value, 64)
+
+					if err != nil {
+						return newError("number(...) can only be called on strings which represent numbers, '%s' given", arg.Value)
+					}
+
+					return &object.Number{Value: i}
 				default:
 					// we will never reach here
 					return newError("argument to `int` not supported, got %s", args[0].Type())
@@ -145,15 +171,15 @@ func getFns() map[string]*object.Builtin {
 		},
 		// arg(position:1)
 		"arg": &object.Builtin{
-			Types: []string{object.INTEGER_OBJ},
+			Types: []string{object.NUMBER_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("arg", args, 1, [][]string{{object.INTEGER_OBJ}})
+				err := validateArgs("arg", args, 1, [][]string{{object.NUMBER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				arg := args[0].(*object.Integer)
-				i := arg.Value
+				arg := args[0].(*object.Number)
+				i := arg.Int()
 
 				if int(i) > len(os.Args)-1 {
 					return &object.String{Value: ""}
@@ -286,14 +312,14 @@ func getFns() map[string]*object.Builtin {
 
 				arr := args[0].(*object.Array)
 
-				var sum int64 = 0
+				var sum float64 = 0
 
 				for _, v := range arr.Elements {
-					elem := v.(*object.Integer)
+					elem := v.(*object.Number)
 					sum += elem.Value
 				}
 
-				return &object.Integer{Value: int64(sum)}
+				return &object.Number{Value: sum}
 			},
 		},
 		// sort(array:[1, 2, 3])
@@ -317,17 +343,17 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				switch elements[0].(type) {
-				case *object.Integer:
-					a := []int{}
+				case *object.Number:
+					a := []float64{}
 					for _, v := range elements {
-						a = append(a, int(v.(*object.Integer).Value))
+						a = append(a, v.(*object.Number).Value)
 					}
-					sort.Ints(a)
+					sort.Float64s(a)
 
 					o := []object.Object{}
 
 					for _, v := range a {
-						o = append(o, &object.Integer{Value: int64(v)})
+						o = append(o, &object.Number{Value: v})
 					}
 					return &object.Array{Elements: o}
 				case *object.String:
@@ -467,7 +493,7 @@ func getFns() map[string]*object.Builtin {
 		"contains": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("contains", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ, object.INTEGER_OBJ}})
+				err := validateArgs("contains", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ, object.NUMBER_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -492,14 +518,14 @@ func getFns() map[string]*object.Builtin {
 						}
 
 						return &object.Boolean{Value: found}
-					case *object.Integer:
+					case *object.Number:
 						for _, v := range arg.Elements {
 							// Quite ghetto but also the easiest way out
 							// Instead of doing type checking on the argument,
 							// we received back its string representation.
 							// If they match, we then check that its type was
 							// integer.
-							if v.Inspect() == strconv.Itoa(int(needle.Value)) && v.Type() == object.INTEGER_OBJ {
+							if v.Inspect() == strconv.Itoa(int(needle.Value)) && v.Type() == object.NUMBER_OBJ {
 								found = true
 								break // Let's get outta here!
 							}
@@ -564,24 +590,24 @@ func getFns() map[string]*object.Builtin {
 		"repeat": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("repeat", args, 2, [][]string{{object.STRING_OBJ}, {object.INTEGER_OBJ}})
+				err := validateArgs("repeat", args, 2, [][]string{{object.STRING_OBJ}, {object.NUMBER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				return &object.String{Value: strings.Repeat(args[0].(*object.String).Value, int(args[1].(*object.Integer).Value))}
+				return &object.String{Value: strings.Repeat(args[0].(*object.String).Value, int(args[1].(*object.Number).Value))}
 			},
 		},
 		// replace("abc", "b", "f", -1)
 		"replace": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("replace", args, 4, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ}, {object.INTEGER_OBJ}})
+				err := validateArgs("replace", args, 4, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ}, {object.NUMBER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				return &object.String{Value: strings.Replace(args[0].(*object.String).Value, args[1].(*object.String).Value, args[2].(*object.String).Value, int(args[3].(*object.Integer).Value))}
+				return &object.String{Value: strings.Replace(args[0].(*object.String).Value, args[1].(*object.String).Value, args[2].(*object.String).Value, int(args[3].(*object.Number).Value))}
 			},
 		},
 		// title("some thing")
@@ -659,7 +685,7 @@ func getFns() map[string]*object.Builtin {
 					return NULL
 				}
 
-				return &object.Integer{Value: int64(i)}
+				return &object.Number{Value: float64(i)}
 			},
 		},
 		// last_index("abcc", "c")
@@ -677,20 +703,20 @@ func getFns() map[string]*object.Builtin {
 					return NULL
 				}
 
-				return &object.Integer{Value: int64(i)}
+				return &object.Number{Value: float64(i)}
 			},
 		},
 		// slice("abcc", 0, -1)
 		"slice": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("slice", args, 3, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.INTEGER_OBJ}, {object.INTEGER_OBJ}})
+				err := validateArgs("slice", args, 3, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.NUMBER_OBJ}, {object.NUMBER_OBJ}})
 				if err != nil {
 					return err
 				}
 
-				start := int(args[1].(*object.Integer).Value)
-				end := int(args[2].(*object.Integer).Value)
+				start := int(args[1].(*object.Number).Value)
+				end := int(args[2].(*object.Number).Value)
 
 				switch arg := args[0].(type) {
 				case *object.String:
@@ -748,7 +774,7 @@ func getFns() map[string]*object.Builtin {
 		"push": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("push", args, 2, [][]string{{object.ARRAY_OBJ}, {object.NULL_OBJ, object.ARRAY_OBJ, object.INTEGER_OBJ, object.STRING_OBJ, object.HASH_OBJ}})
+				err := validateArgs("push", args, 2, [][]string{{object.ARRAY_OBJ}, {object.NULL_OBJ, object.ARRAY_OBJ, object.NUMBER_OBJ, object.STRING_OBJ, object.HASH_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -789,7 +815,7 @@ func getFns() map[string]*object.Builtin {
 				newElements := make([]object.Object, length, length)
 
 				for k, _ := range arr.Elements {
-					newElements[k] = &object.Integer{Value: int64(k)}
+					newElements[k] = &object.Number{Value: float64(k)}
 				}
 
 				return &object.Array{Elements: newElements}

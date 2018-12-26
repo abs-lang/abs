@@ -16,7 +16,7 @@ const (
 	NULL_OBJ  = "NULL"
 	ERROR_OBJ = "ERROR"
 
-	INTEGER_OBJ = "INTEGER"
+	NUMBER_OBJ  = "NUMBER"
 	BOOLEAN_OBJ = "BOOLEAN"
 	STRING_OBJ  = "STRING"
 
@@ -43,13 +43,14 @@ type Object interface {
 	Inspect() string
 }
 
-type Integer struct {
-	Value int64
+type Number struct {
+	Value float64
 }
 
-func (i *Integer) Type() ObjectType { return INTEGER_OBJ }
-func (i *Integer) Inspect() string  { return fmt.Sprintf("%d", i.Value) }
-func (i *Integer) ZeroValue() int64 { return int64(0) }
+func (n *Number) Type() ObjectType   { return NUMBER_OBJ }
+func (n *Number) Inspect() string    { return fmt.Sprintf("%v", n.Value) }
+func (n *Number) ZeroValue() float64 { return float64(0) }
+func (n *Number) Int() int           { return int(n.Value) }
 
 type Boolean struct {
 	Value bool

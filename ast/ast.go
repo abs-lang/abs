@@ -148,14 +148,14 @@ func (b *Boolean) expressionNode()      {}
 func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
 func (b *Boolean) String() string       { return b.Token.Literal }
 
-type IntegerLiteral struct {
+type NumberLiteral struct {
 	Token token.Token
-	Value int64
+	Value float64
 }
 
-func (il *IntegerLiteral) expressionNode()      {}
-func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
-func (il *IntegerLiteral) String() string       { return il.Token.Literal }
+func (nl *NumberLiteral) expressionNode()      {}
+func (nl *NumberLiteral) TokenLiteral() string { return nl.Token.Literal }
+func (nl *NumberLiteral) String() string       { return nl.Token.Literal }
 
 type PrefixExpression struct {
 	Token    token.Token // The prefix token, e.g. !

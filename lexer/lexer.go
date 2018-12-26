@@ -183,8 +183,9 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
 		} else if isDigit(l.ch) {
-			tok.Type = token.INT
-			tok.Literal = l.readNumber()
+			literal, kind := l.readNumber()
+			tok.Type = kind
+			tok.Literal = literal
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
@@ -245,12 +246,28 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[position:l.position]
 }
 
-func (l *Lexer) readNumber() string {
+func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 	position := l.position
-	for isDigit(l.ch) {
+	kind = token.NUMBER
+	hasDot := false
+
+	for isDigit(l.ch) || l.ch == '.' {
+		if l.ch == '.' && (l.peekChar() == '.' || !isDigit(l.peekChar())) {
+			return l.input[position:l.position], token.NUMBER
+		}
+
+		if l.ch == '.' {
+			if hasDot {
+				return "", token.ILLEGAL
+			}
+
+			hasDot = true
+			kind = token.NUMBER
+		}
 		l.readChar()
 	}
-	return l.input[position:l.position]
+
+	return l.input[position:l.position], kind
 }
 
 // A logical operator is 2 chars, so

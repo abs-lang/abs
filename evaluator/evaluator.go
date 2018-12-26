@@ -56,8 +56,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 
 	// Expressions
-	case *ast.IntegerLiteral:
-		return &object.Integer{Value: node.Value}
+	case *ast.NumberLiteral:
+		return &object.Number{Value: node.Value}
 
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
@@ -292,8 +292,8 @@ func evalInfixExpression(
 	case operator == "+=":
 		fmt.Printf("%s %s %s", operator, left, right)
 		return nil
-	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
-		return evalIntegerInfixExpression(operator, left, right)
+	case left.Type() == object.NUMBER_OBJ && right.Type() == object.NUMBER_OBJ:
+		return evalNumberInfixExpression(operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
 		return evalStringInfixExpression(operator, left, right)
 	case left.Type() == object.ARRAY_OBJ && right.Type() == object.ARRAY_OBJ:
@@ -325,7 +325,7 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 			}
 
 			return FALSE
-		case *object.Integer:
+		case *object.Number:
 			if o.Value == o.ZeroValue() {
 				return TRUE
 			}
@@ -338,35 +338,35 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 }
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
-	if right.Type() != object.INTEGER_OBJ {
+	if right.Type() != object.NUMBER_OBJ {
 		return newError("unknown operator: -%s", right.Type())
 	}
 
-	value := right.(*object.Integer).Value
-	return &object.Integer{Value: -value}
+	value := right.(*object.Number).Value
+	return &object.Number{Value: -value}
 }
 
-func evalIntegerInfixExpression(
+func evalNumberInfixExpression(
 	operator string,
 	left, right object.Object,
 ) object.Object {
-	leftVal := left.(*object.Integer).Value
-	rightVal := right.(*object.Integer).Value
+	leftVal := left.(*object.Number).Value
+	rightVal := right.(*object.Number).Value
 
 	switch operator {
 	case "+":
-		return &object.Integer{Value: leftVal + rightVal}
+		return &object.Number{Value: leftVal + rightVal}
 	case "-":
-		return &object.Integer{Value: leftVal - rightVal}
+		return &object.Number{Value: leftVal - rightVal}
 	case "*":
-		return &object.Integer{Value: leftVal * rightVal}
+		return &object.Number{Value: leftVal * rightVal}
 	case "/":
-		return &object.Integer{Value: leftVal / rightVal}
+		return &object.Number{Value: leftVal / rightVal}
 	case "**":
 		// TODO this does not support floats
-		return &object.Integer{Value: int64(math.Pow(float64(leftVal), float64(rightVal)))}
+		return &object.Number{Value: math.Pow(leftVal, rightVal)}
 	case "%":
-		return &object.Integer{Value: leftVal % rightVal}
+		return &object.Number{Value: math.Mod(leftVal, rightVal)}
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
@@ -376,7 +376,7 @@ func evalIntegerInfixExpression(
 	case ">=":
 		return nativeBoolToBooleanObject(leftVal >= rightVal)
 	case "<=>":
-		i := &object.Integer{}
+		i := &object.Number{}
 
 		if leftVal == rightVal {
 			i.Value = 0
@@ -396,7 +396,7 @@ func evalIntegerInfixExpression(
 		a := make([]object.Object, 0)
 
 		for i := leftVal; i <= rightVal; i++ {
-			a = append(a, &object.Integer{Value: int64(i)})
+			a = append(a, &object.Number{Value: float64(i)})
 		}
 		return &object.Array{Elements: a}
 	default:
@@ -564,7 +564,7 @@ func evalForInExpression(
 		for k, v := range i.Elements {
 			// set the special k v variables in the
 			// environment
-			env.Set(fie.Key, &object.Integer{Value: int64(k)})
+			env.Set(fie.Key, &object.Number{Value: float64(k)})
 			env.Set(fie.Value, v)
 			err := Eval(fie.Block, env)
 
@@ -607,7 +607,7 @@ func isTruthy(obj object.Object) bool {
 		return v.Value
 	// An integer is truthy
 	// unless it's 0
-	case *object.Integer:
+	case *object.Number:
 		return v.Value != v.ZeroValue()
 	// A string is truthy
 	// unless is empty
@@ -736,11 +736,11 @@ func unwrapReturnValue(obj object.Object) object.Object {
 
 func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
-	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.NUMBER_OBJ:
 		return evalArrayIndexExpression(left, index)
 	case left.Type() == object.HASH_OBJ && index.Type() == object.STRING_OBJ:
 		return evalHashIndexExpression(left, index)
-	case left.Type() == object.STRING_OBJ && index.Type() == object.INTEGER_OBJ:
+	case left.Type() == object.STRING_OBJ && index.Type() == object.NUMBER_OBJ:
 		return evalStringIndexExpression(left, index)
 	default:
 		return newError("index operator not supported: %s on %s", index.Inspect(), left.Type())
@@ -749,8 +749,8 @@ func evalIndexExpression(left, index object.Object) object.Object {
 
 func evalStringIndexExpression(array, index object.Object) object.Object {
 	stringObject := array.(*object.String)
-	idx := index.(*object.Integer).Value
-	max := int64(len(stringObject.Value) - 1)
+	idx := index.(*object.Number).Int()
+	max := len(stringObject.Value) - 1
 
 	if idx < 0 || idx > max {
 		return NULL
@@ -761,8 +761,8 @@ func evalStringIndexExpression(array, index object.Object) object.Object {
 
 func evalArrayIndexExpression(array, index object.Object) object.Object {
 	arrayObject := array.(*object.Array)
-	idx := index.(*object.Integer).Value
-	max := int64(len(arrayObject.Elements) - 1)
+	idx := index.(*object.Number).Int()
+	max := len(arrayObject.Elements) - 1
 
 	if idx < 0 || idx > max {
 		return NULL

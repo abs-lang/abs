@@ -16,8 +16,7 @@ $ cat examples/error.abs
 echo("should not reach here")
 
 $ abs examples/error.abs
-go build -o builds/abs main.go
-ERROR: type mismatch: INTEGER + STRING
+ERROR: type mismatch: NUMBER + STRING
 
 $ echo $?
 99

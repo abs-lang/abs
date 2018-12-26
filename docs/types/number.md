@@ -4,22 +4,23 @@
   </a>
 </p>
 
-# Integer
+# Number
 
-Integers are very straightforward data structures:
+Numbers are very straightforward data structures:
 
 ``` bash
-123456789
+123
+1.23
 ```
 
 Most mathematical operators are designed to work
 with them
 
 ``` bash
-2 ** 5 / 1 / 3 + 19 % 5
+(2 ** 5.5 / 1 / 3 + 19) % 5 # 4.08494466531301
 ```
 
-Note that integers have what we call a "zero value":
+Note that numbers have what we call a "zero value":
 a value that evaluates to `false` when casted to boolean:
 
 ``` bash
@@ -28,17 +29,25 @@ a value that evaluates to `false` when casted to boolean:
 
 ## Supported functions
 
-### int()
+### number()
 
 Identity:
 
 ``` bash
-99.int() # 99
+99.5.number() # 99.5
+```
+
+### int()
+
+Rounds down the number to the closest integer:
+
+``` bash
+10.3.int() # 10
 ```
 
 ### str()
 
-Returns a string containing the integer:
+Returns a string containing the number:
 
 ``` bash
 99.str() # "99"

@@ -100,7 +100,7 @@ sh <(curl https://www.abs-lang.org/installer.sh)
 ## Types and functions
 
 * [String](/types/string)
-* [Integer](/types/int)
+* [Number](/types/number)
 * [Array](/types/array)
 * [Hash](/types/hash)
 * [Functions](/types/function)

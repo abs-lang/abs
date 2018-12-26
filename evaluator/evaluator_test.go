@@ -8,11 +8,31 @@ import (
 	"github.com/abs-lang/abs/parser"
 )
 
-func TestEvalIntegerExpression(t *testing.T) {
+func TestEvalFloatExpression(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected float64
 	}{
+		{"5.5", 5.5},
+		{"-5.5", -5.5},
+		{"5.5 + 3.7", 9.2},
+		{"5.5 * 2", 11},
+		{"1 / 3", 0.3333333333333333},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testNumberObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestEvalNumberExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"5.5", 5.5},
+		{"5.5 + 2.2", 7.7},
 		{"5", 5},
 		{"10", 10},
 		{"-5", -5},
@@ -50,7 +70,7 @@ func TestEvalIntegerExpression(t *testing.T) {
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		testIntegerObject(t, evaluated, tt.expected)
+		testNumberObject(t, evaluated, tt.expected)
 	}
 }
 
@@ -148,7 +168,7 @@ func TestIfElseExpressions(t *testing.T) {
 		evaluated := testEval(tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testIntegerObject(t, evaluated, int64(integer))
+			testNumberObject(t, evaluated, float64(integer))
 		} else {
 			testNullObject(t, evaluated)
 		}
@@ -173,7 +193,7 @@ func TestForExpressions(t *testing.T) {
 		evaluated := testEval(tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testIntegerObject(t, evaluated, int64(integer))
+			testNumberObject(t, evaluated, float64(integer))
 		} else {
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
@@ -210,7 +230,7 @@ func TestForInExpressions(t *testing.T) {
 		evaluated := testEval(tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testIntegerObject(t, evaluated, int64(integer))
+			testNumberObject(t, evaluated, float64(integer))
 		} else {
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
@@ -238,7 +258,7 @@ func TestWhileExpressions(t *testing.T) {
 		evaluated := testEval(tt.input)
 		switch tt.expected.(type) {
 		case int:
-			testIntegerObject(t, evaluated, int64(tt.expected.(int)))
+			testNumberObject(t, evaluated, float64(tt.expected.(int)))
 		case string:
 			testStringObject(t, evaluated, tt.expected.(string))
 		default:
@@ -250,7 +270,7 @@ func TestWhileExpressions(t *testing.T) {
 func TestReturnStatements(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected float64
 	}{
 		{"return 10;", 10},
 		{"return 10; 9;", 10},
@@ -292,7 +312,7 @@ fn(10);`,
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		testIntegerObject(t, evaluated, tt.expected)
+		testNumberObject(t, evaluated, tt.expected)
 	}
 }
 
@@ -303,11 +323,11 @@ func TestErrorHandling(t *testing.T) {
 	}{
 		{
 			"5 + true;",
-			"type mismatch: INTEGER + BOOLEAN",
+			"type mismatch: NUMBER + BOOLEAN",
 		},
 		{
 			"5 + true; 5;",
-			"type mismatch: INTEGER + BOOLEAN",
+			"type mismatch: NUMBER + BOOLEAN",
 		},
 		{
 			"-true",
@@ -357,7 +377,7 @@ x
 		},
 		{
 			`999[1]`,
-			"index operator not supported: 1 on INTEGER",
+			"index operator not supported: 1 on NUMBER",
 		},
 	}
 
@@ -388,7 +408,7 @@ func TestAssignStatements(t *testing.T) {
 		{"a = 5; b = a; b;", 5},
 		{"a = 5; b = a; c = a + b + 5; c;", 15},
 		{"[a] = [10]; a;", 10},
-		{"[a] = 10; a;", "wrong assignment, expected identifier or array destructuring, got INTEGER (10)"},
+		{"[a] = 10; a;", "wrong assignment, expected identifier or array destructuring, got NUMBER (10)"},
 		{"[a, b, c] = [1]; a;", 1},
 		{"[a, b, c] = [1]; b;", nil},
 	}
@@ -397,7 +417,7 @@ func TestAssignStatements(t *testing.T) {
 		evaluated := testEval(tt.input)
 		switch expected := tt.expected.(type) {
 		case int:
-			testIntegerObject(t, testEval(tt.input), int64(expected))
+			testNumberObject(t, testEval(tt.input), float64(expected))
 		case string:
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
@@ -439,7 +459,7 @@ func TestFunctionObject(t *testing.T) {
 func TestFunctionApplication(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected float64
 	}{
 		{"identity = f(x) { x; }; identity(5);", 5},
 		{"identity = f(x) { return x; }; identity(5);", 5},
@@ -450,7 +470,7 @@ func TestFunctionApplication(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testIntegerObject(t, testEval(tt.input), tt.expected)
+		testNumberObject(t, testEval(tt.input), tt.expected)
 	}
 }
 
@@ -468,7 +488,7 @@ ourFunction = f(first) {
 
 ourFunction(20) + first + second;`
 
-	testIntegerObject(t, testEval(input), 70)
+	testNumberObject(t, testEval(input), float64(70))
 }
 
 func TestClosures(t *testing.T) {
@@ -480,7 +500,7 @@ newAdder = f(x) {
 addTwo = newAdder(2);
 addTwo(2);`
 
-	testIntegerObject(t, testEval(input), 4)
+	testNumberObject(t, testEval(input), float64(4))
 }
 
 func TestStringLiteral(t *testing.T) {
@@ -520,8 +540,8 @@ func TestArrayConcatenation(t *testing.T) {
 		t.Fatalf("object is not Array. got=%T (%+v)", evaluated, evaluated)
 	}
 
-	testIntegerObject(t, arr.Elements[0], 1)
-	testIntegerObject(t, arr.Elements[1], 2)
+	testNumberObject(t, arr.Elements[0], float64(1))
+	testNumberObject(t, arr.Elements[1], float64(2))
 }
 
 func TestBuiltinFunctions(t *testing.T) {
@@ -540,13 +560,17 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`contains(1..100000, 1)`, true},
 		{`find([1,2,3,3], f(x) {x == 3})`, 3},
 		{`find([1,2], f(x) {x == "some"})`, nil},
-		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: INTEGER)"},
+		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
 		{`arg(3)`, ""},
 		{`rand(1)`, 0},
 		{`int(10)`, 10},
+		{`int(10.5)`, 10},
+		{`number("10")`, 10},
+		{`number("10.55")`, 10.55},
 		{`int("10")`, 10},
-		{`int("abc")`, `int(...) can only be called on strings which represent integers, 'abc' given`},
-		{`int([])`, "argument 0 to int(...) is not supported (got: [], allowed: INTEGER, STRING)"},
+		{`int("10.5")`, 10},
+		{`int("abc")`, `int(...) can only be called on strings which represent numbers, 'abc' given`},
+		{`int([])`, "argument 0 to int(...) is not supported (got: [], allowed: NUMBER, STRING)"},
 		{`len("")`, 0},
 		{`len("four")`, 4},
 		{`len("hello world")`, 11},
@@ -557,7 +581,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`echo("hello", "world!")`, nil},
 		{`env("TERM")`, "xterm"},
 		{`type("TERM")`, "STRING"},
-		{`type(1)`, "INTEGER"},
+		{`type(1)`, "NUMBER"},
 		{`type({})`, "HASH"},
 		{`type([])`, "ARRAY"},
 		{`type("{}".json())`, "HASH"},
@@ -642,7 +666,9 @@ c")`, []string{"a", "b", "c"}},
 		evaluated := testEval(tt.input)
 		switch expected := tt.expected.(type) {
 		case int:
-			testIntegerObject(t, evaluated, int64(expected))
+			testNumberObject(t, evaluated, float64(expected))
+		case float64:
+			testNumberObject(t, evaluated, float64(expected))
 		case nil:
 			testNullObject(t, evaluated)
 		case bool:
@@ -679,7 +705,7 @@ c")`, []string{"a", "b", "c"}},
 			}
 
 			for i, expectedElem := range expected {
-				testIntegerObject(t, array.Elements[i], int64(expectedElem))
+				testNumberObject(t, array.Elements[i], float64(expectedElem))
 			}
 		case []string:
 			array, ok := evaluated.(*object.Array)
@@ -736,7 +762,7 @@ func TestLogicalOperators(t *testing.T) {
 		evaluated := testEval(tt.input)
 		switch expected := tt.expected.(type) {
 		case int:
-			testIntegerObject(t, evaluated, int64(expected))
+			testNumberObject(t, evaluated, float64(expected))
 		case nil:
 			testNullObject(t, evaluated)
 		case string:
@@ -770,7 +796,7 @@ func TestLogicalOperators(t *testing.T) {
 			}
 
 			for i, expectedElem := range expected {
-				testIntegerObject(t, array.Elements[i], int64(expectedElem))
+				testNumberObject(t, array.Elements[i], float64(expectedElem))
 			}
 		}
 	}
@@ -791,7 +817,7 @@ func TestRangesOperators(t *testing.T) {
 		evaluated := testEval(tt.input)
 		switch expected := tt.expected.(type) {
 		case int:
-			testIntegerObject(t, evaluated, int64(expected))
+			testNumberObject(t, evaluated, float64(expected))
 		case nil:
 			testNullObject(t, evaluated)
 		case string:
@@ -825,7 +851,7 @@ func TestRangesOperators(t *testing.T) {
 			}
 
 			for i, expectedElem := range expected {
-				testIntegerObject(t, array.Elements[i], int64(expectedElem))
+				testNumberObject(t, array.Elements[i], float64(expectedElem))
 			}
 		}
 	}
@@ -841,7 +867,7 @@ func TestBuiltinProperties(t *testing.T) {
 		{"a = $(date);\na.ok", true},
 		{`{}.a`, nil},
 		{`{"a": 1}.a`, 1},
-		{`{1: 1}.1`, "unusable as hash key: INTEGER"},
+		{`{1: 1}.1`, "unusable as hash key: NUMBER"},
 		{`[].a`, "invalid property 'a' on type ARRAY"},
 	}
 
@@ -852,7 +878,7 @@ func TestBuiltinProperties(t *testing.T) {
 		case bool:
 			testBooleanObject(t, evaluated, bool(expected))
 		case int:
-			testIntegerObject(t, evaluated, int64(expected))
+			testNumberObject(t, evaluated, float64(expected))
 		case nil:
 			testNullObject(t, evaluated)
 		case string:
@@ -889,7 +915,7 @@ func TestBuiltinProperties(t *testing.T) {
 			}
 
 			for i, expectedElem := range expected {
-				testIntegerObject(t, array.Elements[i], int64(expectedElem))
+				testNumberObject(t, array.Elements[i], float64(expectedElem))
 			}
 		case []string:
 			array, ok := evaluated.(*object.Array)
@@ -954,9 +980,9 @@ func TestArrayLiterals(t *testing.T) {
 			len(result.Elements))
 	}
 
-	testIntegerObject(t, result.Elements[0], 1)
-	testIntegerObject(t, result.Elements[1], 4)
-	testIntegerObject(t, result.Elements[2], 6)
+	testNumberObject(t, result.Elements[0], float64(1))
+	testNumberObject(t, result.Elements[1], float64(4))
+	testNumberObject(t, result.Elements[2], float64(6))
 }
 
 func TestArrayIndexExpressions(t *testing.T) {
@@ -1010,7 +1036,7 @@ func TestArrayIndexExpressions(t *testing.T) {
 		evaluated := testEval(tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testIntegerObject(t, evaluated, int64(integer))
+			testNumberObject(t, evaluated, float64(integer))
 		} else {
 			testNullObject(t, evaluated)
 		}
@@ -1031,7 +1057,7 @@ func TestHashLiterals(t *testing.T) {
 		t.Fatalf("Eval didn't return Hash. got=%T (%+v)", evaluated, evaluated)
 	}
 
-	expected := map[object.HashKey]int64{
+	expected := map[object.HashKey]float64{
 		(&object.String{Value: "one"}).HashKey():   1,
 		(&object.String{Value: "two"}).HashKey():   2,
 		(&object.String{Value: "three"}).HashKey(): 3,
@@ -1047,7 +1073,7 @@ func TestHashLiterals(t *testing.T) {
 			t.Errorf("no pair for given key in Pairs")
 		}
 
-		testIntegerObject(t, pair.Value, expectedValue)
+		testNumberObject(t, pair.Value, expectedValue)
 	}
 }
 
@@ -1086,7 +1112,7 @@ func TestHashIndexExpressions(t *testing.T) {
 		evaluated := testEval(tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testIntegerObject(t, evaluated, int64(integer))
+			testNumberObject(t, evaluated, float64(integer))
 		} else {
 			testNullObject(t, evaluated)
 		}
@@ -1128,14 +1154,14 @@ func testEval(input string) object.Object {
 	return Eval(program, env)
 }
 
-func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
-	result, ok := obj.(*object.Integer)
+func testNumberObject(t *testing.T, obj object.Object, expected interface{}) bool {
+	result, ok := obj.(*object.Number)
 	if !ok {
-		t.Errorf("object is not Integer. got=%T (%+v)", obj, obj)
+		t.Errorf("object is not Number. got=%T (%+v)", obj, obj)
 		return false
 	}
 	if result.Value != expected {
-		t.Errorf("object has wrong value. got=%d, want=%d", result.Value, expected)
+		t.Errorf("object has wrong value. got=%v, want=%v", result.Value, expected)
 		return false
 	}
 

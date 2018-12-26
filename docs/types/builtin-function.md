@@ -10,13 +10,13 @@ There are many builtin functions in ABS.
 Take `type`, for example:
 
 ``` bash
-type(1) # INTEGER
+type(1) # NUMBER
 type([]) # ARRAY
 ```
 
-We'll reveal you a secret now: all string, array, integer, hash functions
+We'll reveal you a secret now: all string, array, number & hash functions
 are actually "generic", but the syntax you see makes you think those are
-specific to the string, integer, etc object.
+specific to the string, number, etc object.
 
 The trick is very simple; whenever the ABS' interpreter seem a method call
 such as `object.func(arg)` it will actually translate it to `func(object, arg)`.

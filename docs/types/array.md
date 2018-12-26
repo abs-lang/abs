@@ -48,7 +48,7 @@ Returns the length of the array:
 
 ### sum()
 
-Sums the elements of the array. Only supported on arrays of integers:
+Sums the elements of the array. Only supported on arrays of numbers:
 
 ``` bash
 [1, 1, 1].sum() # 3
@@ -56,7 +56,7 @@ Sums the elements of the array. Only supported on arrays of integers:
 
 ### sort()
 
-Sorts the array. Only supported on arrays of only integers
+Sorts the array. Only supported on arrays of only numbers
 or only strings:
 
 ``` bash
@@ -88,7 +88,7 @@ Returns true when all elements in the array
 return `true` when applied to the function `f`:
 
 ``` bash
-[0, 1, 2].every(f(x){type(x) == "INTEGER"}) # true
+[0, 1, 2].every(f(x){type(x) == "NUMBER"}) # true
 [0, 1, 2].every(f(x){x == 0}) # false
 ```
 
@@ -97,7 +97,7 @@ return `true` when applied to the function `f`:
 Returns the first element that returns `true` when applied to the function `f`:
 
 ``` bash
-["hello", 0, 1, 2].find(f(x){type(x) == "INTEGER"}) # 0
+["hello", 0, 1, 2].find(f(x){type(x) == "NUMBER"}) # 0
 ```
 
 ### find(f)
@@ -106,7 +106,7 @@ Returns a new array with only the elements that returned
 `true` when applied to the function `f`:
 
 ``` bash
-["hello", 0, 1, 2].filter(f(x){type(x) == "INTEGER"}) # [0, 1, 2]
+["hello", 0, 1, 2].filter(f(x){type(x) == "NUMBER"}) # [0, 1, 2]
 ```
 
 ### json()
@@ -125,8 +125,8 @@ as well as being able to parse all valid JSON expressions (see [#54](https://git
 ### contains(e)
 
 Checks whether `e` is present in the array. `e` can only be
-a string or integer and the array needs to be a heterogeneous array
-of strings or integers:
+a string or number and the array needs to be a heterogeneous array
+of strings or number:
 
 ``` bash
 [1, 2, 3].contains(3) # true

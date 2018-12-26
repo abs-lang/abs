@@ -7,12 +7,12 @@ if !r.ok {
 
 doc = r.json()
 
-arena = doc["basicGameData"]["arena"]["name"]
-city = doc["basicGameData"]["arena"]["city"]
+arena = doc.basicGameData.arena.name
+city = doc.basicGameData.arena.city
 
 echo("The game was played at the %s in %s", arena, city)
 
-highlight = doc["basicGameData"]["nugget"]["text"]
+highlight = doc.basicGameData.nugget.text
 if highlight.len() {
     echo("The press said: \"%s\"", highlight)
 }

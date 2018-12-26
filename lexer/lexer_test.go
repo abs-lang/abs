@@ -66,6 +66,8 @@ one | two | tree
 /=
 **=
 %=
+1.23
+1.str()
 `
 
 	tests := []struct {
@@ -74,11 +76,11 @@ one | two | tree
 	}{
 		{token.IDENT, "five"},
 		{token.ASSIGN, "="},
-		{token.INT, "5"},
+		{token.NUMBER, "5"},
 		{token.SEMICOLON, ";"},
 		{token.IDENT, "ten"},
 		{token.ASSIGN, "="},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.SEMICOLON, ";"},
 		{token.IDENT, "add"},
 		{token.ASSIGN, "="},
@@ -110,26 +112,26 @@ one | two | tree
 		{token.MINUS, "-"},
 		{token.SLASH, "/"},
 		{token.ASTERISK, "*"},
-		{token.INT, "5"},
+		{token.NUMBER, "5"},
 		{token.SEMICOLON, ";"},
-		{token.INT, "5"},
+		{token.NUMBER, "5"},
 		{token.LT, "<"},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.GT, ">"},
-		{token.INT, "5"},
+		{token.NUMBER, "5"},
 		{token.SEMICOLON, ";"},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.LT_EQ, "<="},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.GT_EQ, ">="},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.SEMICOLON, ";"},
 		{token.COMBINED_COMP, "<=>"},
 		{token.IF, "if"},
 		{token.LPAREN, "("},
-		{token.INT, "5"},
+		{token.NUMBER, "5"},
 		{token.LT, "<"},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},
@@ -144,9 +146,9 @@ one | two | tree
 		{token.RBRACE, "}"},
 		{token.WHILE, "while"},
 		{token.LPAREN, "("},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.GT, ">"},
-		{token.INT, "0"},
+		{token.NUMBER, "0"},
 		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
 		{token.IDENT, "echo"},
@@ -164,34 +166,34 @@ one | two | tree
 		{token.FOR, "for"},
 		{token.IDENT, "x"},
 		{token.ASSIGN, "="},
-		{token.INT, "0"},
+		{token.NUMBER, "0"},
 		{token.SEMICOLON, ";"},
 		{token.IDENT, "x"},
 		{token.LT, "<"},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.SEMICOLON, ";"},
 		{token.IDENT, "x"},
 		{token.ASSIGN, "="},
 		{token.IDENT, "x"},
 		{token.PLUS, "+"},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.LBRACE, "{"},
 		{token.IDENT, "x"},
 		{token.RBRACE, "}"},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.EQ, "=="},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.SEMICOLON, ";"},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.NOT_EQ, "!="},
-		{token.INT, "9"},
+		{token.NUMBER, "9"},
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foobar"},
 		{token.STRING, "foo bar"},
 		{token.LBRACKET, "["},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.COMMA, ","},
-		{token.INT, "2"},
+		{token.NUMBER, "2"},
 		{token.RBRACKET, "]"},
 		{token.SEMICOLON, ";"},
 		{token.COMMAND, `echo "()"`},
@@ -205,7 +207,7 @@ one | two | tree
 		{token.IDENT, "a"},
 		{token.ASSIGN, "="},
 		{token.LBRACKET, "["},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.RBRACKET, "]"},
 		{token.IDENT, "a"},
 		{token.DOT, "."},
@@ -234,9 +236,9 @@ one | two | tree
 		{token.STRING, "hello\\\\"},
 		{token.STRING, "\\\\hello"},
 		{token.EXPONENT, "**"},
-		{token.INT, "1"},
+		{token.NUMBER, "1"},
 		{token.RANGE, ".."},
-		{token.INT, "10"},
+		{token.NUMBER, "10"},
 		{token.TILDE, "~"},
 		{token.MODULO, "%"},
 		{token.COMP_PLUS, "+="},
@@ -245,6 +247,12 @@ one | two | tree
 		{token.COMP_SLASH, "/="},
 		{token.COMP_EXPONENT, "**="},
 		{token.COMP_MODULO, "%="},
+		{token.NUMBER, "1.23"},
+		{token.NUMBER, "1"},
+		{token.DOT, "."},
+		{token.IDENT, "str"},
+		{token.LPAREN, "("},
+		{token.RPAREN, ")"},
 		{token.EOF, ""},
 	}
 
@@ -254,13 +262,11 @@ one | two | tree
 		tok := l.NextToken()
 
 		if tok.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
-				i, tt.expectedType, tok.Type)
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q (%s, %s)", i, tt.expectedType, tok.Type, tok.Literal, tt.expectedLiteral)
 		}
 
 		if tok.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
-				i, tt.expectedLiteral, tok.Literal)
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
 		}
 	}
 }
@@ -284,13 +290,11 @@ func TestRewind(t *testing.T) {
 		tok := l.NextToken()
 
 		if tok.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
-				i, tt.expectedType, tok.Type)
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q (%s, %s)", i, tt.expectedType, tok.Type, tok.Literal, tt.expectedLiteral)
 		}
 
 		if tok.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
-				i, tt.expectedLiteral, tok.Literal)
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
 		}
 	}
 

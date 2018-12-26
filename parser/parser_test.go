@@ -118,34 +118,41 @@ func TestIdentifierExpression(t *testing.T) {
 	}
 }
 
-func TestIntegerLiteralExpression(t *testing.T) {
-	input := "5;"
-
-	l := lexer.New(input)
-	p := New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
-
-	if len(program.Statements) != 1 {
-		t.Fatalf("program has not enough statements. got=%d",
-			len(program.Statements))
-	}
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
-			program.Statements[0])
+func TestNumberLiteralExpression(t *testing.T) {
+	prefixTests := []struct {
+		input string
+		value float64
+	}{
+		{"5;", 5},
+		{"5.5", 5.5},
+		{"5.5555555", 5.5555555},
 	}
 
-	literal, ok := stmt.Expression.(*ast.IntegerLiteral)
-	if !ok {
-		t.Fatalf("exp not *ast.IntegerLiteral. got=%T", stmt.Expression)
-	}
-	if literal.Value != 5 {
-		t.Errorf("literal.Value not %d. got=%d", 5, literal.Value)
-	}
-	if literal.TokenLiteral() != "5" {
-		t.Errorf("literal.TokenLiteral not %s. got=%s", "5",
-			literal.TokenLiteral())
+	for _, tt := range prefixTests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program has not enough statements. got=%d", len(program.Statements))
+		}
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+		}
+
+		literal, ok := stmt.Expression.(*ast.NumberLiteral)
+		if !ok {
+			t.Fatalf("exp not *ast.NumberLiteral. got=%T", stmt.Expression)
+		}
+		if literal.Value != tt.value {
+			t.Errorf("literal.Value not %v. got=%v", tt.value, literal.Value)
+		}
+
+		if literal.TokenLiteral() != fmt.Sprintf("%v", tt.value) {
+			t.Errorf("number.TokenLiteral not %v. got=%s", tt.value, literal.TokenLiteral())
+		}
 	}
 }
 
@@ -1006,7 +1013,7 @@ func TestParsingArrayLiterals(t *testing.T) {
 		t.Fatalf("len(array.Elements) not 3. got=%d", len(array.Elements))
 	}
 
-	testIntegerLiteral(t, array.Elements[0], 1)
+	testNumberLiteral(t, array.Elements[0], 1)
 	testInfixExpression(t, array.Elements[1], 2, "*", 2)
 	testInfixExpression(t, array.Elements[2], 3, "+", 3)
 }
@@ -1091,7 +1098,7 @@ func TestParsingHashLiteralsStringKeys(t *testing.T) {
 		t.Fatalf("exp is not ast.HashLiteral. got=%T", stmt.Expression)
 	}
 
-	expected := map[string]int64{
+	expected := map[string]float64{
 		"one":   1,
 		"two":   2,
 		"three": 3,
@@ -1109,7 +1116,7 @@ func TestParsingHashLiteralsStringKeys(t *testing.T) {
 		}
 
 		expectedValue := expected[literal.String()]
-		testIntegerLiteral(t, value, expectedValue)
+		testNumberLiteral(t, value, expectedValue)
 	}
 }
 
@@ -1127,7 +1134,7 @@ func TestParsingHashLiteralsBooleanKeys(t *testing.T) {
 		t.Fatalf("exp is not ast.HashLiteral. got=%T", stmt.Expression)
 	}
 
-	expected := map[string]int64{
+	expected := map[string]float64{
 		"true":  1,
 		"false": 2,
 	}
@@ -1144,11 +1151,11 @@ func TestParsingHashLiteralsBooleanKeys(t *testing.T) {
 		}
 
 		expectedValue := expected[boolean.String()]
-		testIntegerLiteral(t, value, expectedValue)
+		testNumberLiteral(t, value, expectedValue)
 	}
 }
 
-func TestParsingHashLiteralsIntegerKeys(t *testing.T) {
+func TestParsingHashLiteralsNumberKeys(t *testing.T) {
 	input := `{1: 1, 2: 2, 3: 3}`
 
 	l := lexer.New(input)
@@ -1162,7 +1169,7 @@ func TestParsingHashLiteralsIntegerKeys(t *testing.T) {
 		t.Fatalf("exp is not ast.HashLiteral. got=%T", stmt.Expression)
 	}
 
-	expected := map[string]int64{
+	expected := map[string]float64{
 		"1": 1,
 		"2": 2,
 		"3": 3,
@@ -1173,15 +1180,15 @@ func TestParsingHashLiteralsIntegerKeys(t *testing.T) {
 	}
 
 	for key, value := range hash.Pairs {
-		integer, ok := key.(*ast.IntegerLiteral)
+		Number, ok := key.(*ast.NumberLiteral)
 		if !ok {
-			t.Errorf("key is not ast.IntegerLiteral. got=%T", key)
+			t.Errorf("key is not ast.NumberLiteral. got=%T", key)
 			continue
 		}
 
-		expectedValue := expected[integer.String()]
+		expectedValue := expected[Number.String()]
 
-		testIntegerLiteral(t, value, expectedValue)
+		testNumberLiteral(t, value, expectedValue)
 	}
 }
 
@@ -1290,9 +1297,9 @@ func testLiteralExpression(
 ) bool {
 	switch v := expected.(type) {
 	case int:
-		return testIntegerLiteral(t, exp, int64(v))
-	case int64:
-		return testIntegerLiteral(t, exp, v)
+		return testNumberLiteral(t, exp, float64(v))
+	case float64:
+		return testNumberLiteral(t, exp, v)
 	case string:
 		return testIdentifier(t, exp, v)
 	case bool:
@@ -1302,21 +1309,20 @@ func testLiteralExpression(
 	return false
 }
 
-func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
-	integ, ok := il.(*ast.IntegerLiteral)
+func testNumberLiteral(t *testing.T, il ast.Expression, value float64) bool {
+	number, ok := il.(*ast.NumberLiteral)
 	if !ok {
-		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
+		t.Errorf("il not *ast.NumberLiteral. got=%T", il)
 		return false
 	}
 
-	if integ.Value != value {
-		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
+	if number.Value != value {
+		t.Errorf("number.Value not %f. got=%f", value, number.Value)
 		return false
 	}
 
-	if integ.TokenLiteral() != fmt.Sprintf("%d", value) {
-		t.Errorf("integ.TokenLiteral not %d. got=%s", value,
-			integ.TokenLiteral())
+	if number.TokenLiteral() != fmt.Sprintf("%v", value) {
+		t.Errorf("number.TokenLiteral not %v. got=%s", value, number.TokenLiteral())
 		return false
 	}
 

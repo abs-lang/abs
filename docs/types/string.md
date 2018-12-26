@@ -64,12 +64,22 @@ Formats a string ([sprintf convention](https://linux.die.net/man/3/sprintf)):
 "hello %s".fmt("world") # "hello world"
 ```
 
+### number()
+
+Converts a string to a number, if possible:
+
+``` bash
+"99.5".number() # 99.5
+"a".number() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
+```
+
 ### int()
 
 Converts a string to integer, if possible:
 
 ``` bash
-"99".int() # 99
+"99.5".int() # 99
+"a".int() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
 ```
 
 ### split(separator)
@@ -237,4 +247,4 @@ back as many characters as the value of `start`:
 
 That's about it for this section!
 
-You can now head over to read about [integers](/types/int).
+You can now head over to read about [numbers](/types/number).
