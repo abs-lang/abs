@@ -341,6 +341,17 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				arr := args[0].(*object.Array)
+				if arr.Empty() {
+					return &object.Number{Value: float64(0)}
+				}
+
+				if !arr.Homogeneous() {
+					return newError("sum(...) can only be called on an homogeneous array, got %s", arr.Inspect())
+				}
+
+				if arr.Elements[0].Type() != object.NUMBER_OBJ {
+					return newError("sum(...) can only be called on arrays of numbers, got %s", arr.Inspect())
+				}
 
 				var sum float64 = 0
 

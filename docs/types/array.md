@@ -30,6 +30,18 @@ To concatenate arrays, "sum" them:
 [1, 2] + [3] # [1, 2, 3]
 ```
 
+An array is defined as "homogeneous" when all its elements
+are of a single type:
+
+```
+[1, 2, 3] # homogeneous
+[null, 0, "", {}] # heterogeneous
+```
+
+This is important as some functions are only supported
+on homogeneous arrays: `sum()`, for example, can only be
+called on homogeneous arrays of numbers.
+
 ## Supported functions
 
 ### len()

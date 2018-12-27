@@ -573,6 +573,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`[1, null].sum()`, "sum(...) can only be called on an homogeneous array, got [1, null]"},
+		{`[null, null].sum()`, "sum(...) can only be called on arrays of numbers, got [null, null]"},
+		{`[].sum()`, 0},
+		{`[1, 2].sum()`, 3},
 		{`[1].map(f(x) { y = x + 1 }).str()`, "[null]"},
 		{`contains("hello", "lo")`, true},
 		{`contains("hello", "_")`, false},

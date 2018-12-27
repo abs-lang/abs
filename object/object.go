@@ -176,7 +176,7 @@ func (ao *Array) Next(pos int) (int, Object) {
 	return -1, nil
 }
 func (ao *Array) Homogeneous() bool {
-	if len(ao.Elements) == 0 {
+	if ao.Empty() {
 		return true
 	}
 
@@ -190,6 +190,9 @@ func (ao *Array) Homogeneous() bool {
 	}
 
 	return homogeneous
+}
+func (ao *Array) Empty() bool {
+	return len(ao.Elements) == 0
 }
 func (ao *Array) Inspect() string {
 	var out bytes.Buffer
