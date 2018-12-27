@@ -28,7 +28,16 @@ favors `f` for 2 main reasons:
 * brevity
 * resembles the standard mathematical notation everyone is used to (*x ↦ f(x)*)
 
-Functions can be passed as arguments to other functions:
+Functions must be called with the right number of arguments:
+
+``` bash
+fn = f(x) { x }
+fn() # ERROR: Wrong number of arguments passed to f(x) {
+# x
+# }. Want [x], got []
+```
+
+They can be passed as arguments to other functions:
 
 ``` bash
 [1, 2, 3].map(f(x){ x + 1}) # [2, 3, 4]
