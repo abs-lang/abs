@@ -32,6 +32,7 @@ func TestEvalNumberExpression(t *testing.T) {
 		expected float64
 	}{
 		{"5.5", 5.5},
+		{"1.1 + 2.1", 3.2},
 		{"5.5 + 2.2", 7.7},
 		{"5", 5},
 		{"10", 10},
@@ -79,6 +80,9 @@ func TestEvalStringExpression(t *testing.T) {
 		input    string
 		expected string
 	}{
+		{"9999999999.str()", "9999999999"},
+		{"12.1.str()", "12.1"},
+		{"12.123456789.str()", "12.123456789"},
 		{`"5"`, "5"},
 		{`"5" + "5"`, "55"},
 	}
