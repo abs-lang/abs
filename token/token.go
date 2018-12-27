@@ -11,6 +11,7 @@ const (
 	NUMBER  = "NUMBER" // 1343456, 1.23456
 	STRING  = "STRING" // "foobar"
 	COMMENT = "#"      // # Comment
+	NULL    = "NULL"   // # null
 
 	// Operators
 	TILDE         = "~"
@@ -84,6 +85,7 @@ var keywords = map[string]TokenType{
 	"while":  WHILE,
 	"for":    FOR,
 	"in":     IN,
+	"null":   NULL,
 }
 
 func LookupIdent(ident string) TokenType {
