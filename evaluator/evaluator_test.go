@@ -634,6 +634,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`lines("a
 b
 c")`, []string{"a", "b", "c"}},
+		{`lines("a	b		c	d")`, []string{"a", "b", "c", "d"}}, // These are tabs
 		{`[1, 2].sort()`, []int{1, 2}},
 		{`["b", "a"].sort()`, []string{"a", "b"}},
 		{`["b", 1].sort()`, "argument to `sort` must be an homogeneous array (elements of the same type), got [b, 1]"},

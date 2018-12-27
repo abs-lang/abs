@@ -263,7 +263,9 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				s := args[0].(*object.String)
-				parts := strings.Split(s.Value, "\n")
+				parts := strings.FieldsFunc(s.Value, func(r rune) bool {
+					return r == '\n' || r == '\r' || r == '\f'
+				})
 				length := len(parts)
 				elements := make([]object.Object, length, length)
 
