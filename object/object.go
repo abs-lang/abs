@@ -3,6 +3,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/abs-lang/abs/ast"
@@ -51,8 +52,18 @@ type Number struct {
 	Value float64
 }
 
-func (n *Number) Type() ObjectType   { return NUMBER_OBJ }
-func (n *Number) Inspect() string    { return fmt.Sprintf("%v", n.Value) }
+func (n *Number) Type() ObjectType { return NUMBER_OBJ }
+
+// If the number we're dealing with is
+// an integer, print it as such (1.0000 becomes 1).
+// If it's a float, let's remove as many zeroes
+// as possible (1.10000 becomes 1.1).
+func (n *Number) Inspect() string {
+	if n.Value == float64(int64(n.Value)) {
+		return fmt.Sprintf("%d", int64(n.Value))
+	}
+	return strconv.FormatFloat(n.Value, 'f', -1, 64)
+}
 func (n *Number) ZeroValue() float64 { return float64(0) }
 func (n *Number) Int() int           { return int(n.Value) }
 
