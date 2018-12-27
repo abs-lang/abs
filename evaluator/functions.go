@@ -430,7 +430,12 @@ func getFns() map[string]*object.Builtin {
 				copy(newElements, arr.Elements)
 
 				for k, v := range arr.Elements {
-					newElements[k] = applyFunction(args[1], []object.Object{v})
+					evaluated := applyFunction(args[1], []object.Object{v})
+
+					if isError(evaluated) {
+						return evaluated
+					}
+					newElements[k] = evaluated
 				}
 
 				return &object.Array{Elements: newElements}
@@ -520,9 +525,13 @@ func getFns() map[string]*object.Builtin {
 				arr := args[0].(*object.Array)
 
 				for _, v := range arr.Elements {
-					r := applyFunction(args[1], []object.Object{v})
+					evaluated := applyFunction(args[1], []object.Object{v})
 
-					if isTruthy(r) {
+					if isError(evaluated) {
+						return evaluated
+					}
+
+					if isTruthy(evaluated) {
 						result = append(result, v)
 					}
 				}

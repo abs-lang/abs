@@ -573,6 +573,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`[1,2,"a"].map(int)`, "int(...) can only be called on strings which represent numbers, 'a' given"},
+		{`[1,2,"a"].filter(int)`, "int(...) can only be called on strings which represent numbers, 'a' given"},
 		{`[1, null].sum()`, "sum(...) can only be called on an homogeneous array, got [1, null]"},
 		{`[null, null].sum()`, "sum(...) can only be called on arrays of numbers, got [null, null]"},
 		{`[].sum()`, 0},
