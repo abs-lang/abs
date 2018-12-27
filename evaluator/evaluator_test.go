@@ -254,6 +254,7 @@ func TestWhileExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{"while true { echo x }", "identifier not found: x"},
 		{"a = 0; while (a < 10) { a = a + 1 }; a", 10},
 		{`a = ""; while (len(a) < 3) { a = a + "a" }; a`, "aaa"},
 	}
@@ -264,7 +265,15 @@ func TestWhileExpressions(t *testing.T) {
 		case int:
 			testNumberObject(t, evaluated, float64(tt.expected.(int)))
 		case string:
-			testStringObject(t, evaluated, tt.expected.(string))
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				testStringObject(t, evaluated, tt.expected.(string))
+				continue
+			}
+
+			if errObj.Message != tt.expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
+			}
 		default:
 			panic("should not reach here")
 		}

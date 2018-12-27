@@ -472,7 +472,12 @@ func evalWhileExpression(
 	}
 
 	if isTruthy(condition) {
-		Eval(we.Consequence, env)
+		evaluated := Eval(we.Consequence, env)
+
+		if isError(evaluated) {
+			return evaluated
+		}
+
 		evalWhileExpression(we, env)
 	}
 	return NULL
