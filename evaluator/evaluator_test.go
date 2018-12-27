@@ -558,6 +558,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`[1].map(f(x) { y = x + 1 }).str()`, "[null]"},
 		{`contains("hello", "lo")`, true},
 		{`contains("hello", "_")`, false},
 		{`contains("hello", 1)`, false},

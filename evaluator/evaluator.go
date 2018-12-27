@@ -56,6 +56,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return err
 		}
 
+		return NULL
 	// Expressions
 	case *ast.NumberLiteral:
 		return &object.Number{Value: node.Value}
@@ -102,6 +103,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		expr := evalInfixExpression(node.Operator[:len(node.Operator)-1], left, right)
 		env.Set(node.Left.String(), expr)
+		return NULL
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 
@@ -176,7 +178,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	}
 
-	return nil
+	return NULL
 }
 
 func evalProgram(program *ast.Program, env *object.Environment) object.Object {
