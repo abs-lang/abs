@@ -31,7 +31,8 @@ func main() {
 	code, err := ioutil.ReadFile(args[1])
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 
 	repl.Run(string(code), false)
