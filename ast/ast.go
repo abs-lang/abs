@@ -414,6 +414,14 @@ func (sl *StringLiteral) expressionNode()      {}
 func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
 func (sl *StringLiteral) String() string       { return sl.Token.Literal }
 
+type NullLiteral struct {
+	Token token.Token
+}
+
+func (nl *NullLiteral) expressionNode()      {}
+func (nl *NullLiteral) TokenLiteral() string { return "null" }
+func (nl *NullLiteral) String() string       { return "null" }
+
 type ArrayLiteral struct {
 	Token    token.Token // the '[' token
 	Elements []Expression

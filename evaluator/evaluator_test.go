@@ -590,6 +590,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`type({})`, "HASH"},
 		{`type([])`, "ARRAY"},
 		{`type("{}".json())`, "HASH"},
+		{`"{\"a\": null}".json().a`, nil},
+		{`type(null)`, "NULL"},
 		{`"{\"k\": \"v\"}".json()["k"]`, "v"},
 		{`"hello".json()`, "argument to `json` must be a valid JSON object, got 'hello'"},
 		{`"\"hello".json()`, "argument to `json` must be a valid JSON object, got '\"hello'"},

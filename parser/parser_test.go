@@ -976,6 +976,25 @@ func TestStringLiteralExpression(t *testing.T) {
 	}
 }
 
+func TestNullLiteralExpression(t *testing.T) {
+	input := `null;`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	literal, ok := stmt.Expression.(*ast.NullLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.NullLiteral. got=%T", stmt.Expression)
+	}
+
+	if literal.TokenLiteral() != "null" {
+		t.Errorf("literal.Value not %q. got=%s", "null", literal.TokenLiteral())
+	}
+}
+
 func TestParsingEmptyArrayLiterals(t *testing.T) {
 	input := "[]"
 

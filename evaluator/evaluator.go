@@ -60,6 +60,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.NumberLiteral:
 		return &object.Number{Value: node.Value}
 
+	case *ast.NullLiteral:
+		return NULL
+
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
 

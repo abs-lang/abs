@@ -68,6 +68,8 @@ one | two | tree
 %=
 1.23
 1.str()
+null
+nullo
 `
 
 	tests := []struct {
@@ -256,6 +258,8 @@ one | two | tree
 		{token.IDENT, "str"},
 		{token.LPAREN, "("},
 		{token.RPAREN, ")"},
+		{token.NULL, "null"},
+		{token.IDENT, "nullo"},
 		{token.EOF, ""},
 	}
 
