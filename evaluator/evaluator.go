@@ -709,7 +709,11 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 	switch fn := fn.(type) {
 
 	case *object.Function:
-		extendedEnv := extendFunctionEnv(fn, args)
+		extendedEnv, err := extendFunctionEnv(fn, args)
+
+		if err != nil {
+			return err
+		}
 		evaluated := Eval(fn.Body, extendedEnv)
 		return unwrapReturnValue(evaluated)
 
@@ -739,14 +743,18 @@ func applyMethod(o object.Object, method string, args []object.Object) object.Ob
 func extendFunctionEnv(
 	fn *object.Function,
 	args []object.Object,
-) *object.Environment {
+) (*object.Environment, *object.Error) {
 	env := object.NewEnclosedEnvironment(fn.Env)
+
+	if len(args) != len(fn.Parameters) {
+		return nil, newError("Wrong number of arguments passed to %s. Want %s, got %s", fn.Inspect(), fn.Parameters, args)
+	}
 
 	for paramIdx, param := range fn.Parameters {
 		env.Set(param.Value, args[paramIdx])
 	}
 
-	return env
+	return env, nil
 }
 
 func unwrapReturnValue(obj object.Object) object.Object {

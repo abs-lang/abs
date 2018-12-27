@@ -468,7 +468,7 @@ func TestFunctionObject(t *testing.T) {
 func TestFunctionApplication(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected float64
+		expected interface{}
 	}{
 		{"identity = f(x) { x; }; identity(5);", 5},
 		{"identity = f(x) { return x; }; identity(5);", 5},
@@ -476,10 +476,25 @@ func TestFunctionApplication(t *testing.T) {
 		{"add = f(x, y) { x + y; }; add(5, 5);", 10},
 		{"add = f(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
 		{"f(x) { x; }(5)", 5},
+		{"f(x) { x; }()", "Wrong number of arguments passed to f(x) {\nx\n}. Want [x], got []"},
 	}
 
 	for _, tt := range tests {
-		testNumberObject(t, testEval(tt.input), tt.expected)
+		evaluated := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+
+			if errObj.Message != tt.expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
+			}
+		case float64:
+			testNumberObject(t, evaluated, float64(expected))
+		}
 	}
 }
 
