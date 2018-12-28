@@ -31,8 +31,19 @@ const (
 	COMP_MODULO   = "%="
 	RANGE         = ".."
 
+	// Logical operators
 	AND = "&&"
 	OR  = "OR"
+
+	// Bitwise operators
+	// It might be worth
+	// to rename these
+	// to AMPERSAND / CARET / etc
+	BIT_AND    = "&"
+	BIT_XOR    = "^"
+	BIT_RSHIFT = ">>"
+	BIT_LSHIFT = "<<"
+	PIPE       = "|"
 
 	LT            = "<"
 	LT_EQ         = "<="
@@ -55,7 +66,6 @@ const (
 	LBRACKET = "["
 	RBRACKET = "]"
 	DOT      = "."
-	PIPE     = "|"
 	COMMAND  = "$()"
 
 	// Keywords

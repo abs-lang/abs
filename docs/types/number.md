@@ -21,6 +21,15 @@ a value that evaluates to `false` when casted to boolean:
 !!0 # false
 ```
 
+You can use [bitwise operators](/syntax/operators) on numbers, but bear in
+mind that they will be implicitely converted to integers:
+
+``` bash
+1 ^ 1 # 0
+1 ^ 0 # 1
+1 ^ 0.9 # 1, as 0.9 is converted to 0
+```
+
 ## Supported functions
 
 ### number()

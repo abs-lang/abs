@@ -27,6 +27,11 @@ const (
 var precedences = map[token.TokenType]int{
 	token.AND:           AND,
 	token.OR:            AND,
+	token.BIT_AND:       AND,
+	token.BIT_XOR:       AND,
+	token.BIT_RSHIFT:    AND,
+	token.BIT_LSHIFT:    AND,
+	token.PIPE:          AND,
 	token.EQ:            EQUALS,
 	token.NOT_EQ:        EQUALS,
 	token.TILDE:         EQUALS,
@@ -53,7 +58,6 @@ var precedences = map[token.TokenType]int{
 	token.LPAREN:        CALL,
 	token.LBRACKET:      INDEX,
 	token.DOT:           DOT,
-	token.PIPE:          DOT,
 }
 
 type (
@@ -85,6 +89,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.NULL, p.ParseNullLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+	p.registerPrefix(token.TILDE, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
@@ -99,7 +104,6 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.DOT, p.parseDottedExpression)
-	p.registerInfix(token.PIPE, p.parseMethodExpression)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
 	p.registerInfix(token.SLASH, p.parseInfixExpression)
@@ -123,6 +127,11 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.COMBINED_COMP, p.parseInfixExpression)
 	p.registerInfix(token.AND, p.parseInfixExpression)
 	p.registerInfix(token.OR, p.parseInfixExpression)
+	p.registerInfix(token.BIT_AND, p.parseInfixExpression)
+	p.registerInfix(token.BIT_XOR, p.parseInfixExpression)
+	p.registerInfix(token.PIPE, p.parseInfixExpression)
+	p.registerInfix(token.BIT_RSHIFT, p.parseInfixExpression)
+	p.registerInfix(token.BIT_LSHIFT, p.parseInfixExpression)
 	p.registerInfix(token.RANGE, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	p.registerInfix(token.LBRACKET, p.parseIndexExpression)

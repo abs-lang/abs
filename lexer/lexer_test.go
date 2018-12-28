@@ -70,6 +70,7 @@ one | two | tree
 1.str()
 null
 nullo
+&^>><<
 `
 
 	tests := []struct {
@@ -260,6 +261,10 @@ nullo
 		{token.RPAREN, ")"},
 		{token.NULL, "null"},
 		{token.IDENT, "nullo"},
+		{token.BIT_AND, "&"},
+		{token.BIT_XOR, "^"},
+		{token.BIT_RSHIFT, ">>"},
+		{token.BIT_LSHIFT, "<<"},
 		{token.EOF, ""},
 	}
 

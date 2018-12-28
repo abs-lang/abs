@@ -215,16 +215,6 @@ Range operator, which creates an array from start to end:
 1..10 # [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-## ~
-
-The tilde (meaning "around") is used to do a case-insensitive
-comparison between strings:
-
-``` bash
-"hello" == "HELLO" # false
-"hello" ~ "HELLO" # true
-```
-
 ## !
 
 Negation:
@@ -244,6 +234,69 @@ Even though there is no double negation operator, using
 !!0 # false
 !!"" # false
 !!"hello" # true
+```
+
+## ~
+
+The tilde (meaning "around") is used to do a case-insensitive
+comparison between strings:
+
+``` bash
+"hello" == "HELLO" # false
+"hello" ~ "HELLO" # true
+```
+
+When in front of a number, it will instead be used as a
+bitwise NOT:
+
+``` bash
+~0 # -1
+~"hello" # ERROR: Bitwise not (~) can only be applied to numbers, got STRING (hello)
+```
+
+## &
+
+Bitwise AND:
+
+``` bash
+1 & 1 # 1
+1 & "hello" # ERROR: type mismatch: NUMBER & STRING
+```
+
+## |
+
+Bitwise OR:
+
+``` bash
+1 | 1 # 1
+1 | "hello" # ERROR: type mismatch: NUMBER | STRING
+```
+
+## ^
+
+Bitwise XOR:
+
+``` bash
+1 ^ 1 # 0
+1 ^ "hello" # ERROR: type mismatch: NUMBER ^ STRING
+```
+
+## >>
+
+Bitwise right shift:
+
+``` bash
+1 >> 1 # 0
+1 >> "hello" # ERROR: type mismatch: NUMBER >> STRING
+```
+
+## <<
+
+Bitwise left shift:
+
+``` bash
+1 << 1 # 2
+1 << "hello" # ERROR: type mismatch: NUMBER << STRING
 ```
 
 ## Next
