@@ -874,8 +874,24 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 }
 
 func evalCommandExpression(cmd string, env *object.Environment) object.Object {
-	re := regexp.MustCompile("\\$([a-zA-Z_]{1,})")
+	// Match all strings preceded by
+	// a $ or a \$
+	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
 	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
+		// If the string starts with a backslash,
+		// that's an escape, so we should replace
+		// it with the remaining portion of the match.
+		// \$VAR becomes $VAR
+		if string(m[0]) == "\\" {
+			return m[1:]
+		}
+
+		// If the string starts with $, then
+		// it's an interpolation. Let's
+		// replace $VAR with the variable
+		// named VAR in the ABS' environment.
+		// If the variable is not found, we
+		// just dump an empty string
 		v, ok := env.Get(m[1:])
 
 		if !ok {

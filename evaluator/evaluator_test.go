@@ -1037,6 +1037,7 @@ func TestCommand(t *testing.T) {
 		{`$(echo -n "123")`, "123"},
 		{`$(echo -n hello world)`, "hello world"},
 		{`$(echo hello world | xargs echo -n)`, "hello world"},
+		{`$(echo \$CONTEXT)`, "abs"},
 	}
 
 	for _, tt := range tests {

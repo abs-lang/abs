@@ -42,6 +42,14 @@ x = $(cat /proc/$file)
 echo(x) # processor: 0\nvendor_id: GenuineIntel...
 ```
 
+and if you need `$` literals in your command, you
+simply need to escape them with a `\`:
+
+``` bash
+$(echo $PWD) # "" since the ABS variable PWD doesn't exist
+$(echo \$PWD) # "/go/src/github.com/abs-lang/abs"
+```
+
 Currently, commands need to be on their own line, meaning
 that you will not be able to have additional code
 on the same line. This will throw an error:
