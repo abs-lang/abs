@@ -120,7 +120,7 @@ func Run(code string, interactive bool) {
 			return
 		}
 
-		if interactive {
+		if interactive && evaluated.Type() != object.NULL_OBJ {
 			fmt.Printf("%s", evaluated.Inspect())
 			fmt.Println("")
 		}
