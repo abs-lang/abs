@@ -212,6 +212,36 @@ func TestForExpressions(t *testing.T) {
 	}
 }
 
+// func TestBitwiseExpressions(t *testing.T) {
+// 	tests := []struct {
+// 		input    string
+// 		expected interface{}
+// 	}{
+// 		{"1 & 1", 1},
+// 		{"1 & 1.1", 1},
+// 		{"1 & 0", 0},
+// 		{`1 & ""`, "ERROR"},
+// 	}
+
+// 	for _, tt := range tests {
+// 		evaluated := testEval(tt.input)
+// 		integer, ok := tt.expected.(int)
+// 		if ok {
+// 			testNumberObject(t, evaluated, float64(integer))
+// 		} else {
+// 			errObj, ok := evaluated.(*object.Error)
+// 			if !ok {
+// 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+// 				continue
+// 			}
+
+// 			if errObj.Message != tt.expected {
+// 				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
+// 			}
+// 		}
+// 	}
+// }
+
 func TestForInExpressions(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -619,8 +649,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len([1, 2, 3])`, 3},
 		{`len([])`, 0},
 		{`echo("hello", "world!")`, nil},
-		{`env("TERM")`, "xterm"},
-		{`type("TERM")`, "STRING"},
+		{`env("CONTEXT")`, "abs"},
+		{`type("SOME")`, "STRING"},
 		{`type(1)`, "NUMBER"},
 		{`type({})`, "HASH"},
 		{`type([])`, "ARRAY"},
@@ -634,7 +664,6 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`lines("a
 b
 c")`, []string{"a", "b", "c"}},
-		{`lines("a	b		c	d")`, []string{"a", "b", "c", "d"}}, // These are tabs
 		{`[1, 2].sort()`, []int{1, 2}},
 		{`["b", "a"].sort()`, []string{"a", "b"}},
 		{`["b", 1].sort()`, "argument to `sort` must be an homogeneous array (elements of the same type), got [b, 1]"},

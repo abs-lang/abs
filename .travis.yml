@@ -1,6 +1,20 @@
 language: go
 
+os:
+  - windows
+  - linux
+  - osx
+
 go:
   - "1.11.x"
 
-script: make travis
+before_script:
+- go get github.com/c-bata/go-prompt
+- go get -v github.com/mattn/go-colorable
+- go get -v github.com/mattn/go-tty
+- go get -d -v ./...
+
+env:
+  - CONTEXT=abs
+
+script: go test ./... -vet=off
