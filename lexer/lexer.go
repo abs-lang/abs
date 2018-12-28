@@ -74,7 +74,7 @@ func (l *Lexer) NextToken() token.Token {
 	case '/':
 		if l.peekChar() == '/' {
 			tok.Type = token.COMMENT
-			tok.Literal = l.readComment()
+			tok.Literal = l.readLine()
 		} else if l.peekChar() == '=' {
 			tok.Type = token.COMP_SLASH
 			tok.Literal = "/="
@@ -84,7 +84,7 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '#':
 		tok.Type = token.COMMENT
-		tok.Literal = l.readComment()
+		tok.Literal = l.readLine()
 	case '&':
 		if l.peekChar() == '&' {
 			tok.Type = token.AND
@@ -178,8 +178,13 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
 	case '$':
-		tok.Type = token.COMMAND
-		tok.Literal = l.readCommand()
+		if l.peekChar() == '(' {
+			tok.Type = token.COMMAND
+			tok.Literal = l.readCommand()
+		} else {
+			tok.Type = token.ILLEGAL
+			tok.Literal = l.readLine()
+		}
 	case '[':
 		tok = newToken(token.LBRACKET, l.ch)
 	case ']':
@@ -331,7 +336,7 @@ func (l *Lexer) readString() string {
 // Go ahead until you find a new line.
 // This makes it so that comments take
 // a full line.
-func (l *Lexer) readComment() string {
+func (l *Lexer) readLine() string {
 	position := l.position
 	for {
 		l.readChar()

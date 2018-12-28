@@ -71,6 +71,7 @@ one | two | tree
 null
 nullo
 &^>><<
+$111
 `
 
 	tests := []struct {
@@ -265,6 +266,7 @@ nullo
 		{token.BIT_XOR, "^"},
 		{token.BIT_RSHIFT, ">>"},
 		{token.BIT_LSHIFT, "<<"},
+		{token.ILLEGAL, "$111"},
 		{token.EOF, ""},
 	}
 

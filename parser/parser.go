@@ -146,6 +146,11 @@ func New(l *lexer.Lexer) *Parser {
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.l.NextToken()
+
+	if p.curTokenIs(token.ILLEGAL) {
+		msg := fmt.Sprintf(`Illegal token '%s'`, p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+	}
 }
 
 func (p *Parser) curTokenIs(t token.TokenType) bool {
