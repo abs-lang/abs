@@ -212,35 +212,55 @@ func TestForExpressions(t *testing.T) {
 	}
 }
 
-// func TestBitwiseExpressions(t *testing.T) {
-// 	tests := []struct {
-// 		input    string
-// 		expected interface{}
-// 	}{
-// 		{"1 & 1", 1},
-// 		{"1 & 1.1", 1},
-// 		{"1 & 0", 0},
-// 		{`1 & ""`, "ERROR"},
-// 	}
+func TestBitwiseExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"1 & 1", 1},
+		{"1 & 1.1", 1},
+		{"1 & 0", 0},
+		{`1 & ""`, "type mismatch: NUMBER & STRING"},
+		{"1 ^ 1", 0},
+		{"1 ^ 1.1", 0},
+		{"1 ^ 0", 1},
+		{`1 ^ ""`, "type mismatch: NUMBER ^ STRING"},
+		{"1 | 1", 1},
+		{"1 | 1.1", 1},
+		{"1 | 0", 1},
+		{`1 | ""`, "type mismatch: NUMBER | STRING"},
+		{"1 >> 1", 0},
+		{"1 >> 1.1", 0},
+		{"1 >> 0", 1},
+		{`1 >> ""`, "type mismatch: NUMBER >> STRING"},
+		{"1 << 1", 2},
+		{"1 << 1.1", 2},
+		{"1 << 0", 1},
+		{`1 << ""`, "type mismatch: NUMBER << STRING"},
+		{"~1", -2},
+		{"~1.1", -2},
+		{"~0", -1},
+		{`~"abc"`, "Bitwise not (~) can only be applied to numbers, got STRING (abc)"},
+	}
 
-// 	for _, tt := range tests {
-// 		evaluated := testEval(tt.input)
-// 		integer, ok := tt.expected.(int)
-// 		if ok {
-// 			testNumberObject(t, evaluated, float64(integer))
-// 		} else {
-// 			errObj, ok := evaluated.(*object.Error)
-// 			if !ok {
-// 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
-// 				continue
-// 			}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testNumberObject(t, evaluated, float64(integer))
+		} else {
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
 
-// 			if errObj.Message != tt.expected {
-// 				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
-// 			}
-// 		}
-// 	}
-// }
+			if errObj.Message != tt.expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
+			}
+		}
+	}
+}
 
 func TestForInExpressions(t *testing.T) {
 	tests := []struct {

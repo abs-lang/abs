@@ -90,8 +90,10 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Type = token.AND
 			tok.Literal = l.readLogicalOperator()
 		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
+			tok = newToken(token.BIT_AND, l.ch)
 		}
+	case '^':
+		tok = newToken(token.BIT_XOR, l.ch)
 	case '*':
 		if l.peekChar() == '*' {
 			l.readChar()
@@ -122,6 +124,10 @@ func (l *Lexer) NextToken() token.Token {
 				tok.Type = token.LT_EQ
 				tok.Literal = "<="
 			}
+		} else if l.peekChar() == '<' {
+			tok.Type = token.BIT_LSHIFT
+			tok.Literal = "<<"
+			l.readChar()
 		} else {
 			tok = newToken(token.LT, l.ch)
 		}
@@ -129,6 +135,10 @@ func (l *Lexer) NextToken() token.Token {
 		if l.peekChar() == '=' {
 			tok.Type = token.GT_EQ
 			tok.Literal = ">="
+			l.readChar()
+		} else if l.peekChar() == '>' {
+			tok.Type = token.BIT_RSHIFT
+			tok.Literal = ">>"
 			l.readChar()
 		} else {
 			tok = newToken(token.GT, l.ch)

@@ -262,6 +262,8 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 		return evalBangOperatorExpression(right)
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
+	case "~":
+		return evalTildePrefixOperatorExpression(right)
 	default:
 		return newError("unknown operator: %s%s", operator, right.Type())
 	}
@@ -343,6 +345,15 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 	}
 }
 
+func evalTildePrefixOperatorExpression(right object.Object) object.Object {
+	switch o := right.(type) {
+	case *object.Number:
+		return &object.Number{Value: float64(^int64(o.Value))}
+	default:
+		return newError("Bitwise not (~) can only be applied to numbers, got %s (%s)", o.Type(), o.Inspect())
+	}
+}
+
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() != object.NUMBER_OBJ {
 		return newError("unknown operator: -%s", right.Type())
@@ -397,6 +408,16 @@ func evalNumberInfixExpression(
 		return nativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":
 		return nativeBoolToBooleanObject(leftVal != rightVal)
+	case "&":
+		return &object.Number{Value: float64(int64(leftVal) & int64(rightVal))}
+	case "|":
+		return &object.Number{Value: float64(int64(leftVal) | int64(rightVal))}
+	case ">>":
+		return &object.Number{Value: float64(uint64(leftVal) >> uint64(rightVal))}
+	case "<<":
+		return &object.Number{Value: float64(uint64(leftVal) << uint64(rightVal))}
+	case "^":
+		return &object.Number{Value: float64(int64(leftVal) ^ int64(rightVal))}
 	// A range results in an array of integers from left to right
 	case "..":
 		a := make([]object.Object, 0)
