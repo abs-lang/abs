@@ -12,14 +12,14 @@ We'll reveal you a secret now: all string, array, number & hash functions
 are actually "generic", but the syntax you see makes you think those are
 specific to the string, number, etc object.
 
-The trick is very simple; whenever the ABS' interpreter seem a method call
+The trick is very simple; whenever the ABS' interpreter finds a method call
 such as `object.func(arg)` it will actually translate it to `func(object, arg)`.
 
 Don't believe us? Try with these examples:
 
 ``` bash
 map(["1"], int) # [1]
-cmd = $(date)
+sort([3, 2, 1]) # [1, 2, 3]
 len("abc") # 3
 ```
 
@@ -85,7 +85,7 @@ exit(99)
 
 ### rand(max)
 
-Returns a random number between 0 and `max`:
+Returns a random integer number between 0 and `max`:
 
 ``` bash
 rand(10) # 7

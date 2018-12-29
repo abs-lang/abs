@@ -11,9 +11,9 @@ f(x, y) {
 }
 ```
 
-As you might notice, the return statement is implicity.
-You can make it explicit, but we advise not to keep
-your code as coincise as possible:
+As you might notice, the return statement is implicit.
+You can make it explicit, but we advise not to, in order
+to keep your code as concise as possible:
 
 ``` bash
 f(x, y) {

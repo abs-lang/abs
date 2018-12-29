@@ -1,18 +1,11 @@
 # Why another scripting language?
 
 If you're a developer, chances are that you got your hands
-on a server at some point during your career. If that statement
-is true, chances are that server was running a flavor of Linux,
-meaning you've probably encountered a terminal before, where
-you most likely had to use Bash to automate some task with a
-good old `.sh` script.
+on a server at some point during your career and bumped
+into an `.sh` script
 
-<p align="center">
-    <img alt="terminal" src="https://github.com/abs-lang/abs/blob/master/bin/terminal.png?raw=true">
-</p>
-
-You might have felt, though, that Bash was a fairly strange
-language, with a very uncommon syntax:
+You might have felt, though, that the script was written
+in a fairly strange language, with a very untraditional syntax:
 
 ``` bash
 if [ -z $STRING ]; then
@@ -25,14 +18,16 @@ fi
 
 Far for bashing Bash (pun intended) or the generic [shell command language](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html),
 we believe there should be a more straightforward alternative
-to automating tasks, something that [Bash excels at](https://www.quora.com/What-are-the-main-advantages-of-Bash-as-a-programming-language): if there's reason why the pragmatic Python or the elegant Ruby haven't been able to overcome Bash as the *de-facto* standard
-for shell scripting, that would be the inner simplicity of bash.
+to automating tasks.
+
+We believe the pragmatic Python or the elegant Ruby haven't been 
+able to overcome Bash as the *de-facto* standard
+for shell scripting because of the [inner simplicity of Bash](https://www.quora.com/What-are-the-main-advantages-of-Bash-as-a-programming-language).
 Running programs in parallel, interacting with the underlying system,
 ease of portability...   ...these are quick and easy wins when you're
 writing those `.sh` files.
 
-As both general-purpose programming languages fans and shell lovers,
-we believe there could be an alternative where a programmer would
+We believe, though, there could be an alternative where a programmer would
 combine the syntax and flexibility of general-purpose languages
 (Python, Ruby and JS, to name a few) with the benefits of Bash.
 
@@ -41,7 +36,7 @@ language that is a joy to work with in the context of shell scripting:
 it isn't here to replace the likes of PHP, Java or Python,
 neither it wants to diminish the importance of Bash.
 
-ABS tries to mix a more modern language with the
+ABS tries to mix a more modern syntax with the
 simplicity of Bash.
 
 Let's take a look a look at some practical ABS code. We will now
@@ -104,6 +99,9 @@ and some more opinionated language features:
 
 # Array concatenation
 [1] + [2] = [1, 2]
+
+# Reading from the stdin
+echo("You typed '%s'", stdin())
 ```
 
 ## Next
