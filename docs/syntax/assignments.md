@@ -11,7 +11,7 @@ Array destructuring is supported, meaning you can
 set multiple variables based on an array:
 
 ``` bash
-[x, y, z] = ["hello world", 99, {}]
+x, y, z = ["hello world", 99, {}]
 x # "hello world"
 y # 99
 z # {}
@@ -22,24 +22,9 @@ than the array, the extra variables will be set to
 null:
 
 ``` bash
-[x] = []
-x # null
+x, y = [1]
+y # null
 ```
-
-Note that when using destructuring, the previous line
-should end with a semicolon:
-
-``` bash
-# Ok
-x = "10";
-[a] = [100]
-
-# Not ok, the parser reads this `x = "10"[a]`
-x = "10"
-[a] = [100]
-```
-
-This behavior will be fixed soon (see [#83](https://github.com/abs-lang/abs/issues/83)).
 
 ABS doesn't have block-specific scopes, so any new variable
 declared in a block is automatically available outside as well:

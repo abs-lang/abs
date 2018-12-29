@@ -227,7 +227,7 @@ func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Obj
 		env.Set(as.Name.Value, val)
 	}
 
-	// destructuring [x] = [1]
+	// destructuring x, y = [1, 2]
 	if len(as.Names) > 0 {
 		if val.Type() != object.ARRAY_OBJ {
 			return newError("wrong assignment, expected identifier or array destructuring, got %s (%s)", val.Type(), val.Inspect())

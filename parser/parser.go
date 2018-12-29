@@ -228,27 +228,42 @@ func (p *Parser) Rewind(pos int) {
 	}
 }
 
+func (p *Parser) parseDestructuringIdentifiers() []ast.Expression {
+	list := []ast.Expression{}
+
+	if p.peekTokenIs(token.ASSIGN) {
+		return list
+	}
+
+	list = append(list, p.parseIdentifier())
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		list = append(list, p.parseExpression(LOWEST))
+	}
+
+	if !p.peekTokenIs(token.ASSIGN) {
+		return nil
+	}
+
+	return list
+}
+
 // x = y
-// [x] = [y]
+// x, y = [z, zz]
 func (p *Parser) parseAssignStatement() ast.Statement {
 	stmt := &ast.AssignStatement{}
 
 	// Is this a regular x = y assignment?
-	if !p.curTokenIs(token.IDENT) {
+	if p.peekTokenIs(token.COMMA) {
 		lexerPosition := p.l.CurrentPosition()
-		// Let's figure out if we are destructuring [x] = [y]
-		if !p.curTokenIs(token.LBRACKET) {
+		// Let's figure out if we are destructuring x, y = [z, zz]
+		if !p.curTokenIs(token.IDENT) {
 			return nil
 		}
 
-		arr := p.ParseArrayLiteral()
-
-		if arr != nil && len(arr.(*ast.ArrayLiteral).Elements) == 0 {
-			p.Rewind(lexerPosition)
-			return nil
-		}
-
-		stmt.Names = arr.(*ast.ArrayLiteral).Elements
+		stmt.Names = p.parseDestructuringIdentifiers()
 
 		if !p.peekTokenIs(token.ASSIGN) {
 			p.Rewind(lexerPosition)

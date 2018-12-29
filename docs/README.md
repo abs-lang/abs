@@ -16,7 +16,7 @@ such as Python, or Ruby, to the convenience of Bash.
 
 ``` bash
 tz = $(cat /etc/timezone);
-[cont, city] = tz.split("/")
+continent, city = tz.split("/")
 
 echo("Best city in the world?")
 
@@ -29,7 +29,7 @@ if selection == city {
 
 See it in action:
 
-[![asciicast](https://asciinema.org/a/218451.svg)](https://asciinema.org/a/218451)
+[![asciicast](https://asciinema.org/a/218909.svg)](https://asciinema.org/a/218909)
 
 Let's now try to fetch our IP address and print the sum of its
 parts, if its higher than 100. Here's how you could do it
