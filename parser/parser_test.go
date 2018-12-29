@@ -18,7 +18,7 @@ func TestAssignStatements(t *testing.T) {
 		{"x = 5;", "x", 5},
 		{"y = true;", "y", true},
 		{"foobar = y;", "foobar", "y"},
-		{"[x, y] = [1, 2];", "", nil},
+		{"x, y = [1, 2];", "", nil},
 	}
 
 	for _, tt := range tests {

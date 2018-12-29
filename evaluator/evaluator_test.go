@@ -470,15 +470,17 @@ func TestAssignStatements(t *testing.T) {
 		{"a = 5 * 5; a;", 25},
 		{"a = 5; b = a; b;", 5},
 		{"a = 5; b = a; c = a + b + 5; c;", 15},
-		{"[a] = [10]; a;", 10},
-		{"[a] = 10; a;", "wrong assignment, expected identifier or array destructuring, got NUMBER (10)"},
-		{"[a, b, c] = [1]; a;", 1},
-		{"[a, b, c] = [1]; b;", nil},
+		{"a, b, c = [1]; a;", 1},
+		{"a, b, c = [1]; b;", nil},
+		{`a = 10 + 1 + 2
+b, c = [1, 2]; b`, 1},
+		{`a = 10 + 1 + 2
+		b, c = [1, 2]; a`, 13},
 		{`
-tz = $(echo "10/20");
-[a, b] = tz.split("/")
-a.int()
-		`, 10},
+		tz = $(echo "10/20")
+		a, b = tz.split("/")
+		a.int()
+				`, 10},
 	}
 
 	for _, tt := range tests {
