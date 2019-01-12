@@ -592,6 +592,10 @@ func evalForInExpression(
 
 	switch i := iterable.(type) {
 	case object.Iterable:
+		defer func() {
+			i.Reset()
+		}()
+
 		return loopIterable(i.Next, env, fie, 0)
 	case *object.Builtin:
 		if i.Next == nil {
