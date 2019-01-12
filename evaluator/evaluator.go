@@ -914,7 +914,7 @@ func evalCommandExpression(cmd string, env *object.Environment) object.Object {
 	c.Env = os.Environ()
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	c.Stdout = os.Stdin
+	c.Stdin = os.Stdin
 	c.Stdout = &out
 	c.Stderr = &stderr
 	err := c.Run()
