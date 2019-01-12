@@ -46,6 +46,7 @@ type Object interface {
 
 type Iterable interface {
 	Next(int) (int, Object)
+	Reset()
 }
 
 type Number struct {
@@ -174,6 +175,9 @@ func (ao *Array) Next(pos int) (int, Object) {
 	}
 
 	return -1, nil
+}
+func (ao *Array) Reset() {
+	ao.position = 0
 }
 func (ao *Array) Homogeneous() bool {
 	if ao.Empty() {

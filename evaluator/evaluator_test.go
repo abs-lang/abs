@@ -267,6 +267,7 @@ func TestForInExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{"a = 1..3; b = 0; c = 0; for x in a { b = x }; for x in a { c = x }; c", 3}, // See: https://github.com/abs-lang/abs/issues/112
 		{"a = 0; for k, x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
 		{"a = 0; for k, x in 1..10 { a = a + 1}; a", 10},
 		{"a = 0; for x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
