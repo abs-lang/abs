@@ -116,6 +116,15 @@ type("") # "STRING"
 type({}) # "HASH"
 ```
 
+### pwd()
+
+Returns the working directory where the script was started for -- equivalent
+to `env("PWD")`:
+
+``` bash
+pwd() # /go/src/github.com/abs-lang/abs
+```
+
 ## Next
 
 That's about it for this section!

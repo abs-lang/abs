@@ -95,6 +95,17 @@ func getFns() map[string]*object.Builtin {
 				return arg
 			},
 		},
+		// pwd()
+		"pwd": &object.Builtin{
+			Types: []string{},
+			Fn: func(args ...object.Object) object.Object {
+				dir, err := os.Getwd()
+				if err != nil {
+					return newError(err.Error())
+				}
+				return &object.String{Value: dir}
+			},
+		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
 			Types: []string{},

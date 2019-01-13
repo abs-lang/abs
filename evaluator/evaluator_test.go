@@ -655,6 +655,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`find([1,2], f(x) {x == "some"})`, nil},
 		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
 		{`arg(3)`, ""},
+		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1)`, "github.com/abs-lang/abs/evaluator"}, // Little trick to get travis to run this test, as the base path is not /go/src/
 		{`rand(1)`, 0},
 		{`int(10)`, 10},
 		{`int(10.5)`, 10},
