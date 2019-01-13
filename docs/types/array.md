@@ -30,6 +30,15 @@ To concatenate arrays, "sum" them:
 [1, 2] + [3] # [1, 2, 3]
 ```
 
+This is also the suggested way to push a new element into
+an array:
+
+``` bash
+x = [1, 2]
+x += [3]
+x # [1, 2, 3]
+```
+
 An array is defined as "homogeneous" when all its elements
 are of a single type:
 
