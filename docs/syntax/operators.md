@@ -303,5 +303,4 @@ Bitwise left shift:
 
 That's about it for this section!
 
-You can now head over to read about data types available in
-ABS, starting from the [string](/types/string).
+You can now head over to read about [commenting code](/syntax/comments).

@@ -104,6 +104,7 @@ sh <(curl https://www.abs-lang.org/installer.sh)
 * [while](/syntax/while)
 * [System commands](/syntax/system-commands)
 * [Operators](/syntax/operators)
+* [Comments](/syntax/comments)
 
 ## Types and functions
 
