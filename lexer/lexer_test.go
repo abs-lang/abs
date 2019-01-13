@@ -72,6 +72,7 @@ null
 nullo
 &^>><<
 $111
+'123'
 `
 
 	tests := []struct {
@@ -267,6 +268,7 @@ $111
 		{token.BIT_RSHIFT, ">>"},
 		{token.BIT_LSHIFT, "<<"},
 		{token.ILLEGAL, "$111"},
+		{token.STRING, "123"},
 		{token.EOF, ""},
 	}
 

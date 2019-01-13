@@ -6,16 +6,23 @@ value in ABS: considering that shell scripting
 is all about working around command outputs,
 we assume you will likely work a lot with them.
 
-Strings are enclosed by double quotes:
+Strings are enclosed by double or single quotes:
 
 ``` bash
 "hello world"
+'hello world'
 ```
 
 You can escape quotes with a simple backslash:
 
 ``` bash
 "I said: \"hello world\""
+```
+
+or use the other quote to ease escaping:
+
+``` bash
+'I said: "hello world"'
 ```
 
 Their individual characters can be accessed

@@ -176,7 +176,10 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.RPAREN, l.ch)
 	case '"':
 		tok.Type = token.STRING
-		tok.Literal = l.readString()
+		tok.Literal = l.readString('"')
+	case '\'':
+		tok.Type = token.STRING
+		tok.Literal = l.readString('\'')
 	case '$':
 		if l.peekChar() == '(' {
 			tok.Type = token.COMMAND
@@ -298,7 +301,7 @@ func (l *Lexer) readLogicalOperator() string {
 // To close a string with an escape
 // character ("\"), escape the escape
 // character itself ("\\").
-func (l *Lexer) readString() string {
+func (l *Lexer) readString(quote byte) string {
 	var chars []string
 	doubleEscape := false
 	for {
@@ -314,8 +317,8 @@ func (l *Lexer) readString() string {
 		// If we encounter a \, let's check whether
 		// we're trying to escape a ". If so, let's skip
 		// the / and add the " to the string.
-		if l.ch == '\\' && l.peekChar() == '"' {
-			chars = append(chars, string('"'))
+		if l.ch == '\\' && l.peekChar() == quote {
+			chars = append(chars, string(quote))
 			l.readChar()
 			continue
 		}
@@ -323,7 +326,7 @@ func (l *Lexer) readString() string {
 		// The string ends when we encounter a "
 		// and the character before that was not a \,
 		// or the \ was escaped as well ("string\\").
-		if (l.ch == '"' && (l.prevChar(2) != '\\' || doubleEscape)) || l.ch == 0 {
+		if (l.ch == quote && (l.prevChar(2) != '\\' || doubleEscape)) || l.ch == 0 {
 			break
 		}
 

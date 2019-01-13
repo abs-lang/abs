@@ -83,8 +83,13 @@ func TestEvalStringExpression(t *testing.T) {
 		{"9999999999.str()", "9999999999"},
 		{"12.1.str()", "12.1"},
 		{"12.123456789.str()", "12.123456789"},
+		{`"nice 'escaping"`, "nice 'escaping"},
+		{`'nice "escaping"`, `nice "escaping"`},
+		{`'nice \'escaping`, `nice 'escaping`},
+		{`"nice \"escaping"`, `nice "escaping`},
 		{`"5"`, "5"},
-		{`"5" + "5"`, "55"},
+		{`'5'`, "5"},
+		{`'hello %s'.fmt("world")`, "hello world"},
 	}
 
 	for _, tt := range tests {
