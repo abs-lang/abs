@@ -44,9 +44,18 @@ if !rm.ok {
     return echo("error: " + rm)
 }
 
+version = $(cat ./main.go | grep "var VERSION")
+version = version.slice(15, len(version) - 1)
+echo("Running builds for version %s, confirm by typing \"y\"".fmt(version))
+selection = stdin()
+
+if selection != "y" {
+    exit(2)
+}
+
 for platform in platforms {
     goos, goarch = platform.split("/")
-    output_name = "abs-latest-" + goos + "-" + goarch
+    output_name = "abs-%s-%s-%s".fmt(version, goos, goarch)
 
     if (goos == "windows") {
         output_name = output_name + ".exe"

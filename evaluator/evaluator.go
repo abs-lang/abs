@@ -445,6 +445,10 @@ func evalStringInfixExpression(
 		return &object.Boolean{Value: left.(*object.String).Value == right.(*object.String).Value}
 	}
 
+	if operator == "!=" {
+		return &object.Boolean{Value: left.(*object.String).Value != right.(*object.String).Value}
+	}
+
 	if operator == "~" {
 		return &object.Boolean{Value: strings.ToLower(left.(*object.String).Value) == strings.ToLower(right.(*object.String).Value)}
 	}

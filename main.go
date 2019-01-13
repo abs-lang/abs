@@ -9,6 +9,8 @@ import (
 	"github.com/abs-lang/abs/repl"
 )
 
+var VERSION = "preview-3"
+
 // The ABS interpreter
 func main() {
 	user, err := user.Current()
@@ -24,6 +26,11 @@ func main() {
 		fmt.Printf("Hello %s, welcome to the ABS programming language!\n", user.Username)
 		fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")
 		repl.Start(os.Stdin, os.Stdout)
+		return
+	}
+
+	if args[1] == "--version" {
+		fmt.Println(VERSION)
 		return
 	}
 
