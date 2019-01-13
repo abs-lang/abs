@@ -160,7 +160,29 @@ func getFns() map[string]*object.Builtin {
 					return &object.Number{Value: i}
 				default:
 					// we will never reach here
-					return newError("argument to `int` not supported, got %s", args[0].Type())
+					return newError("argument to `number` not supported, got %s", args[0].Type())
+				}
+			},
+		},
+		// is_number(string:"1.23456")
+		"is_number": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("number", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				switch arg := args[0].(type) {
+				case *object.Number:
+					return &object.Boolean{Value: true}
+				case *object.String:
+					_, err := strconv.ParseFloat(arg.Value, 64)
+
+					return &object.Boolean{Value: err == nil}
+				default:
+					// we will never reach here
+					return newError("argument to `is_number` not supported, got %s", args[0].Type())
 				}
 			},
 		},

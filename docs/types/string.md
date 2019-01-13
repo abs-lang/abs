@@ -67,6 +67,17 @@ Converts a string to a number, if possible:
 "a".number() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
 ```
 
+### is_number()
+
+Checks whether a string can be converted to a number:
+
+``` bash
+"99.5".is_number() # true
+"a".is_number() # false
+```
+
+Use this function when `"...".number()` might return an error.
+
 ### int()
 
 Converts a string to integer, if possible:
