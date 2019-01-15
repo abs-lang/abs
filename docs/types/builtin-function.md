@@ -125,6 +125,47 @@ to `env("PWD")`:
 pwd() # /go/src/github.com/abs-lang/abs
 ```
 
+### flag(str)
+
+Returns the value of a command-line flag. Both the `--flag` and `-flag`
+form are accepted, and you can specify values with `--flag=x`
+as well as `--flag x`:
+
+``` bash
+$ abs --test --test2 2 --test3=3 --test4 -test5
+Hello user, welcome to the ABS programming language!
+Type 'quit' when you're done, 'help' if you get lost!
+⧐  flag("test")
+true
+⧐  flag("test2")
+2
+⧐  flag("test3")
+3
+⧐  flag("test4")
+true
+⧐  flag("test5")
+true
+⧐  flag("test6")
+⧐  
+```
+
+If a flag value is not set, it will default to `true`.
+The value of a flag that does not exist is `NULL`.
+
+In all other cases `flag(...)` returns the literal string
+value of the flag:
+
+``` bash
+$ abs --number 10
+Hello user, welcome to the ABS programming language!
+Type 'quit' when you're done, 'help' if you get lost!
+⧐  n = flag("number")
+⧐  n
+10
+⧐  type(n)
+STRING
+```
+
 ## Next
 
 That's about it for this section!

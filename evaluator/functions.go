@@ -95,6 +95,71 @@ func getFns() map[string]*object.Builtin {
 				return arg
 			},
 		},
+		// flag("my-flag")
+		// TODO:
+		// This seems a bit more complicated than it should,
+		// and I could probably use some unit testing for this.
+		// In any case it's a small function so YOLO
+		"flag": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn: func(args ...object.Object) object.Object {
+				err := validateArgs("exit", args, 1, [][]string{{object.STRING_OBJ}})
+				if err != nil {
+					return err
+				}
+
+				// flag we're trying to retrieve
+				name := args[0].(*object.String)
+				found := false
+
+				// Let's loop through all the arguments
+				// passed to the script
+				// This is O(n) but again, performance
+				// is not a big deal in ABS
+				for _, v := range os.Args {
+					// If the flag was found in the previous
+					// argument...
+					if found {
+						// ...and the next one is another flag
+						// means we're done parsing
+						// eg. --flag1 --flag2
+						if strings.HasPrefix(v, "-") {
+							break
+						}
+
+						// else return the next argument
+						// eg --flag1 something --flag2
+						return &object.String{Value: v}
+					}
+
+					// try to parse the flag as key=value
+					parts := strings.SplitN(v, "=", 2)
+					// let's just take the left-side of the flag
+					left := parts[0]
+
+					// if the left side of the current argument corresponds
+					// to the flag we're looking for (both in the form of "--flag" and "-flag")...
+					// ..BINGO!
+					if (len(left) > 1 && left[1:] == name.Value) || (len(left) > 2 && left[2:] == name.Value) {
+						if len(parts) > 1 {
+							return &object.String{Value: parts[1]}
+						} else {
+							found = true
+						}
+					}
+				}
+
+				// If the flag was found but we got here
+				// it means no value was assigned to it,
+				// so let's default to true
+				if found {
+					return &object.Boolean{Value: true}
+				}
+
+				// else a flag that's not found is NULL
+				return NULL
+			},
+		},
 		// pwd()
 		"pwd": &object.Builtin{
 			Types: []string{},
