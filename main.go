@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"strings"
 
 	"github.com/abs-lang/abs/repl"
 )
@@ -22,7 +23,7 @@ func main() {
 
 	// if we're called without arguments,
 	// launch the REPL
-	if len(args) == 1 {
+	if len(args) == 1 || strings.HasPrefix(args[1], "-") {
 		fmt.Printf("Hello %s, welcome to the ABS programming language!\n", user.Username)
 		fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")
 		repl.Start(os.Stdin, os.Stdout)

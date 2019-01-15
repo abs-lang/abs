@@ -1,0 +1,2 @@
+# Call me `abs example.abs --example some_value`
+echo(flag("example"))
