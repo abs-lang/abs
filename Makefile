@@ -7,7 +7,9 @@ build:
 	docker build -t abs .
 test:
 	# The -vet=off is as YOLO as it gets
-	go test ./... -vet=off
+	CONTEXT='abs' go test ./... -vet=off
+test_verbose:
+	CONTEXT='abs' go test ./... -v -vet=off
 repl:
 	go run main.go
 build_simple:

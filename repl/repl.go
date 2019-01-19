@@ -102,6 +102,9 @@ func Run(code string, interactive bool) {
 	program := p.ParseProgram()
 	if len(p.Errors()) != 0 {
 		printParserErrors(p.Errors())
+		if !interactive {
+			os.Exit(99)
+		}
 		return
 	}
 

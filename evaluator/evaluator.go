@@ -22,15 +22,24 @@ var (
 	Fns   map[string]*object.Builtin
 )
 
+// This program's current Node used for error location in Eval(program)
+var currentNode ast.Node
+
 func init() {
 	Fns = getFns()
 }
 
 func newError(format string, a ...interface{}) *object.Error {
-	return &object.Error{Message: fmt.Sprintf(format, a...)}
+	// get the position from the currentNode and append the offending line to the error message
+	lineNum, column, thisLine := currentNode.GetLine()
+	return &object.Error{Message: fmt.Sprintf(format, a...) +
+		fmt.Sprintf("\n\t[%d:%d]\t%s", lineNum, column, thisLine)}
 }
 
 func Eval(node ast.Node, env *object.Environment) object.Object {
+	// global current node for error location
+	currentNode = node
+
 	switch node := node.(type) {
 	// Statements
 	case *ast.Program:

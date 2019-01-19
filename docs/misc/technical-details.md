@@ -1,16 +1,12 @@
 # A few technical details...
 
-The ABS interpreter is built with Golang version `1.11`, and is mostly based
-on [the interpreter book](https://interpreterbook.com/) written by
-[Thorsten Ball](https://twitter.com/thorstenball).
+The ABS interpreter is built with Golang version `1.11`, and is mostly based on [the interpreter book](https://interpreterbook.com/) written by [Thorsten Ball](https://twitter.com/thorstenball).
 
-ABS is extremely different from Monkey, the "fictional" language the reader
-builds throughout the book, but the base structure (lexer, parser, evaluator)
-are still very much based on Thorsten's work.
+ABS is extremely different from Monkey, the "fictional" language the reader builds throughout the book, but the base structure (lexer, parser, evaluator) are still very much based on Thorsten's work.
 
 ## Why Go?
 
-There are multiple rasons Go's the ideal choice for ABS, in no
+There are multiple reasons Go is the ideal choice for ABS, in no
 particular order:
 
 * portability, as our goal is to be able to deliver ABS to

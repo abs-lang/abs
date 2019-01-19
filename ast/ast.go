@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"strings"
 
+	"github.com/abs-lang/abs/lexer"
 	"github.com/abs-lang/abs/token"
 )
 
 // The base Node interface
 type Node interface {
+	PositionInterface
 	TokenLiteral() string
 	String() string
 }
@@ -25,9 +27,35 @@ type Expression interface {
 	expressionNode()
 }
 
+// PositionInterface all nodes have this interface
+type PositionInterface interface {
+	SetPosition(int, *lexer.Lexer)
+	GetLine() (int, int, string)
+}
+
+// Position defines the offset into the file where this node was seen
+type Position struct {
+	Position int          // records our Position in the file
+	Lexer    *lexer.Lexer // pointer to our Lexer instance for error location in Eval()
+}
+
+// SetPosition sets the Position and Lexer for this node
+func (p *Position) SetPosition(pos int, lex *lexer.Lexer) {
+	p.Position = pos
+	p.Lexer = lex
+}
+
+// GetLine returns (lineNum, column, thisLine) from this node's Position
+func (p *Position) GetLine() (int, int, string) {
+	pos := p.Position
+	lineNum, column, thisLine := p.Lexer.GetLinePos(pos)
+	return lineNum, column, thisLine
+}
+
 // Represents the whole program
 // as a bunch of statements
 type Program struct {
+	Position   // our position in the file
 	Statements []Statement
 }
 
@@ -51,10 +79,11 @@ func (p *Program) String() string {
 
 // Statements
 type AssignStatement struct {
-	Token token.Token // the token.ASSIGN token
-	Name  *Identifier
-	Names []Expression
-	Value Expression
+	Position             // our position in the file
+	Token    token.Token // the token.ASSIGN token
+	Name     *Identifier
+	Names    []Expression
+	Value    Expression
 }
 
 func (as *AssignStatement) statementNode()       {}
@@ -78,6 +107,7 @@ func (as *AssignStatement) String() string {
 }
 
 type ReturnStatement struct {
+	Position                // our position in the file
 	Token       token.Token // the 'return' token
 	ReturnValue Expression
 }
@@ -99,6 +129,7 @@ func (rs *ReturnStatement) String() string {
 }
 
 type ExpressionStatement struct {
+	Position               // our position in the file
 	Token      token.Token // the first token of the expression
 	Expression Expression
 }
@@ -113,6 +144,7 @@ func (es *ExpressionStatement) String() string {
 }
 
 type BlockStatement struct {
+	Position               // our position in the file
 	Token      token.Token // the { token
 	Statements []Statement
 }
@@ -131,8 +163,9 @@ func (bs *BlockStatement) String() string {
 
 // Expressions
 type Identifier struct {
-	Token token.Token // the token.IDENT token
-	Value string
+	Position             // our position in the file
+	Token    token.Token // the token.IDENT token
+	Value    string
 }
 
 func (i *Identifier) expressionNode()      {}
@@ -140,8 +173,9 @@ func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 func (i *Identifier) String() string       { return i.Value }
 
 type Boolean struct {
-	Token token.Token
-	Value bool
+	Position // our position in the file
+	Token    token.Token
+	Value    bool
 }
 
 func (b *Boolean) expressionNode()      {}
@@ -149,8 +183,9 @@ func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
 func (b *Boolean) String() string       { return b.Token.Literal }
 
 type NumberLiteral struct {
-	Token token.Token
-	Value float64
+	Position // our position in the file
+	Token    token.Token
+	Value    float64
 }
 
 func (nl *NumberLiteral) expressionNode()      {}
@@ -158,6 +193,7 @@ func (nl *NumberLiteral) TokenLiteral() string { return nl.Token.Literal }
 func (nl *NumberLiteral) String() string       { return nl.Token.Literal }
 
 type PrefixExpression struct {
+	Position             // our position in the file
 	Token    token.Token // The prefix token, e.g. !
 	Operator string
 	Right    Expression
@@ -177,6 +213,7 @@ func (pe *PrefixExpression) String() string {
 }
 
 type InfixExpression struct {
+	Position             // our position in the file
 	Token    token.Token // The operator token, e.g. +
 	Left     Expression
 	Operator string
@@ -198,6 +235,7 @@ func (ie *InfixExpression) String() string {
 }
 
 type CompoundAssignment struct {
+	Position             // our position in the file
 	Token    token.Token // The operator token, e.g. +
 	Left     Expression
 	Operator string
@@ -219,6 +257,7 @@ func (ca *CompoundAssignment) String() string {
 }
 
 type MethodExpression struct {
+	Position              // our position in the file
 	Token     token.Token // The operator token, e.g. .
 	Object    Expression
 	Method    Expression
@@ -246,6 +285,7 @@ func (me *MethodExpression) String() string {
 }
 
 type IfExpression struct {
+	Position                // our position in the file
 	Token       token.Token // The 'if' token
 	Condition   Expression
 	Consequence *BlockStatement
@@ -271,6 +311,7 @@ func (ie *IfExpression) String() string {
 }
 
 type WhileExpression struct {
+	Position                // our position in the file
 	Token       token.Token // The 'while' token
 	Condition   Expression
 	Consequence *BlockStatement
@@ -290,6 +331,7 @@ func (ie *WhileExpression) String() string {
 }
 
 type ForInExpression struct {
+	Position                 // our position in the file
 	Token    token.Token     // The 'for' token
 	Block    *BlockStatement // The block executed inside the for loop
 	Iterable Expression      // An expression that should return an iterable ([1, 2, 3] or x in 1..10)
@@ -316,6 +358,7 @@ func (fie *ForInExpression) String() string {
 }
 
 type ForExpression struct {
+	Position                   // our position in the file
 	Token      token.Token     // The 'for' token
 	Identifier string          // "x"
 	Starter    Statement       // x = 0
@@ -343,8 +386,9 @@ func (fe *ForExpression) String() string {
 }
 
 type CommandExpression struct {
-	Token token.Token // The command itself
-	Value string
+	Position             // our position in the file
+	Token    token.Token // The command itself
+	Value    string
 }
 
 func (ce *CommandExpression) expressionNode()      {}
@@ -357,6 +401,7 @@ func (ce *CommandExpression) String() string {
 }
 
 type FunctionLiteral struct {
+	Position               // our position in the file
 	Token      token.Token // The 'fn' token
 	Parameters []*Identifier
 	Body       *BlockStatement
@@ -382,6 +427,7 @@ func (fl *FunctionLiteral) String() string {
 }
 
 type CallExpression struct {
+	Position              // our position in the file
 	Token     token.Token // The '(' token
 	Function  Expression  // Identifier or FunctionLiteral
 	Arguments []Expression
@@ -406,8 +452,9 @@ func (ce *CallExpression) String() string {
 }
 
 type StringLiteral struct {
-	Token token.Token
-	Value string
+	Position // our position in the file
+	Token    token.Token
+	Value    string
 }
 
 func (sl *StringLiteral) expressionNode()      {}
@@ -415,7 +462,8 @@ func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
 func (sl *StringLiteral) String() string       { return sl.Token.Literal }
 
 type NullLiteral struct {
-	Token token.Token
+	Position // our position in the file
+	Token    token.Token
 }
 
 func (nl *NullLiteral) expressionNode()      {}
@@ -423,6 +471,7 @@ func (nl *NullLiteral) TokenLiteral() string { return "null" }
 func (nl *NullLiteral) String() string       { return "null" }
 
 type ArrayLiteral struct {
+	Position             // our position in the file
 	Token    token.Token // the '[' token
 	Elements []Expression
 }
@@ -445,9 +494,10 @@ func (al *ArrayLiteral) String() string {
 }
 
 type IndexExpression struct {
-	Token token.Token // The [ token
-	Left  Expression
-	Index Expression
+	Position             // our position in the file
+	Token    token.Token // The [ token
+	Left     Expression
+	Index    Expression
 }
 
 func (ie *IndexExpression) expressionNode()      {}
@@ -465,6 +515,7 @@ func (ie *IndexExpression) String() string {
 }
 
 type PropertyExpression struct {
+	Position             // our position in the file
 	Token    token.Token // The . token
 	Object   Expression
 	Property Expression
@@ -485,8 +536,9 @@ func (pe *PropertyExpression) String() string {
 }
 
 type HashLiteral struct {
-	Token token.Token // the '{' token
-	Pairs map[Expression]Expression
+	Position             // our position in the file
+	Token    token.Token // the '{' token
+	Pairs    map[Expression]Expression
 }
 
 func (hl *HashLiteral) expressionNode()      {}

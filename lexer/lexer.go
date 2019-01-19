@@ -11,16 +11,93 @@ type Lexer struct {
 	position     int  // current position in input (points to current char)
 	readPosition int  // current reading position in input (after current char)
 	ch           byte // current char under examination
+	// map of input line boundaries used by LinePosition() for error location
+	lineMap [][2]int // array of [begin, end] pairs: [[0,12], [13,22], [23,33] ... ]
 }
 
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
+	// map the input line boundaries for CurrentLine()
+	l.buildLineMap()
+	// read the first char
 	l.readChar()
 	return l
 }
 
+// buildLineMap creates map of input line boundaries used by LinePosition() for error location
+func (l *Lexer) buildLineMap() {
+	begin := 0
+	idx := 0
+	for i, ch := range l.input {
+		idx = i
+		if ch == '\n' {
+			l.lineMap = append(l.lineMap, [2]int{begin, idx})
+			begin = idx + 1
+		}
+	}
+	// last line
+	l.lineMap = append(l.lineMap, [2]int{begin, idx + 1})
+	// fmt.Printf("l.lineMap %v\n", l.lineMap)
+}
+
+// CurrentPosition returns l.position
 func (l *Lexer) CurrentPosition() int {
 	return l.position
+}
+
+// LinePosition (pos) returns lineNum, begin, end
+func (l *Lexer) LinePosition(pos int) (int, int, int) {
+	idx := 0
+	begin := 0
+	end := 0
+	for i, tuple := range l.lineMap {
+		idx = i
+		begin, end = tuple[0], tuple[1]
+		if pos >= begin && pos <= end {
+			break
+		}
+	}
+	lineNum := idx + 1
+	return lineNum, begin, end
+}
+
+// GetLinePos (pos=l.position) returns lineNum, column, thisLine
+// optional arg: pos=l.position i.e. l.CurrentPosition()
+func (l *Lexer) GetLinePos(args ...int) (int, int, string) {
+	pos := l.position
+	if len(args) == 1 {
+		pos = args[0]
+	}
+	lineNum, begin, end := l.LinePosition(pos)
+	thisLine := l.input[begin:end]
+	// fmt.Printf("GetLinePos() %d[%d:%d]%d '%s'\n", lineNum, begin, end, pos, thisLine)
+	column := pos - begin
+	// ensure that we have a working line
+	for count := 0; count < 5; count-- {
+		aLine := strings.TrimSpace(thisLine)
+		if !(len(aLine) == 0 || strings.HasPrefix(aLine, "}") ||
+			strings.HasPrefix(aLine, "#") || strings.HasPrefix(aLine, "echo(")) {
+			break
+		}
+		// error is probably on a previous line
+		lineNum--
+		lineNum, column, thisLine = l.GetLineNum(lineNum)
+	}
+	// fmt.Printf("GetLinePos() %d[%d:%d]%d '%s'\n", lineNum, begin, end, pos, thisLine)
+	return lineNum, column, thisLine
+}
+
+// GetLineNum (lineNum) returns lineNum, column, thisLine
+func (l *Lexer) GetLineNum(lineNum int) (int, int, string) {
+	idx := lineNum - 1
+	if idx < 0 {
+		idx = 0
+	}
+	tuple := l.lineMap[idx]
+	begin, end := tuple[0], tuple[1]
+	thisLine := l.input[begin:end]
+	column := end - begin
+	return lineNum, column, thisLine
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -227,7 +304,7 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPosition]
 	}
 	l.position = l.readPosition
-	l.readPosition += 1
+	l.readPosition++
 }
 
 func (l *Lexer) Rewind(pos int) {
@@ -373,7 +450,6 @@ func (l *Lexer) readCommand() string {
 			break
 		}
 	}
-
 	ret := l.input[position : l.position-subtract]
 
 	// Let's make sure the semicolo is the next token, without
