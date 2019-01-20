@@ -1,0 +1,4 @@
+echo('Reading from stdin. Press ctrl-d to exit.')
+out = $(cat)
+echo('You typed:')
+echo(out)
