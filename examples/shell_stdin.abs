@@ -1,4 +1,3 @@
-echo('Reading from stdin. Press ctrl-d to exit.')
+# cat hello | abs examples/shell_stdin.abs
 out = $(cat)
-echo('You typed:')
-echo(out)
+echo("%s %s", out, "world!")
