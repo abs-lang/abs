@@ -1,6 +1,6 @@
 command -v uname >/dev/null || {
   echo >&2 'requires uname'
-	exit 1
+  exit 1
 }
 
 OS="linux"
@@ -16,7 +16,7 @@ elif [ "${OSTYPE:0:4}" = "msys" ]; then
 elif [ "${OSTYPE:0:7}" = "freebsd" ]; then
   OS="freebsd"
 else
-	OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 fi
 
 ARCH="386"
