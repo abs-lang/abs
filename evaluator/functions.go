@@ -103,7 +103,7 @@ func getFns() map[string]*object.Builtin {
 		"flag": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("exit", args, 1, [][]string{{object.STRING_OBJ}})
+				err := validateArgs("flag", args, 1, [][]string{{object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
