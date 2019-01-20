@@ -8,7 +8,7 @@ We also provide a 1-command installer that should work across
 platforms:
 
 ``` bash
-sh <(curl https://www.abs-lang.org/installer.sh)
+bash <(curl https://www.abs-lang.org/installer.sh)
 ```
 
 and will download the `abs` executable in your current
