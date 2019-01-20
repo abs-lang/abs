@@ -21,7 +21,7 @@ func main() {
 
 	args := os.Args
 
-	if args[1] == "--version" {
+	if len(args) == 2 && args[1] == "--version" {
 		fmt.Println(VERSION)
 		return
 	}
