@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/abs-lang/abs/token"
@@ -70,7 +71,7 @@ func (l *Lexer) GetLinePos(args ...int) (int, int, string) {
 	}
 	lineNum, begin, end := l.LinePosition(pos)
 	thisLine := l.input[begin:end]
-	// fmt.Printf("GetLinePos() %d[%d:%d]%d '%s'\n", lineNum, begin, end, pos, thisLine)
+	fmt.Printf("GetLinePos() %d[%d:%d]%d '%s'\n", lineNum, begin, end, pos, thisLine)
 	column := pos - begin
 	// ensure that we have a working line
 	for count := 0; count < 5; count-- {
@@ -83,7 +84,10 @@ func (l *Lexer) GetLinePos(args ...int) (int, int, string) {
 		lineNum--
 		lineNum, column, thisLine = l.GetLineNum(lineNum)
 	}
-	// fmt.Printf("GetLinePos() %d[%d:%d]%d '%s'\n", lineNum, begin, end, pos, thisLine)
+	if lineNum <= 0 {
+		lineNum = 1
+	}
+	fmt.Printf("GetLinePos() %d[%d:%d]%d '%s'\n", lineNum, begin, end, pos, thisLine)
 	return lineNum, column, thisLine
 }
 

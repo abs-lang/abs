@@ -188,6 +188,9 @@ func (p *Parser) reportError(err string, match string) {
 			lineNum, column, currentLine = p.l.GetLineNum(lineNum)
 		}
 	}
+	if lineNum <= 0 {
+		lineNum = 1
+	}
 	msg := fmt.Sprintf("%s\n\t[%d:%d]\t%s", err, lineNum, column, currentLine)
 	p.errors = append(p.errors, msg)
 }
