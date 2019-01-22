@@ -14,26 +14,28 @@ import (
 	"github.com/abs-lang/abs/lexer"
 	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/parser"
+	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
 )
 
 var scanner *bufio.Scanner
+var tok token.Token
 
 func init() {
 	scanner = bufio.NewScanner(os.Stdin)
-
+	tok = token.Token{Type: token.FUNCTION, Position: 0, Literal: "BuiltinFunction"}
 }
 
 // Utility function that validates arguments passed to builtin
 // functions.
 func validateArgs(name string, args []object.Object, size int, types [][]string) object.Object {
 	if len(args) != size {
-		return newError("wrong number of arguments to %s(...): got=%d, want=%d", name, len(args), size)
+		return newError(tok, "wrong number of arguments to %s(...): got=%d, want=%d", name, len(args), size)
 	}
 
 	for i, t := range types {
 		if !util.Contains(t, string(args[i].Type())) {
-			return newError("argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
+			return newError(tok, "argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
 		}
 	}
 
@@ -53,12 +55,11 @@ func getFns() map[string]*object.Builtin {
 
 				switch arg := args[0].(type) {
 				case *object.Array:
-					return &object.Number{Value: float64(len(arg.Elements))}
+					return &object.Number{Token: tok, Value: float64(len(arg.Elements))}
 				case *object.String:
-					return &object.Number{Value: float64(len(arg.Value))}
+					return &object.Number{Token: tok, Value: float64(len(arg.Value))}
 				default:
-					return newError("argument to `len` not supported, got %s",
-						args[0].Type())
+					return newError(tok, "argument to `len` not supported, got %s", args[0].Type())
 				}
 			},
 		},
@@ -75,10 +76,10 @@ func getFns() map[string]*object.Builtin {
 				r, e := rand.Int(rand.Reader, big.NewInt(int64(arg.Value)))
 
 				if e != nil {
-					return newError("error occurred while calling 'rand(%v)': %s", arg.Value, e.Error())
+					return newError(tok, "error occurred while calling 'rand(%v)': %s", arg.Value, e.Error())
 				}
 
-				return &object.Number{Value: float64(r.Int64())}
+				return &object.Number{Token: tok, Value: float64(r.Int64())}
 			},
 		},
 		// exit(code:0)
@@ -103,7 +104,7 @@ func getFns() map[string]*object.Builtin {
 		"flag": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
-				err := validateArgs("exit", args, 1, [][]string{{object.STRING_OBJ}})
+				err := validateArgs("flag", args, 1, [][]string{{object.STRING_OBJ}})
 				if err != nil {
 					return err
 				}
@@ -129,7 +130,7 @@ func getFns() map[string]*object.Builtin {
 
 						// else return the next argument
 						// eg --flag1 something --flag2
-						return &object.String{Value: v}
+						return &object.String{Token: tok, Value: v}
 					}
 
 					// try to parse the flag as key=value
@@ -142,7 +143,7 @@ func getFns() map[string]*object.Builtin {
 					// ..BINGO!
 					if (len(left) > 1 && left[1:] == name.Value) || (len(left) > 2 && left[2:] == name.Value) {
 						if len(parts) > 1 {
-							return &object.String{Value: parts[1]}
+							return &object.String{Token: tok, Value: parts[1]}
 						} else {
 							found = true
 						}
@@ -153,7 +154,7 @@ func getFns() map[string]*object.Builtin {
 				// it means no value was assigned to it,
 				// so let's default to true
 				if found {
-					return &object.Boolean{Value: true}
+					return &object.Boolean{Token: tok, Value: true}
 				}
 
 				// else a flag that's not found is NULL
@@ -166,9 +167,9 @@ func getFns() map[string]*object.Builtin {
 			Fn: func(args ...object.Object) object.Object {
 				dir, err := os.Getwd()
 				if err != nil {
-					return newError(err.Error())
+					return newError(tok, err.Error())
 				}
-				return &object.String{Value: dir}
+				return &object.String{Token: tok, Value: dir}
 			},
 		},
 		// echo(arg:"hello")
@@ -199,18 +200,18 @@ func getFns() map[string]*object.Builtin {
 
 				switch arg := args[0].(type) {
 				case *object.Number:
-					return &object.Number{Value: float64(int64(arg.Value))}
+					return &object.Number{Token: tok, Value: float64(int64(arg.Value))}
 				case *object.String:
 					i, err := strconv.ParseFloat(arg.Value, 64)
 
 					if err != nil {
-						return newError("int(...) can only be called on strings which represent numbers, '%s' given", arg.Value)
+						return newError(tok, "int(...) can only be called on strings which represent numbers, '%s' given", arg.Value)
 					}
 
-					return &object.Number{Value: float64(int64(i))}
+					return &object.Number{Token: tok, Value: float64(int64(i))}
 				default:
 					// we will never reach here
-					return newError("argument to `int` not supported, got %s", args[0].Type())
+					return newError(tok, "argument to `int` not supported, got %s", args[0].Type())
 				}
 			},
 		},
@@ -230,13 +231,13 @@ func getFns() map[string]*object.Builtin {
 					i, err := strconv.ParseFloat(arg.Value, 64)
 
 					if err != nil {
-						return newError("number(...) can only be called on strings which represent numbers, '%s' given", arg.Value)
+						return newError(tok, "number(...) can only be called on strings which represent numbers, '%s' given", arg.Value)
 					}
 
-					return &object.Number{Value: i}
+					return &object.Number{Token: tok, Value: i}
 				default:
 					// we will never reach here
-					return newError("argument to `number` not supported, got %s", args[0].Type())
+					return newError(tok, "argument to `number` not supported, got %s", args[0].Type())
 				}
 			},
 		},
@@ -251,14 +252,14 @@ func getFns() map[string]*object.Builtin {
 
 				switch arg := args[0].(type) {
 				case *object.Number:
-					return &object.Boolean{Value: true}
+					return &object.Boolean{Token: tok, Value: true}
 				case *object.String:
 					_, err := strconv.ParseFloat(arg.Value, 64)
 
-					return &object.Boolean{Value: err == nil}
+					return &object.Boolean{Token: tok, Value: err == nil}
 				default:
 					// we will never reach here
-					return newError("argument to `is_number` not supported, got %s", args[0].Type())
+					return newError(tok, "argument to `is_number` not supported, got %s", args[0].Type())
 				}
 			},
 		},
@@ -271,7 +272,7 @@ func getFns() map[string]*object.Builtin {
 					return pos, EOF
 				}
 
-				return pos, &object.String{Value: scanner.Text()}
+				return pos, &object.String{Token: tok, Value: scanner.Text()}
 			},
 			Types: []string{},
 			Fn: func(args ...object.Object) object.Object {
@@ -281,7 +282,7 @@ func getFns() map[string]*object.Builtin {
 					return EOF
 				}
 
-				return &object.String{Value: scanner.Text()}
+				return &object.String{Token: tok, Value: scanner.Text()}
 			},
 		},
 		// env(variable:"PWD")
@@ -294,7 +295,7 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				arg := args[0].(*object.String)
-				return &object.String{Value: os.Getenv(arg.Value)}
+				return &object.String{Token: tok, Value: os.Getenv(arg.Value)}
 			},
 		},
 		// arg(position:1)
@@ -310,10 +311,10 @@ func getFns() map[string]*object.Builtin {
 				i := arg.Int()
 
 				if int(i) > len(os.Args)-1 {
-					return &object.String{Value: ""}
+					return &object.String{Token: tok, Value: ""}
 				}
 
-				return &object.String{Value: os.Args[i]}
+				return &object.String{Token: tok, Value: os.Args[i]}
 			},
 		},
 		// type(variable:"hello")
@@ -325,7 +326,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: string(args[0].Type())}
+				return &object.String{Token: tok, Value: string(args[0].Type())}
 			},
 		},
 		// split(string:"hello")
@@ -345,7 +346,7 @@ func getFns() map[string]*object.Builtin {
 				elements := make([]object.Object, length, length)
 
 				for k, v := range parts {
-					elements[k] = &object.String{Value: v}
+					elements[k] = &object.String{Token: tok, Value: v}
 				}
 
 				return &object.Array{Elements: elements}
@@ -368,7 +369,7 @@ func getFns() map[string]*object.Builtin {
 				elements := make([]object.Object, length, length)
 
 				for k, v := range parts {
-					elements[k] = &object.String{Value: v}
+					elements[k] = &object.String{Token: tok, Value: v}
 				}
 
 				return &object.Array{Elements: elements}
@@ -410,7 +411,7 @@ func getFns() map[string]*object.Builtin {
 					return evalHashLiteral(hl, env)
 				}
 
-				return newError("argument to `json` must be a valid JSON object, got '%s'", s.Value)
+				return newError(tok, "argument to `json` must be a valid JSON object, got '%s'", s.Value)
 			},
 		},
 		// "a %s".fmt(b)
@@ -428,7 +429,7 @@ func getFns() map[string]*object.Builtin {
 					list = append(list, s.Inspect())
 				}
 
-				return &object.String{Value: fmt.Sprintf(args[0].(*object.String).Value, list...)}
+				return &object.String{Token: tok, Value: fmt.Sprintf(args[0].(*object.String).Value, list...)}
 			},
 		},
 		// sum(array:[1, 2, 3])
@@ -442,15 +443,15 @@ func getFns() map[string]*object.Builtin {
 
 				arr := args[0].(*object.Array)
 				if arr.Empty() {
-					return &object.Number{Value: float64(0)}
+					return &object.Number{Token: tok, Value: float64(0)}
 				}
 
 				if !arr.Homogeneous() {
-					return newError("sum(...) can only be called on an homogeneous array, got %s", arr.Inspect())
+					return newError(tok, "sum(...) can only be called on an homogeneous array, got %s", arr.Inspect())
 				}
 
 				if arr.Elements[0].Type() != object.NUMBER_OBJ {
-					return newError("sum(...) can only be called on arrays of numbers, got %s", arr.Inspect())
+					return newError(tok, "sum(...) can only be called on arrays of numbers, got %s", arr.Inspect())
 				}
 
 				var sum float64 = 0
@@ -460,7 +461,7 @@ func getFns() map[string]*object.Builtin {
 					sum += elem.Value
 				}
 
-				return &object.Number{Value: sum}
+				return &object.Number{Token: tok, Value: sum}
 			},
 		},
 		// sort(array:[1, 2, 3])
@@ -480,7 +481,7 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				if !arr.Homogeneous() {
-					return newError("argument to `sort` must be an homogeneous array (elements of the same type), got %s", arr.Inspect())
+					return newError(tok, "argument to `sort` must be an homogeneous array (elements of the same type), got %s", arr.Inspect())
 				}
 
 				switch elements[0].(type) {
@@ -494,7 +495,7 @@ func getFns() map[string]*object.Builtin {
 					o := []object.Object{}
 
 					for _, v := range a {
-						o = append(o, &object.Number{Value: v})
+						o = append(o, &object.Number{Token: tok, Value: v})
 					}
 					return &object.Array{Elements: o}
 				case *object.String:
@@ -507,11 +508,11 @@ func getFns() map[string]*object.Builtin {
 					o := []object.Object{}
 
 					for _, v := range a {
-						o = append(o, &object.String{Value: v})
+						o = append(o, &object.String{Token: tok, Value: v})
 					}
 					return &object.Array{Elements: o}
 				default:
-					return newError("cannot sort an array with given elements elements (%s)", arr.Inspect())
+					return newError(tok, "cannot sort an array with given elements elements (%s)", arr.Inspect())
 				}
 			},
 		},
@@ -530,7 +531,7 @@ func getFns() map[string]*object.Builtin {
 				copy(newElements, arr.Elements)
 
 				for k, v := range arr.Elements {
-					evaluated := applyFunction(args[1], []object.Object{v})
+					evaluated := applyFunction(tok, args[1], []object.Object{v})
 
 					if isError(evaluated) {
 						return evaluated
@@ -555,7 +556,7 @@ func getFns() map[string]*object.Builtin {
 				arr := args[0].(*object.Array)
 
 				for _, v := range arr.Elements {
-					r := applyFunction(args[1], []object.Object{v})
+					r := applyFunction(tok, args[1], []object.Object{v})
 
 					if isTruthy(r) {
 						result = true
@@ -563,7 +564,7 @@ func getFns() map[string]*object.Builtin {
 					}
 				}
 
-				return &object.Boolean{Value: result}
+				return &object.Boolean{Token: tok, Value: result}
 			},
 		},
 		// every(array:[1, 2, 3], function:f(x) { x == 2 })
@@ -580,14 +581,14 @@ func getFns() map[string]*object.Builtin {
 				arr := args[0].(*object.Array)
 
 				for _, v := range arr.Elements {
-					r := applyFunction(args[1], []object.Object{v})
+					r := applyFunction(tok, args[1], []object.Object{v})
 
 					if !isTruthy(r) {
 						result = false
 					}
 				}
 
-				return &object.Boolean{Value: result}
+				return &object.Boolean{Token: tok, Value: result}
 			},
 		},
 		// find(array:[1, 2, 3], function:f(x) { x == 2 })
@@ -602,7 +603,7 @@ func getFns() map[string]*object.Builtin {
 				arr := args[0].(*object.Array)
 
 				for _, v := range arr.Elements {
-					r := applyFunction(args[1], []object.Object{v})
+					r := applyFunction(tok, args[1], []object.Object{v})
 
 					if isTruthy(r) {
 						return v
@@ -625,7 +626,7 @@ func getFns() map[string]*object.Builtin {
 				arr := args[0].(*object.Array)
 
 				for _, v := range arr.Elements {
-					evaluated := applyFunction(args[1], []object.Object{v})
+					evaluated := applyFunction(tok, args[1], []object.Object{v})
 
 					if isError(evaluated) {
 						return evaluated
@@ -653,7 +654,7 @@ func getFns() map[string]*object.Builtin {
 					needle, ok := args[1].(*object.String)
 
 					if ok {
-						return &object.Boolean{Value: strings.Contains(arg.Value, needle.Value)}
+						return &object.Boolean{Token: tok, Value: strings.Contains(arg.Value, needle.Value)}
 					}
 				case *object.Array:
 					var found bool
@@ -667,7 +668,7 @@ func getFns() map[string]*object.Builtin {
 							}
 						}
 
-						return &object.Boolean{Value: found}
+						return &object.Boolean{Token: tok, Value: found}
 					case *object.Number:
 						for _, v := range arg.Elements {
 							// Quite ghetto but also the easiest way out
@@ -681,11 +682,11 @@ func getFns() map[string]*object.Builtin {
 							}
 						}
 
-						return &object.Boolean{Value: found}
+						return &object.Boolean{Token: tok, Value: found}
 					}
 				}
 
-				return &object.Boolean{Value: false}
+				return &object.Boolean{Token: tok, Value: false}
 			},
 		},
 		// str(1)
@@ -697,7 +698,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: args[0].Inspect()}
+				return &object.String{Token: tok, Value: args[0].Inspect()}
 			},
 		},
 		// any("abc", "b")
@@ -709,7 +710,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.Boolean{Value: strings.ContainsAny(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+				return &object.Boolean{Token: tok, Value: strings.ContainsAny(args[0].(*object.String).Value, args[1].(*object.String).Value)}
 			},
 		},
 		// prefix("abc", "a")
@@ -721,7 +722,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.Boolean{Value: strings.HasPrefix(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+				return &object.Boolean{Token: tok, Value: strings.HasPrefix(args[0].(*object.String).Value, args[1].(*object.String).Value)}
 			},
 		},
 		// suffix("abc", "a")
@@ -733,7 +734,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.Boolean{Value: strings.HasSuffix(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+				return &object.Boolean{Token: tok, Value: strings.HasSuffix(args[0].(*object.String).Value, args[1].(*object.String).Value)}
 			},
 		},
 		// repeat("abc", 3)
@@ -745,7 +746,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: strings.Repeat(args[0].(*object.String).Value, int(args[1].(*object.Number).Value))}
+				return &object.String{Token: tok, Value: strings.Repeat(args[0].(*object.String).Value, int(args[1].(*object.Number).Value))}
 			},
 		},
 		// replace("abc", "b", "f", -1)
@@ -757,7 +758,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: strings.Replace(args[0].(*object.String).Value, args[1].(*object.String).Value, args[2].(*object.String).Value, int(args[3].(*object.Number).Value))}
+				return &object.String{Token: tok, Value: strings.Replace(args[0].(*object.String).Value, args[1].(*object.String).Value, args[2].(*object.String).Value, int(args[3].(*object.Number).Value))}
 			},
 		},
 		// title("some thing")
@@ -769,7 +770,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: strings.Title(args[0].(*object.String).Value)}
+				return &object.String{Token: tok, Value: strings.Title(args[0].(*object.String).Value)}
 			},
 		},
 		// lower("ABC")
@@ -781,7 +782,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: strings.ToLower(args[0].(*object.String).Value)}
+				return &object.String{Token: tok, Value: strings.ToLower(args[0].(*object.String).Value)}
 			},
 		},
 		// upper("abc")
@@ -793,7 +794,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: strings.ToUpper(args[0].(*object.String).Value)}
+				return &object.String{Token: tok, Value: strings.ToUpper(args[0].(*object.String).Value)}
 			},
 		},
 		// trim("abc")
@@ -805,7 +806,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: strings.Trim(args[0].(*object.String).Value, " ")}
+				return &object.String{Token: tok, Value: strings.Trim(args[0].(*object.String).Value, " ")}
 			},
 		},
 		// trim_by("abc", "c")
@@ -817,7 +818,7 @@ func getFns() map[string]*object.Builtin {
 					return err
 				}
 
-				return &object.String{Value: strings.Trim(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+				return &object.String{Token: tok, Value: strings.Trim(args[0].(*object.String).Value, args[1].(*object.String).Value)}
 			},
 		},
 		// index("abc", "c")
@@ -835,7 +836,7 @@ func getFns() map[string]*object.Builtin {
 					return NULL
 				}
 
-				return &object.Number{Value: float64(i)}
+				return &object.Number{Token: tok, Value: float64(i)}
 			},
 		},
 		// last_index("abcc", "c")
@@ -853,7 +854,7 @@ func getFns() map[string]*object.Builtin {
 					return NULL
 				}
 
-				return &object.Number{Value: float64(i)}
+				return &object.Number{Token: tok, Value: float64(i)}
 			},
 		},
 		// slice("abcc", 0, -1)
@@ -873,7 +874,7 @@ func getFns() map[string]*object.Builtin {
 					s := arg.Value
 					start, end := sliceStartAndEnd(len(s), start, end)
 
-					return &object.String{Value: s[start:end]}
+					return &object.String{Token: tok, Value: s[start:end]}
 				case *object.Array:
 					start, end := sliceStartAndEnd(len(arg.Elements), start, end)
 
@@ -965,7 +966,7 @@ func getFns() map[string]*object.Builtin {
 				newElements := make([]object.Object, length, length)
 
 				for k, _ := range arr.Elements {
-					newElements[k] = &object.Number{Value: float64(k)}
+					newElements[k] = &object.Number{Token: tok, Value: float64(k)}
 				}
 
 				return &object.Array{Elements: newElements}
@@ -988,7 +989,7 @@ func getFns() map[string]*object.Builtin {
 					newElements[k] = v.Inspect()
 				}
 
-				return &object.String{Value: strings.Join(newElements, args[1].(*object.String).Value)}
+				return &object.String{Token: tok, Value: strings.Join(newElements, args[1].(*object.String).Value)}
 			},
 		},
 	}

@@ -1,0 +1,20 @@
+# eval fails
+
+test_num = int(arg(2))
+
+if test_num == 1 {
+    # mismatched type
+    s = "string"
+    s = s + 1   # this is a comment
+}
+
+if test_num == 2 {
+    # invalid property
+    a = [1,2,3]
+    a.junk
+}
+
+if test_num == 3 {
+    # invalid function as index
+    {"name": "Abs"}[f(x) {x}];  
+}

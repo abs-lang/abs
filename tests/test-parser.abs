@@ -1,0 +1,81 @@
+# parser fails
+
+# this is a malformed identifier
+m.a = 'abc'
+
+# this is a command terminated with a semi
+d/d = $(command);
+
+# this is a command terminated with a LF
+c/c = $(command)
+
+# this is a bad infix operator
+b %% c
+
+# test from lexer/lexer_test.go
+five = 5;
+ten = 10;
+add = f(x, y) {
+  x + y;
+};
+result = add(five, ten);
+&&||!-/*5;
+5 < 10 > 5;
+1 <= 1 >= 1;
+<=>
+if (5 < 10) {
+	return true;
+} else {
+	return false;
+}
+while (1 > 0) {
+	echo("hello")
+}
+for x in xs {
+	x
+}
+for x = 0; x < 10; x = x + 1 {
+	x
+}
+10 == 10;
+10 != 9;
+"foobar"
+"foo bar"
+[1, 2];
+$(echo "()");
+{"foo": "bar"}
+$(curl icanhazip.com -X POST)
+$(ls *.go);
+a = [1]
+a.first()
+a.prop
+# Comment
+// Comment
+hello
+$(command; command)
+$(command2; command2);
+one | two | tree
+"hel\"lo"
+"hel\lo"
+"hel\\\\lo"
+"\"hello\""
+"\"he\"\"llo\""
+"hello\\"
+"hello\\\\"
+"\\\\hello"
+**
+1..10
+~%
++=
+-=
+*=
+/=
+**=
+%=
+1.23
+1.str()
+null
+nullo
+&^>><<
+$111
+'123'
