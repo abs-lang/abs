@@ -97,7 +97,7 @@ Exit code: 99
 ```
 ## Roadmap
 
-We're currently working on the [preview-4](https://github.com/abs-lang/abs/milestone/7).
+We're currently working on [1.0](https://github.com/abs-lang/abs/milestone/5).
 
 ## Next
 
