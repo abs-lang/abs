@@ -139,6 +139,10 @@ as well as being able to parse all valid JSON expressions (see [#54](https://git
 
 ### contains(e)
 
+> This function is deprecated and might be removed in future versions.
+>
+> Use the "in" operator instead: 3 in [1, 2, 3]
+
 Checks whether `e` is present in the array. `e` can only be
 a string or number and the array needs to be a heterogeneous array
 of strings or number:

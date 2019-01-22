@@ -98,6 +98,16 @@ a = 10
 a /= 2 # a is now 5
 ```
 
+## in
+
+Checks whether a value is in an array:
+
+``` bash
+1 in [1, 2, 3] # true
+9 in [1, 2, 3] # false
+9 in 9 # unknown operator: NUMBER in NUMBER
+```
+
 ## **
 
 Mathematical exponentiation:
