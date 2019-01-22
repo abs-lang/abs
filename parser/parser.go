@@ -483,8 +483,7 @@ func (p *Parser) parseMethodExpression(object ast.Expression) ast.Expression {
 
 // true
 func (p *Parser) parseBoolean() ast.Expression {
-	b := &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
-	return b
+	return &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }
 
 func (p *Parser) parseGroupedExpression() ast.Expression {

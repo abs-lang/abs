@@ -68,11 +68,11 @@ func (l *Lexer) ErrorLine(pos int) (int, int, string) {
 	return lineNum, column, errorLine
 }
 
-func (lex *Lexer) newToken(tokenType token.TokenType) token.Token {
+func (l *Lexer) newToken(tokenType token.TokenType) token.Token {
 	return token.Token{
 		Type:     tokenType,
-		Position: lex.position,
-		Literal:  string(lex.ch)}
+		Position: l.position,
+		Literal:  string(l.ch)}
 }
 
 func (l *Lexer) NextToken() token.Token {
