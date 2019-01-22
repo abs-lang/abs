@@ -1,5 +1,7 @@
 package util
 
+import "strconv"
+
 // Checks whether the element e is in the
 // list of strings s
 func Contains(s []string, e string) bool {
@@ -9,4 +11,10 @@ func Contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func IsNumber(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+
+	return err == nil
 }

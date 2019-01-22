@@ -84,14 +84,14 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
-	p.registerPrefix(token.NUMBER, p.parseNumberLiteral)
+	p.registerPrefix(token.NUMBER, p.ParseNumberLiteral)
 	p.registerPrefix(token.STRING, p.ParseStringLiteral)
 	p.registerPrefix(token.NULL, p.ParseNullLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.TILDE, p.parsePrefixExpression)
-	p.registerPrefix(token.TRUE, p.parseBoolean)
-	p.registerPrefix(token.FALSE, p.parseBoolean)
+	p.registerPrefix(token.TRUE, p.ParseBoolean)
+	p.registerPrefix(token.FALSE, p.ParseBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.WHILE, p.parseWhileExpression)
@@ -368,7 +368,7 @@ func (p *Parser) parseIdentifier() ast.Expression {
 }
 
 // 1 or 1.1
-func (p *Parser) parseNumberLiteral() ast.Expression {
+func (p *Parser) ParseNumberLiteral() ast.Expression {
 	lit := &ast.NumberLiteral{Token: p.curToken}
 
 	value, err := strconv.ParseFloat(p.curToken.Literal, 64)
@@ -482,7 +482,7 @@ func (p *Parser) parseMethodExpression(object ast.Expression) ast.Expression {
 }
 
 // true
-func (p *Parser) parseBoolean() ast.Expression {
+func (p *Parser) ParseBoolean() ast.Expression {
 	return &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }
 
