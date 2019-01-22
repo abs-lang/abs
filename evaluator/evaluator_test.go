@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 	"testing"
@@ -14,8 +15,11 @@ func logErrorWithPosition(t *testing.T, msg string, expected interface{}) {
 	errorStr := msg
 	expected, _ = expected.(string)
 	expectedStr := fmt.Sprintf("%s", expected)
-	if strings.Contains(errorStr, expectedStr) {
-		t.Log("expected error:", errorStr)
+	if strings.HasPrefix(errorStr, expectedStr) {
+		// Only log when we're running the verbose tests
+		if flag.Lookup("test.v").Value.String() == "true" {
+			t.Log("expected error:", errorStr)
+		}
 	} else {
 		expectedStr = fmt.Sprintf("ERROR: wrong error message. expected='%s',", expectedStr)
 		t.Error(expectedStr, "\ngot=", errorStr)
@@ -651,7 +655,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`find([1,2], f(x) {x == "some"})`, nil},
 		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
 		{`arg(3)`, ""},
-		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1)`, "/evaluator"}, // Little trick to get travis to run this test, as the base path is not /go/src/
+		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1).suffix("/evaluator")`, true}, // Little trick to get travis to run this test, as the base path is not /go/src/
 		{`rand(1)`, 0},
 		{`int(10)`, 10},
 		{`int(10.5)`, 10},
@@ -684,8 +688,13 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`"{\"a\": null}".json().a`, nil},
 		{`type(null)`, "NULL"},
 		{`"{\"k\": \"v\"}".json()["k"]`, "v"},
-		{`"hello".json()`, "argument to `json` must be a valid JSON object, got 'hello'"},
-		{`"\"hello".json()`, "argument to `json` must be a valid JSON object, got '\"hello'"},
+		{`"2".json()`, 2},
+		{`'"2"'.json()`, "2"},
+		{`'true'.json()`, true},
+		{`'null'.json()`, nil},
+		{`'"hello"'.json()`, "hello"},
+		{`'[1, 2, 3]'.json()`, []int{1, 2, 3}},
+		{`'"hello'.json()`, "argument to `json` must be a valid JSON object, got '\"hello'"},
 		{`split("a\"b\"c", "\"")`, []string{"a", "b", "c"}},
 		{`lines("a
 b
@@ -774,7 +783,7 @@ c")`, []string{"a", "b", "c"}},
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if !strings.Contains(s.Value, tt.expected.(string)) {
+				if s.Value != tt.expected.(string) {
 					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
 				continue
@@ -863,7 +872,7 @@ func TestLogicalOperators(t *testing.T) {
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if !strings.Contains(s.Value, tt.expected.(string)) {
+				if s.Value != tt.expected.(string) {
 					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
 
@@ -916,7 +925,7 @@ func TestRangesOperators(t *testing.T) {
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if !strings.Contains(s.Value, tt.expected.(string)) {
+				if s.Value != tt.expected.(string) {
 					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
 
@@ -975,7 +984,7 @@ func TestBuiltinProperties(t *testing.T) {
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if !strings.Contains(s.Value, tt.expected.(string)) {
+				if s.Value != tt.expected.(string) {
 					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
 
@@ -1048,7 +1057,7 @@ func TestCommand(t *testing.T) {
 				t.Errorf("object is not String. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
-			if !strings.Contains(stringObj.Value, expected) {
+			if stringObj.Value != expected {
 				t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, stringObj.Value, expected)
 			}
 		}
