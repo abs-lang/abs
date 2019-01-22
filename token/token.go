@@ -1,5 +1,7 @@
 package token
 
+// import "github.com/abs-lang/abs/lexer"
+
 type TokenType string
 
 const (
@@ -33,7 +35,7 @@ const (
 
 	// Logical operators
 	AND = "&&"
-	OR  = "OR"
+	OR  = "||"
 
 	// Bitwise operators
 	// It might be worth
@@ -81,8 +83,9 @@ const (
 )
 
 type Token struct {
-	Type    TokenType
-	Literal string
+	Type     TokenType
+	Position int // lexer position in file before token
+	Literal  string
 }
 
 var keywords = map[string]TokenType{

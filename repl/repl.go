@@ -96,16 +96,21 @@ func executor(line string) {
 // This function takes code and evaluates
 // it, spitting out the result.
 func Run(code string, interactive bool) {
-	l := lexer.New(code)
-	p := parser.New(l)
+	lex := lexer.New(code)
+	p := parser.New(lex)
 
 	program := p.ParseProgram()
 	if len(p.Errors()) != 0 {
 		printParserErrors(p.Errors())
+		if !interactive {
+			os.Exit(99)
+		}
 		return
 	}
 
-	evaluated := evaluator.Eval(program, env)
+	// invoke BeginEval() passing in the program, env, and lexer for error position
+	// NB. Eval(node, env) is recursive so we can't call it directly
+	evaluated := evaluator.BeginEval(program, env, lex)
 
 	if evaluated != nil {
 		isError := evaluated.Type() == object.ERROR_OBJ

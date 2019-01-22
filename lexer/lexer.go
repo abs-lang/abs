@@ -11,16 +11,68 @@ type Lexer struct {
 	position     int  // current position in input (points to current char)
 	readPosition int  // current reading position in input (after current char)
 	ch           byte // current char under examination
+	// map of input line boundaries used by linePosition() for error location
+	lineMap [][2]int // array of [begin, end] pairs: [[0,12], [13,22], [23,33] ... ]
 }
 
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
+	// map the input line boundaries for CurrentLine()
+	l.buildLineMap()
+	// read the first char
 	l.readChar()
 	return l
 }
 
+// buildLineMap creates map of input line boundaries used by LinePosition() for error location
+func (l *Lexer) buildLineMap() {
+	begin := 0
+	idx := 0
+	for i, ch := range l.input {
+		idx = i
+		if ch == '\n' {
+			l.lineMap = append(l.lineMap, [2]int{begin, idx})
+			begin = idx + 1
+		}
+	}
+	// last line
+	l.lineMap = append(l.lineMap, [2]int{begin, idx + 1})
+}
+
+// CurrentPosition returns l.position
 func (l *Lexer) CurrentPosition() int {
 	return l.position
+}
+
+// linePosition (pos) returns lineNum, begin, end
+func (l *Lexer) linePosition(pos int) (int, int, int) {
+	idx := 0
+	begin := 0
+	end := 0
+	for i, tuple := range l.lineMap {
+		idx = i
+		begin, end = tuple[0], tuple[1]
+		if pos >= begin && pos <= end {
+			break
+		}
+	}
+	lineNum := idx + 1
+	return lineNum, begin, end
+}
+
+// ErrorLine (pos) returns lineNum, column, errorLine
+func (l *Lexer) ErrorLine(pos int) (int, int, string) {
+	lineNum, begin, end := l.linePosition(pos)
+	errorLine := l.input[begin:end]
+	column := pos - begin + 1
+	return lineNum, column, errorLine
+}
+
+func (l *Lexer) newToken(tokenType token.TokenType) token.Token {
+	return token.Token{
+		Type:     tokenType,
+		Position: l.position,
+		Literal:  string(l.ch)}
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -31,86 +83,98 @@ func (l *Lexer) NextToken() token.Token {
 	switch l.ch {
 	case '=':
 		if l.peekChar() == '=' {
+			tok = l.newToken(token.EQ)
 			ch := l.ch
 			l.readChar()
 			literal := string(ch) + string(l.ch)
-			tok = token.Token{Type: token.EQ, Literal: literal}
+			tok.Literal = literal
 		} else {
-			tok = newToken(token.ASSIGN, l.ch)
+			tok = l.newToken(token.ASSIGN)
 		}
 	case '+':
 		if l.peekChar() == '=' {
 			tok.Type = token.COMP_PLUS
+			tok.Position = l.position
 			tok.Literal = "+="
 			l.readChar()
 		} else {
-			tok = newToken(token.PLUS, l.ch)
+			tok = l.newToken(token.PLUS)
 		}
 	case '-':
 		if l.peekChar() == '=' {
 			tok.Type = token.COMP_MINUS
+			tok.Position = l.position
 			tok.Literal = "-="
 			l.readChar()
 		} else {
-			tok = newToken(token.MINUS, l.ch)
+			tok = l.newToken(token.MINUS)
 		}
 	case '%':
 		if l.peekChar() == '=' {
 			tok.Type = token.COMP_MODULO
+			tok.Position = l.position
 			tok.Literal = "%="
 			l.readChar()
 		} else {
-			tok = newToken(token.MODULO, l.ch)
+			tok = l.newToken(token.MODULO)
 		}
 	case '!':
 		if l.peekChar() == '=' {
+			tok = l.newToken(token.NOT_EQ)
 			ch := l.ch
 			l.readChar()
 			literal := string(ch) + string(l.ch)
-			tok = token.Token{Type: token.NOT_EQ, Literal: literal}
+			tok.Literal = literal
 		} else {
-			tok = newToken(token.BANG, l.ch)
+			tok = l.newToken(token.BANG)
 		}
 	case '/':
 		if l.peekChar() == '/' {
 			tok.Type = token.COMMENT
+			tok.Position = l.position
 			tok.Literal = l.readLine()
 		} else if l.peekChar() == '=' {
 			tok.Type = token.COMP_SLASH
+			tok.Position = l.position
 			tok.Literal = "/="
 			l.readChar()
 		} else {
-			tok = newToken(token.SLASH, l.ch)
+			tok = l.newToken(token.SLASH)
 		}
 	case '#':
 		tok.Type = token.COMMENT
+		tok.Position = l.position
 		tok.Literal = l.readLine()
 	case '&':
 		if l.peekChar() == '&' {
 			tok.Type = token.AND
+			tok.Position = l.position
 			tok.Literal = l.readLogicalOperator()
 		} else {
-			tok = newToken(token.BIT_AND, l.ch)
+			tok = l.newToken(token.BIT_AND)
 		}
 	case '^':
-		tok = newToken(token.BIT_XOR, l.ch)
+		tok = l.newToken(token.BIT_XOR)
 	case '*':
 		if l.peekChar() == '*' {
 			l.readChar()
 			if l.peekChar() == '=' {
 				tok.Type = token.COMP_EXPONENT
+				tok.Position = l.position
 				tok.Literal = "**="
 				l.readChar()
 			} else {
 				tok.Type = token.EXPONENT
+				tok.Position = l.position
 				tok.Literal = "**"
 			}
 		} else if l.peekChar() == '=' {
 			tok.Type = token.COMP_ASTERISK
+			tok.Position = l.position
 			tok.Literal = "*="
 			l.readChar()
 		} else {
-			tok = newToken(token.ASTERISK, l.ch)
+			tok = l.newToken(token.ASTERISK)
 		}
 	case '<':
 		if l.peekChar() == '=' {
@@ -118,95 +182,109 @@ func (l *Lexer) NextToken() token.Token {
 
 			if l.peekChar() == '>' {
 				tok.Type = token.COMBINED_COMP
+				tok.Position = l.position
 				tok.Literal = "<=>"
 				l.readChar()
 			} else {
 				tok.Type = token.LT_EQ
+				tok.Position = l.position
 				tok.Literal = "<="
 			}
 		} else if l.peekChar() == '<' {
 			tok.Type = token.BIT_LSHIFT
+			tok.Position = l.position
 			tok.Literal = "<<"
 			l.readChar()
 		} else {
-			tok = newToken(token.LT, l.ch)
+			tok = l.newToken(token.LT)
 		}
 	case '>':
 		if l.peekChar() == '=' {
 			tok.Type = token.GT_EQ
+			tok.Position = l.position
 			tok.Literal = ">="
 			l.readChar()
 		} else if l.peekChar() == '>' {
 			tok.Type = token.BIT_RSHIFT
+			tok.Position = l.position
 			tok.Literal = ">>"
 			l.readChar()
 		} else {
-			tok = newToken(token.GT, l.ch)
+			tok = l.newToken(token.GT)
 		}
 	case ';':
-		tok = newToken(token.SEMICOLON, l.ch)
+		tok = l.newToken(token.SEMICOLON)
 	case ':':
-		tok = newToken(token.COLON, l.ch)
+		tok = l.newToken(token.COLON)
 	case ',':
-		tok = newToken(token.COMMA, l.ch)
+		tok = l.newToken(token.COMMA)
 	case '.':
 		if l.peekChar() == '.' {
 			tok.Type = token.RANGE
+			tok.Position = l.position
 			tok.Literal = ".."
 			l.readChar()
 		} else {
-			tok = newToken(token.DOT, l.ch)
+			tok = l.newToken(token.DOT)
 		}
 	case '|':
 		if l.peekChar() == '|' {
 			tok.Type = token.OR
+			tok.Position = l.position
 			tok.Literal = l.readLogicalOperator()
 		} else {
-			tok = newToken(token.PIPE, l.ch)
+			tok = l.newToken(token.PIPE)
 		}
 	case '{':
-		tok = newToken(token.LBRACE, l.ch)
+		tok = l.newToken(token.LBRACE)
 	case '}':
-		tok = newToken(token.RBRACE, l.ch)
+		tok = l.newToken(token.RBRACE)
 	case '~':
-		tok = newToken(token.TILDE, l.ch)
+		tok = l.newToken(token.TILDE)
 	case '(':
-		tok = newToken(token.LPAREN, l.ch)
+		tok = l.newToken(token.LPAREN)
 	case ')':
-		tok = newToken(token.RPAREN, l.ch)
+		tok = l.newToken(token.RPAREN)
 	case '"':
 		tok.Type = token.STRING
+		tok.Position = l.position
 		tok.Literal = l.readString('"')
 	case '\'':
 		tok.Type = token.STRING
+		tok.Position = l.position
 		tok.Literal = l.readString('\'')
 	case '$':
 		if l.peekChar() == '(' {
 			tok.Type = token.COMMAND
+			tok.Position = l.position
 			tok.Literal = l.readCommand()
 		} else {
 			tok.Type = token.ILLEGAL
+			tok.Position = l.position
 			tok.Literal = l.readLine()
 		}
 	case '[':
-		tok = newToken(token.LBRACKET, l.ch)
+		tok = l.newToken(token.LBRACKET)
 	case ']':
-		tok = newToken(token.RBRACKET, l.ch)
+		tok = l.newToken(token.RBRACKET)
 	case 0:
-		tok.Literal = ""
 		tok.Type = token.EOF
+		tok.Position = l.position
+		tok.Literal = ""
 	default:
 		if isLetter(l.ch) {
+			tok.Position = l.position
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
 		} else if isDigit(l.ch) {
+			tok.Position = l.position
 			literal, kind := l.readNumber()
 			tok.Type = kind
 			tok.Literal = literal
 			return tok
 		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
+			tok = l.newToken(token.ILLEGAL)
 		}
 	}
 
@@ -227,7 +305,7 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPosition]
 	}
 	l.position = l.readPosition
-	l.readPosition += 1
+	l.readPosition++
 }
 
 func (l *Lexer) Rewind(pos int) {
@@ -373,7 +451,6 @@ func (l *Lexer) readCommand() string {
 			break
 		}
 	}
-
 	ret := l.input[position : l.position-subtract]
 
 	// Let's make sure the semicolo is the next token, without
@@ -392,8 +469,4 @@ func isLetter(ch byte) bool {
 
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
-}
-
-func newToken(tokenType token.TokenType, ch byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch)}
 }

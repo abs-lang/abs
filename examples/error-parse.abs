@@ -1,0 +1,13 @@
+# there are multiple parser errors in this file
+
+# this is a malformed identifier
+m.a = 'abc'
+
+# this is a command terminated with a semi
+d/d = $(command);
+
+# this is a command terminated with a LF
+c/c = $(command)
+
+# this is a bad infix operator
+b %% c

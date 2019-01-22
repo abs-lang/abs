@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/abs-lang/abs/ast"
+	"github.com/abs-lang/abs/token"
 )
 
 type BuiltinFunction func(args ...Object) Object
@@ -31,6 +32,7 @@ const (
 )
 
 type HashKey struct {
+	Token token.Token
 	Type  ObjectType
 	Value string
 }
@@ -50,6 +52,7 @@ type Iterable interface {
 }
 
 type Number struct {
+	Token token.Token
 	Value float64
 }
 
@@ -69,18 +72,22 @@ func (n *Number) ZeroValue() float64 { return float64(0) }
 func (n *Number) Int() int           { return int(n.Value) }
 
 type Boolean struct {
+	Token token.Token
 	Value bool
 }
 
 func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
 func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
 
-type Null struct{}
+type Null struct {
+	Token token.Token
+}
 
 func (n *Null) Type() ObjectType { return NULL_OBJ }
 func (n *Null) Inspect() string  { return "null" }
 
 type ReturnValue struct {
+	Token token.Token
 	Value Object
 }
 
@@ -95,6 +102,7 @@ func (e *Error) Type() ObjectType { return ERROR_OBJ }
 func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
 
 type Function struct {
+	Token      token.Token
 	Parameters []*ast.Identifier
 	Body       *ast.BlockStatement
 	Env        *Environment
@@ -112,9 +120,9 @@ func (f *Function) Inspect() string {
 	out.WriteString("f")
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
-	out.WriteString(") {\n")
+	out.WriteString(") {")
 	out.WriteString(f.Body.String())
-	out.WriteString("\n}")
+	out.WriteString("}")
 
 	return out.String()
 }
@@ -140,6 +148,7 @@ func (f *Function) Inspect() string {
 // type(cmd) // STRING
 // cmd.ok // FALSE
 type String struct {
+	Token token.Token
 	Value string
 	Ok    *Boolean // A special property to check whether a command exited correctly
 }
@@ -152,6 +161,7 @@ func (s *String) HashKey() HashKey {
 }
 
 type Builtin struct {
+	Token    token.Token
 	Fn       BuiltinFunction
 	Next     func(int) (int, Object)
 	Types    []string
@@ -162,6 +172,7 @@ func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
 func (b *Builtin) Inspect() string  { return "builtin function" }
 
 type Array struct {
+	Token    token.Token
 	Elements []Object
 	position int
 }
@@ -219,6 +230,7 @@ type HashPair struct {
 }
 
 type Hash struct {
+	Token token.Token
 	Pairs map[HashKey]HashPair
 }
 

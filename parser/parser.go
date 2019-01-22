@@ -149,40 +149,47 @@ func (p *Parser) nextToken() {
 
 	if p.curTokenIs(token.ILLEGAL) {
 		msg := fmt.Sprintf(`Illegal token '%s'`, p.curToken.Literal)
-		p.errors = append(p.errors, msg)
+		p.reportError(msg, p.curToken)
 	}
 }
 
-func (p *Parser) curTokenIs(t token.TokenType) bool {
-	return p.curToken.Type == t
+func (p *Parser) curTokenIs(typ token.TokenType) bool {
+	return p.curToken.Type == typ
 }
 
-func (p *Parser) peekTokenIs(t token.TokenType) bool {
-	return p.peekToken.Type == t
+func (p *Parser) peekTokenIs(typ token.TokenType) bool {
+	return p.peekToken.Type == typ
 }
 
-func (p *Parser) expectPeek(t token.TokenType) bool {
-	if p.peekTokenIs(t) {
+func (p *Parser) expectPeek(typ token.TokenType) bool {
+	if p.peekTokenIs(typ) {
 		p.nextToken()
 		return true
-	} else {
-		p.peekError(t)
-		return false
 	}
+	p.peekError(p.curToken)
+	return false
 }
 
 func (p *Parser) Errors() []string {
 	return p.errors
 }
 
-func (p *Parser) peekError(t token.TokenType) {
-	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
+func (p *Parser) reportError(err string, tok token.Token) {
+	// report error at token location
+	lineNum, column, errorLine := p.l.ErrorLine(tok.Position)
+	msg := fmt.Sprintf("%s\n\t[%d:%d]\t%s", err, lineNum, column, errorLine)
 	p.errors = append(p.errors, msg)
 }
 
-func (p *Parser) noPrefixParseFnError(t token.TokenType) {
-	msg := fmt.Sprintf("no prefix parse function for %s found", t)
-	p.errors = append(p.errors, msg)
+func (p *Parser) peekError(tok token.Token) {
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", tok.Type, p.peekToken.Type)
+	p.reportError(msg, tok)
+}
+
+func (p *Parser) noPrefixParseFnError(tok token.Token) {
+	msg := fmt.Sprintf("no prefix parse function for '%s' found", tok.Literal)
+	// match := fmt.Sprintf("%s", t)
+	p.reportError(msg, tok)
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
@@ -196,7 +203,6 @@ func (p *Parser) ParseProgram() *ast.Program {
 		}
 		p.nextToken()
 	}
-
 	return program
 }
 
@@ -321,7 +327,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
-		p.noPrefixParseFnError(p.curToken.Type)
+		p.noPrefixParseFnError(p.curToken)
 		return nil
 	}
 	leftExp := prefix()
@@ -368,7 +374,7 @@ func (p *Parser) parseNumberLiteral() ast.Expression {
 	value, err := strconv.ParseFloat(p.curToken.Literal, 64)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as number", p.curToken.Literal)
-		p.errors = append(p.errors, msg)
+		p.reportError(msg, p.curToken)
 		return nil
 	}
 
@@ -450,13 +456,13 @@ func (p *Parser) parseDottedExpression(object ast.Expression) ast.Expression {
 		exp.Method = p.parseExpression(precedence)
 		p.nextToken()
 		exp.Arguments = p.parseExpressionList(token.RPAREN)
-
 		return exp
 	} else {
 		exp := &ast.PropertyExpression{Token: t, Object: object}
 
 		if !p.curTokenIs(token.IDENT) {
-			p.errors = append(p.errors, fmt.Sprintf("property needs to be an identifier, got '%s'", p.curToken.Literal))
+			msg := fmt.Sprintf("property needs to be an identifier, got '%s'", p.curToken.Literal)
+			p.reportError(msg, p.curToken)
 		}
 
 		exp.Property = p.parseIdentifier()
@@ -517,7 +523,6 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 		expression.Alternative = p.parseBlockStatement()
 	}
-
 	return expression
 }
 
@@ -535,7 +540,6 @@ func (p *Parser) parseWhileExpression() ast.Expression {
 	}
 
 	expression.Consequence = p.parseBlockStatement()
-
 	return expression
 }
 
@@ -777,7 +781,8 @@ func (p *Parser) ParseHashLiteral() ast.Expression {
 }
 
 func (p *Parser) parseCommand() ast.Expression {
-	return &ast.CommandExpression{Token: p.curToken, Value: p.curToken.Literal}
+	cmd := &ast.CommandExpression{Token: p.curToken, Value: p.curToken.Literal}
+	return cmd
 }
 
 // We don't really have to do anything when comments

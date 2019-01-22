@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/abs-lang/abs/lexer"
@@ -8,6 +10,17 @@ import (
 	"github.com/abs-lang/abs/parser"
 )
 
+func logErrorWithPosition(t *testing.T, msg string, expected interface{}) {
+	errorStr := msg
+	expected, _ = expected.(string)
+	expectedStr := fmt.Sprintf("%s", expected)
+	if strings.Contains(errorStr, expectedStr) {
+		t.Log("expected error:", errorStr)
+	} else {
+		expectedStr = fmt.Sprintf("ERROR: wrong error message. expected='%s',", expectedStr)
+		t.Error(expectedStr, "\ngot=", errorStr)
+	}
+}
 func TestEvalFloatExpression(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -209,10 +222,7 @@ func TestForExpressions(t *testing.T) {
 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
 				continue
 			}
-
-			if errObj.Message != tt.expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		}
 	}
 }
@@ -259,10 +269,7 @@ func TestBitwiseExpressions(t *testing.T) {
 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
 				continue
 			}
-
-			if errObj.Message != tt.expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		}
 	}
 }
@@ -283,7 +290,7 @@ func TestForInExpressions(t *testing.T) {
 		{`k = 100; for k, v in ["x", "y", "z"] {}; k`, 100},
 		{`v = 100; for k, v in ["x", "y", "z"] {}; v`, 100},
 		{`for k, v in ["x", "y", "z"] {k=y}; v`, "identifier not found: y"},
-		{`for k, v in ["x", "y", z] {k=y}; v`, "'ERROR: identifier not found: z' is a ERROR, not an iterable, cannot be used in for loop"},
+		{`for k, v in ["x", "y", z] {k=y}; v`, "'ERROR: identifier not found: z"},
 	}
 
 	for _, tt := range tests {
@@ -297,10 +304,7 @@ func TestForInExpressions(t *testing.T) {
 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
 				continue
 			}
-
-			if errObj.Message != tt.expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		}
 	}
 }
@@ -326,10 +330,7 @@ func TestWhileExpressions(t *testing.T) {
 				testStringObject(t, evaluated, tt.expected.(string))
 				continue
 			}
-
-			if errObj.Message != tt.expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		default:
 			panic("should not reach here")
 		}
@@ -387,8 +388,8 @@ fn(10);`,
 
 func TestErrorHandling(t *testing.T) {
 	tests := []struct {
-		input           string
-		expectedMessage string
+		input    string
+		expected interface{}
 	}{
 		{
 			"5 + true;",
@@ -439,10 +440,9 @@ if (10 > 1) {
 			"identifier not found: foobar",
 		},
 		{
-			`{"name": "Abs"}[f(x) { x }];`,
-			`index operator not supported: f(x) {
-x
-} on HASH`,
+			// `{"name": "Abs"}[f(x) {x}];`,
+			`{"name": "Abs"}[f(x) {x}];`,
+			`index operator not supported: f(x) {x} on HASH`,
 		},
 		{
 			`999[1]`,
@@ -459,11 +459,7 @@ x
 				evaluated, evaluated)
 			continue
 		}
-
-		if errObj.Message != tt.expectedMessage {
-			t.Errorf("wrong error message. expected=%q, got=%q",
-				tt.expectedMessage, errObj.Message)
-		}
+		logErrorWithPosition(t, errObj.Message, tt.expected)
 	}
 }
 
@@ -500,9 +496,7 @@ b, c = [1, 2]; b`, 1},
 				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		}
 	}
 }
@@ -543,7 +537,7 @@ func TestFunctionApplication(t *testing.T) {
 		{"add = f(x, y) { x + y; }; add(5, 5);", 10},
 		{"add = f(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
 		{"f(x) { x; }(5)", 5},
-		{"f(x) { x; }()", "Wrong number of arguments passed to f(x) {\nx\n}. Want [x], got []"},
+		{"f(x) { x; }()", "Wrong number of arguments passed to f(x) {x}. Want [x], got []"},
 	}
 
 	for _, tt := range tests {
@@ -555,10 +549,7 @@ func TestFunctionApplication(t *testing.T) {
 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
 				continue
 			}
-
-			if errObj.Message != tt.expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		case float64:
 			testNumberObject(t, evaluated, float64(expected))
 		}
@@ -660,7 +651,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`find([1,2], f(x) {x == "some"})`, nil},
 		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
 		{`arg(3)`, ""},
-		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1)`, "github.com/abs-lang/abs/evaluator"}, // Little trick to get travis to run this test, as the base path is not /go/src/
+		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1)`, "/evaluator"}, // Little trick to get travis to run this test, as the base path is not /go/src/
 		{`rand(1)`, 0},
 		{`int(10)`, 10},
 		{`int(10.5)`, 10},
@@ -783,10 +774,9 @@ c")`, []string{"a", "b", "c"}},
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if s.Value != tt.expected {
-					t.Errorf("object is not the right string. got=%s want:%s", s.Value, tt.expected)
+				if !strings.Contains(s.Value, tt.expected.(string)) {
+					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
-
 				continue
 			}
 
@@ -795,9 +785,7 @@ c")`, []string{"a", "b", "c"}},
 				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		case []int:
 			array, ok := evaluated.(*object.Array)
 			if !ok {
@@ -875,8 +863,8 @@ func TestLogicalOperators(t *testing.T) {
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if s.Value != tt.expected {
-					t.Errorf("object is not the right string. got=%s want:%s", s.Value, tt.expected)
+				if !strings.Contains(s.Value, tt.expected.(string)) {
+					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
 
 				continue
@@ -887,9 +875,7 @@ func TestLogicalOperators(t *testing.T) {
 				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		case []int:
 			array, ok := evaluated.(*object.Array)
 			if !ok {
@@ -930,8 +916,8 @@ func TestRangesOperators(t *testing.T) {
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if s.Value != tt.expected {
-					t.Errorf("object is not the right string. got=%s want:%s", s.Value, tt.expected)
+				if !strings.Contains(s.Value, tt.expected.(string)) {
+					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
 
 				continue
@@ -942,9 +928,7 @@ func TestRangesOperators(t *testing.T) {
 				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		case []int:
 			array, ok := evaluated.(*object.Array)
 			if !ok {
@@ -991,8 +975,8 @@ func TestBuiltinProperties(t *testing.T) {
 		case string:
 			s, ok := evaluated.(*object.String)
 			if ok {
-				if s.Value != tt.expected {
-					t.Errorf("object is not the right string. got=%s want:%s", s.Value, tt.expected)
+				if !strings.Contains(s.Value, tt.expected.(string)) {
+					t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, s.Value, tt.expected)
 				}
 
 				continue
@@ -1004,10 +988,7 @@ func TestBuiltinProperties(t *testing.T) {
 					evaluated, evaluated)
 				continue
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q",
-					expected, errObj.Message)
-			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
 		case []int:
 			array, ok := evaluated.(*object.Array)
 			if !ok {
@@ -1067,8 +1048,8 @@ func TestCommand(t *testing.T) {
 				t.Errorf("object is not String. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
-			if stringObj.Value != expected {
-				t.Errorf("wrong string. expected=%q, got=%q", expected, stringObj.Value)
+			if !strings.Contains(stringObj.Value, expected) {
+				t.Errorf("result is not the right string for '%s'. got='%s', want='%s'", tt.input, stringObj.Value, expected)
 			}
 		}
 	}
@@ -1254,12 +1235,12 @@ func TestStringIndexExpressions(t *testing.T) {
 }
 
 func testEval(input string) object.Object {
-	l := lexer.New(input)
-	p := parser.New(l)
+	lex := lexer.New(input)
+	p := parser.New(lex)
 	program := p.ParseProgram()
 	env := object.NewEnvironment()
 
-	return Eval(program, env)
+	return BeginEval(program, env, lex)
 }
 
 func testNumberObject(t *testing.T, obj object.Object, expected interface{}) bool {
@@ -1306,8 +1287,9 @@ func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 }
 
 func testNullObject(t *testing.T, obj object.Object) bool {
-	if obj != NULL {
-		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)
+	_, ok := obj.(*object.Null)
+	if !ok {
+		t.Errorf("object is not Null. got=%T (%+v)", obj, obj)
 		return false
 	}
 	return true
