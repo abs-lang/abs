@@ -364,8 +364,7 @@ func (p *Parser) curPrecedence() int {
 
 // var
 func (p *Parser) parseIdentifier() ast.Expression {
-	id := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-	return id
+	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 // 1 or 1.1
@@ -386,14 +385,12 @@ func (p *Parser) parseNumberLiteral() ast.Expression {
 
 // "some"
 func (p *Parser) ParseStringLiteral() ast.Expression {
-	lit := &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
-	return lit
+	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 // null
 func (p *Parser) ParseNullLiteral() ast.Expression {
-	lit := &ast.NullLiteral{Token: p.curToken}
-	return lit
+	return &ast.NullLiteral{Token: p.curToken}
 }
 
 // !x
