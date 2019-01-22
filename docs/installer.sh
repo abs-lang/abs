@@ -24,6 +24,7 @@ MACHINE_TYPE=$(uname -m)
 if [ "${MACHINE_TYPE}" = 'x86_64' ]; then
   ARCH="amd64"
 fi
+VERSION=preview-4
 
 echo "Trying to detect the details of your architecture."
 echo ""
@@ -32,6 +33,7 @@ echo "and download the right binary for your architecture."
 echo ""
 echo "OS: ${OS}"
 echo "ARCH: ${ARCH}"
+echo "VERSION: ${VERSION}"
 echo ""
 echo "Are these correct? [y/N]"
 
@@ -45,13 +47,12 @@ do
   exit 1
 done < "/dev/stdin"
 
-VERSION=preview-4
 BIN=abs-${VERSION}-${OS}-${ARCH}
 wget https://github.com/abs-lang/abs/releases/download/${VERSION}/${BIN}
 mv ${BIN} ./abs
 chmod +x ./abs
-echo "\n"
-echo "ABS installation completed!\n"
+
+echo "ABS installation completed!"
 echo "You can start hacking by './abs script.abs'"
-echo "We recommend moving ABS into your \${PATH} so that you can do 'abs ./script.abs' from any location.\n"
+echo "We recommend moving ABS into your \${PATH} so that you can do 'abs ./script.abs' from any location."
 echo "If you just want to have a look around, run './abs' and you will enter the REPL."
