@@ -688,7 +688,7 @@ func getFns() map[string]*object.Builtin {
 					switch needle := args[1].(type) {
 					case *object.String:
 						for _, v := range arg.Elements {
-							if v.Inspect() == needle.Value {
+							if v.Inspect() == needle.Value && v.Type() == object.STRING_OBJ {
 								found = true
 								break // Let's get outta here!
 							}

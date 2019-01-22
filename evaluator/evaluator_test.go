@@ -642,15 +642,6 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`[].sum()`, 0},
 		{`[1, 2].sum()`, 3},
 		{`[1].map(f(x) { y = x + 1 }).str()`, "[null]"},
-		{`contains("hello", "lo")`, true},
-		{`contains("hello", "_")`, false},
-		{`contains("hello", 1)`, false},
-		{`contains(["hello"], "hello")`, true},
-		{`contains([1, 2], 2)`, true},
-		{`contains(["hello"], "_")`, false},
-		{`contains(["hello"], 1)`, false},
-		{`contains("1", 1)`, false},
-		{`contains(1..100000, 1)`, true},
 		{`find([1,2,3,3], f(x) {x == 3})`, 3},
 		{`find([1,2], f(x) {x == "some"})`, nil},
 		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
@@ -953,6 +944,28 @@ func TestRangesOperators(t *testing.T) {
 			for i, expectedElem := range expected {
 				testNumberObject(t, array.Elements[i], float64(expectedElem))
 			}
+		}
+	}
+}
+
+func TestInExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`1 in [1]`, true},
+		{`1 in ["1"]`, false},
+		{`"1" in [1]`, false},
+		{`1 in [1, 2]`, true},
+		{`"hello" in [1, 2]`, false},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		switch expected := tt.expected.(type) {
+		case bool:
+			testBooleanObject(t, evaluated, bool(expected))
 		}
 	}
 }
