@@ -10,7 +10,7 @@ import (
 	"github.com/abs-lang/abs/repl"
 )
 
-var VERSION = "preview-3"
+var VERSION = "latest"
 
 // The ABS interpreter
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	// if we're called without arguments,
 	// launch the REPL
 	if len(args) == 1 || strings.HasPrefix(args[1], "-") {
-		fmt.Printf("Hello %s, welcome to the ABS programming language!\n", user.Username)
+		fmt.Printf("Hello %s, welcome to the ABS (%s) programming language!\n", user.Username, VERSION)
 		fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")
 		repl.Start(os.Stdin, os.Stdout)
 		return
