@@ -10,7 +10,7 @@ import (
 	"github.com/abs-lang/abs/repl"
 )
 
-var VERSION = "latest"
+var VERSION = "preview-3"
 
 // The ABS interpreter
 func main() {
