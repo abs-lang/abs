@@ -45,7 +45,7 @@ do
   exit 1
 done < "/dev/stdin"
 
-VERSION=preview-3
+VERSION=preview-4
 BIN=abs-${VERSION}-${OS}-${ARCH}
 wget https://github.com/abs-lang/abs/releases/download/${VERSION}/${BIN}
 mv ${BIN} ./abs
