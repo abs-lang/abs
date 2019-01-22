@@ -86,6 +86,19 @@ $ abs script.abs
 
 Visit [abs-lang.org](https://www.abs-lang.org)
 
+## Contributing
+
+Wanna hack on ABS locally? The recommended development
+environment is inside a Docker container -- simply:
+
+* `make build` (builds the container)
+* `make run` (sends you inside the development container)
+* `make test` (runs the abs tests)
+
+After you make any change, simply run `make test` and check
+if any errors pops up. If everything looks fine that means
+you're ready to [open a pull request](https://github.com/abs-lang/abs/pulls)!
+
 ## Status
 
 ABS is fresh and under active development, meaning exciting
