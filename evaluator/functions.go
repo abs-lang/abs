@@ -254,9 +254,7 @@ func getFns() map[string]*object.Builtin {
 				case *object.Number:
 					return &object.Boolean{Token: tok, Value: true}
 				case *object.String:
-					_, err := strconv.ParseFloat(arg.Value, 64)
-
-					return &object.Boolean{Token: tok, Value: err == nil}
+					return &object.Boolean{Token: tok, Value: util.IsNumber(arg.Value)}
 				default:
 					// we will never reach here
 					return newError(tok, "argument to `is_number` not supported, got %s", args[0].Type())
@@ -389,10 +387,6 @@ func getFns() map[string]*object.Builtin {
 		//
 		// Also, we're instantiating a new lexer & parser from
 		// scratch, so this is a tad slow.
-		//
-		// This method is incomplete as it currently does not
-		// support most JSON types, but rather just objects,
-		// ie. "[1, 2, 3]".json() won't work.
 		"json": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn: func(args ...object.Object) object.Object {
@@ -402,13 +396,45 @@ func getFns() map[string]*object.Builtin {
 				}
 
 				s := args[0].(*object.String)
+				str := strings.TrimSpace(s.Value)
 				env := object.NewEnvironment()
-				l := lexer.New(s.Value)
+				l := lexer.New(str)
 				p := parser.New(l)
-				hl, ok := p.ParseHashLiteral().(*ast.HashLiteral)
+				var node ast.Node
+				ok := false
+
+				// JSON types:
+				// - objects
+				// - arrays
+				// - number
+				// - string
+				// - null
+				// - bool
+				switch str[0] {
+				case '{':
+					node, ok = p.ParseHashLiteral().(*ast.HashLiteral)
+				case '[':
+					node, ok = p.ParseArrayLiteral().(*ast.ArrayLiteral)
+				}
+
+				if str[0] == '"' && str[len(str)-1] == '"' {
+					node, ok = p.ParseStringLiteral().(*ast.StringLiteral)
+				}
+
+				if util.IsNumber(str) {
+					node, ok = p.ParseNumberLiteral().(*ast.NumberLiteral)
+				}
+
+				if str == "false" || str == "true" {
+					node, ok = p.ParseBoolean().(*ast.Boolean)
+				}
+
+				if str == "null" {
+					return NULL
+				}
 
 				if ok {
-					return evalHashLiteral(hl, env)
+					return Eval(node, env)
 				}
 
 				return newError(tok, "argument to `json` must be a valid JSON object, got '%s'", s.Value)
