@@ -12,7 +12,7 @@ When you are running ABS interactively in the Run, Eval, Print Loop (REPL) the l
 
 However, when you are running ABS over a script file (even a small one) locating errors requires more help from the interpreter. ABS now provides `[line:column]` positions as well as the error line itself following the error message.
 
-For example, a file with syntax errors might look like this when the first syntax error is in line 4 somewhere around column 11.
+For example, a file with syntax errors might look like this when the first syntax error is in line 4 at column 5.
 ```
 $ cat examples/error-parse.abs
 # there are multiple parser errors in this file
@@ -30,20 +30,20 @@ c/c = $(command)
 b %% c
 
 $ abs examples/error-parse.abs
- parser errors:
+  parser errors:
 	no prefix parse function for '=' found
-	[4:11]	m.a = 'abc'
+	[4:5]	m.a = 'abc'
 	no prefix parse function for '=' found
-	[7:16]	d/d = $(command);
+	[7:5]	d/d = $(command);
 	no prefix parse function for '=' found
-	[10:16]	c/c = $(command)
+	[10:5]	c/c = $(command)
 	no prefix parse function for '%' found
-	[13:6]	b %% c
+	[13:4]	b %% c
 
 $ echo $?
 99
 ```
-Furthermore, a file with evaluation errors might look like this when the first error encountered is in line 2 somewhere around column 11:
+Furthermore, a file with evaluation errors might look like this when the first error encountered is in line 2 at column 3:
 ```
 $ cat examples/error-eval.abs
 # there is an evaluation error on line 2
@@ -52,7 +52,7 @@ echo("should not reach here")
 
 $ abs examples/error-eval.abs
 ERROR: type mismatch: NUMBER + STRING
-	[2:11]	1 + "hello"
+	[2:3]	1 + "hello"
 
 $ echo $?
 99
