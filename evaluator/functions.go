@@ -176,6 +176,11 @@ func getFns() map[string]*object.Builtin {
 		"echo": &object.Builtin{
 			Types: []string{},
 			Fn: func(args ...object.Object) object.Object {
+				if len(args) == 0 {
+					// allow echo() without crashing
+					fmt.Println("")
+					return NULL
+				}
 				var arguments []interface{} = make([]interface{}, len(args)-1)
 				for i, d := range args {
 					if i > 0 {
