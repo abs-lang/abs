@@ -31,6 +31,7 @@ With `make run` you can get inside a container built for ABS'
 development, and `make test` will run all tests.
 
 ## Testing
+### Interpreter Error Location
 You can run the interpreter error location tests by invoking this bash script: `tests/test-abs.sh`. This script iterates over the `test-parser.abs` and `test-eval.abs` test scripts.
 ```
 $ tests/test-abs.sh
@@ -93,6 +94,43 @@ ERROR: index operator not supported: f(x) {x} on HASH
 	[19:20]	    {"name": "Abs"}[f(x) {x}];  
 Exit code: 99
 ```
+### String tests
+String handling tests can be run from `abs tests/test-strings.abs`
+```
+$ abs tests/test-strings.abs
+=====================
+>>> Testing string with mixed LFs and escaped LFs:
+echo("a\\nb\\nc\n%s\n", "x\ny\nz")
+a\\nb\\nc
+x
+y
+z
+
+=====================
+>>> Testing string with multiple escapes:
+echo("hel\\\\lo")
+hel\\\\lo
+=====================
+>>> Testing split and join strings with expanded LFs:
+s = split("a\nb\nc", "\n")
+echo(s)
+[a, b, c]
+ss = join(s, "\n")
+echo(ss)
+a
+b
+c
+=====================
+>>> Testing split and join strings with literal LFs:
+s = split('a\nb\nc', '\n')
+echo(s)
+[a, b, c]
+ss = join(s, '\n')
+echo(ss)
+a\nb\nc
+
+```
+
 ## Roadmap
 
 We're currently working on [1.0](https://github.com/abs-lang/abs/milestone/5).
