@@ -1,4 +1,4 @@
-# tests/tests-echo.abs
+# tests/tests-strings.abs
 
 echo("=====================")
 msg = 'echo() mixed LFs and escaped LFs'
