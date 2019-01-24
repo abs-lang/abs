@@ -1,7 +1,27 @@
 # tests/tests-strings.abs
+echo("=====================")
+msg = 'string with expanded LFs'
+ta = 'echo("a\nb\nc")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("a\nb\nc")
 
 echo("=====================")
-msg = 'string with mixed LFs and escaped LFs'
+msg = 'string with expanded TABs'
+ta = 'echo("a\tb\tc")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("a\tb\tc")
+
+echo("=====================")
+msg = 'string with expanded CRs'
+ta = 'echo("a\rb\rc")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("a\rb\rc")
+
+echo("=====================")
+msg = 'string with mixed expanded LFs and escaped LFs'
 ta = 'echo("a\\nb\\nc\n%s\n", "x\ny\nz")'
 echo(">>> Testing %s:", msg)
 echo("%s", ta)
