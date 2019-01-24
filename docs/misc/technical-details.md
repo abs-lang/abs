@@ -99,7 +99,21 @@ String handling tests can be run from `abs tests/test-strings.abs`
 ```
 $ abs tests/test-strings.abs
 =====================
->>> Testing string with mixed LFs and escaped LFs:
+>>> Testing string with expanded LFs:
+echo("a\nb\nc")
+a
+b
+c
+=====================
+>>> Testing string with expanded TABs:
+echo("a\tb\tc")
+a	b	c
+=====================
+>>> Testing string with expanded CRs:
+echo("a\rb\rc")
+c
+=====================
+>>> Testing string with mixed expanded LFs and escaped LFs:
 echo("a\\nb\\nc\n%s\n", "x\ny\nz")
 a\\nb\\nc
 x
@@ -128,7 +142,6 @@ echo(s)
 ss = join(s, '\n')
 echo(ss)
 a\nb\nc
-
 ```
 
 ## Roadmap

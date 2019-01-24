@@ -420,6 +420,8 @@ func (l *Lexer) readString(quote byte) string {
 				continue
 			} else if l.ch == esc && l.peekChar() == 't' {
 				chars = append(chars, "\t")
+				l.readChar()
+				continue
 			}
 		}
 		// The string ends when we encounter a quote
