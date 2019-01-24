@@ -1,21 +1,21 @@
 # tests/tests-strings.abs
 
 echo("=====================")
-msg = 'echo() mixed LFs and escaped LFs'
+msg = 'string with mixed LFs and escaped LFs'
 ta = 'echo("a\\nb\\nc\n%s\n", "x\ny\nz")'
 echo(">>> Testing %s:", msg)
 echo("%s", ta)
 echo("a\\nb\\nc\n%s\n", "x\ny\nz")
 
 echo("=====================")
-msg = 'echo() multiple escapes'
+msg = 'string with multiple escapes'
 ta = 'echo("hel\\\\lo")'
 echo(">>> Testing %s:", msg)
 echo("%s", ta)
 echo("hel\\\\lo")
 
 echo("=====================")
-msg = 'echo() split and join expanded LFs'
+msg = 'split and join strings with expanded LFs'
 ta = 's = split("a\nb\nc", "\n")'
 tb = 'echo(s)'
 tc = 'ss = join(s, "\n")'
@@ -31,7 +31,7 @@ echo("%s", td)
 echo(ss)
 
 echo("=====================")
-msg = 'echo split and join with literal LFs'
+msg = 'split and join strings with literal LFs'
 ta = 's = split(\'a\nb\nc\', \'\n\')'
 tb = 'echo(s)'
 tc = 'ss = join(s, \'\n\')'
