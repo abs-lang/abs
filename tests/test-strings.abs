@@ -1,0 +1,67 @@
+# tests/tests-strings.abs
+echo("=====================")
+msg = 'string with expanded LFs'
+ta = 'echo("a\nb\nc")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("a\nb\nc")
+
+echo("=====================")
+msg = 'string with expanded TABs'
+ta = 'echo("a\tb\tc")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("a\tb\tc")
+
+echo("=====================")
+msg = 'string with expanded CRs'
+ta = 'echo("a\rb\rc")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("a\rb\rc")
+
+echo("=====================")
+msg = 'string with mixed expanded LFs and escaped LFs'
+ta = 'echo("a\\nb\\nc\n%s\n", "x\ny\nz")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("a\\nb\\nc\n%s\n", "x\ny\nz")
+
+echo("=====================")
+msg = 'string with multiple escapes'
+ta = 'echo("hel\\\\lo")'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+echo("hel\\\\lo")
+
+echo("=====================")
+msg = 'split and join strings with expanded LFs'
+ta = 's = split("a\nb\nc", "\n")'
+tb = 'echo(s)'
+tc = 'ss = join(s, "\n")'
+td = 'echo(ss)'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+s = split("a\nb\nc", "\n")
+echo("%s", tb)
+echo(s)
+echo("%s", tc)
+ss = join(s, "\n")
+echo("%s", td)
+echo(ss)
+
+echo("=====================")
+msg = 'split and join strings with literal LFs'
+ta = 's = split(\'a\nb\nc\', \'\n\')'
+tb = 'echo(s)'
+tc = 'ss = join(s, \'\n\')'
+td = 'echo(ss)'
+echo(">>> Testing %s:", msg)
+echo("%s", ta)
+s = split('a\nb\nc', '\n')
+echo("%s", tb)
+echo(s)
+echo("%s", tc)
+ss = join(s, '\n')
+echo("%s", td)
+echo(ss)

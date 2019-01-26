@@ -84,14 +84,14 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
-	p.registerPrefix(token.NUMBER, p.parseNumberLiteral)
+	p.registerPrefix(token.NUMBER, p.ParseNumberLiteral)
 	p.registerPrefix(token.STRING, p.ParseStringLiteral)
 	p.registerPrefix(token.NULL, p.ParseNullLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.TILDE, p.parsePrefixExpression)
-	p.registerPrefix(token.TRUE, p.parseBoolean)
-	p.registerPrefix(token.FALSE, p.parseBoolean)
+	p.registerPrefix(token.TRUE, p.ParseBoolean)
+	p.registerPrefix(token.FALSE, p.ParseBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.WHILE, p.parseWhileExpression)
@@ -368,7 +368,7 @@ func (p *Parser) parseIdentifier() ast.Expression {
 }
 
 // 1 or 1.1
-func (p *Parser) parseNumberLiteral() ast.Expression {
+func (p *Parser) ParseNumberLiteral() ast.Expression {
 	lit := &ast.NumberLiteral{Token: p.curToken}
 
 	value, err := strconv.ParseFloat(p.curToken.Literal, 64)
@@ -482,7 +482,7 @@ func (p *Parser) parseMethodExpression(object ast.Expression) ast.Expression {
 }
 
 // true
-func (p *Parser) parseBoolean() ast.Expression {
+func (p *Parser) ParseBoolean() ast.Expression {
 	return &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }
 
@@ -500,29 +500,62 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 
 // if x {
 //   return x
-// } esle {
+// } else if y {
 //   return y
+// } else {
+//   return z
 // }
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
+	scenarios := []*ast.Scenario{}
 
 	p.nextToken()
-	expression.Condition = p.parseExpression(LOWEST)
+	scenario := &ast.Scenario{}
+	scenario.Condition = p.parseExpression(LOWEST)
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
 	}
 
-	expression.Consequence = p.parseBlockStatement()
+	scenario.Consequence = p.parseBlockStatement()
+	scenarios = append(scenarios, scenario)
 
-	if p.peekTokenIs(token.ELSE) {
+	// If we encounter ELSEs then let's add more
+	// scenarios to our expression.
+	for p.peekTokenIs(token.ELSE) {
 		p.nextToken()
-		if !p.expectPeek(token.LBRACE) {
-			return nil
+		p.nextToken()
+		scenario := &ast.Scenario{}
+
+		// ELSE IF
+		if p.curTokenIs(token.IF) {
+			p.nextToken()
+			scenario.Condition = p.parseExpression(LOWEST)
+
+			if !p.expectPeek(token.LBRACE) {
+				return nil
+			}
+		} else {
+			// This is a regular ELSE block.
+			//
+			// In order not to have a weird data structure
+			// representing an IF expression, we simply define
+			// it as a list of scenarios.
+			// In case a simple ELSE if encountered, we set the
+			// condition of this scenario to true, so that it always
+			// evaluates to true.
+			tok := &token.Token{Position: -99, Literal: "true", Type: token.LookupIdent(token.TRUE)}
+			scenario.Condition = &ast.Boolean{Token: *tok, Value: true}
 		}
 
-		expression.Alternative = p.parseBlockStatement()
+		scenario.Consequence = p.parseBlockStatement()
+		scenarios = append(scenarios, scenario)
+
+		if !p.peekTokenIs(token.ELSE) {
+			p.nextToken()
+		}
 	}
+	expression.Scenarios = scenarios
 	return expression
 }
 

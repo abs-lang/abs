@@ -245,11 +245,19 @@ func (me *MethodExpression) String() string {
 	return out.String()
 }
 
-type IfExpression struct {
-	Token       token.Token // The 'if' token
+// A scenario is used to
+// represent a path within an
+// IF block (if x = 2 { return x}).
+// It has a condition (x = 2)
+// and a consenquence (return x).
+type Scenario struct {
 	Condition   Expression
 	Consequence *BlockStatement
-	Alternative *BlockStatement
+}
+
+type IfExpression struct {
+	Token     token.Token // The 'if' token
+	Scenarios []*Scenario
 }
 
 func (ie *IfExpression) expressionNode()      {}
@@ -257,14 +265,16 @@ func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
 func (ie *IfExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("if")
-	out.WriteString(ie.Condition.String())
-	out.WriteString(" ")
-	out.WriteString(ie.Consequence.String())
+	for i, s := range ie.Scenarios {
+		if i != 0 {
+			out.WriteString("else")
+			out.WriteString(" ")
+		}
 
-	if ie.Alternative != nil {
-		out.WriteString("else ")
-		out.WriteString(ie.Alternative.String())
+		out.WriteString("if")
+		out.WriteString(s.Condition.String())
+		out.WriteString(" ")
+		out.WriteString(s.Consequence.String())
 	}
 
 	return out.String()

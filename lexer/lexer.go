@@ -381,33 +381,55 @@ func (l *Lexer) readLogicalOperator() string {
 // character itself ("\\").
 func (l *Lexer) readString(quote byte) string {
 	var chars []string
+	esc := byte('\\')
 	doubleEscape := false
 	for {
 		l.readChar()
 
-		if l.ch == '\\' && l.peekChar() == '\\' {
-			chars = append(chars, string('\\'))
+		if l.ch == esc && l.peekChar() == esc {
+			chars = append(chars, string(esc))
 			l.readChar()
-			doubleEscape = true
+			// be careful here, there may be double escaped LFs in the string
+			if l.peekChar() == quote {
+				doubleEscape = true
+			} else {
+				// this is not a double escaped quote
+				chars = append(chars, string(esc))
+			}
 			continue
 		}
-
-		// If we encounter a \, let's check whether
-		// we're trying to escape a ". If so, let's skip
-		// the / and add the " to the string.
-		if l.ch == '\\' && l.peekChar() == quote {
+		// If we encounter an escape, let's check whether
+		// we're trying to escape a quote. If so, let's skip
+		// the escape and add the quote to the string.
+		if l.ch == esc && l.peekChar() == quote {
 			chars = append(chars, string(quote))
 			l.readChar()
 			continue
 		}
-
-		// The string ends when we encounter a "
-		// and the character before that was not a \,
-		// or the \ was escaped as well ("string\\").
-		if (l.ch == quote && (l.prevChar(2) != '\\' || doubleEscape)) || l.ch == 0 {
+		// If this is a double quoted string we need to expand embedded
+		// LF, CR, and TAB to ASCII and add the ASCII code to the string
+		// NB. single quoted strings don't expand special characters to ASCII
+		if quote == '"' {
+			if l.ch == esc && l.peekChar() == 'n' {
+				chars = append(chars, "\n")
+				l.readChar()
+				continue
+			} else if l.ch == esc && l.peekChar() == 'r' {
+				chars = append(chars, "\r")
+				l.readChar()
+				continue
+			} else if l.ch == esc && l.peekChar() == 't' {
+				chars = append(chars, "\t")
+				l.readChar()
+				continue
+			}
+		}
+		// The string ends when we encounter a quote
+		// and the character before that was not an escape,
+		// or the escape was escaped as well ("string\\").
+		if (l.ch == quote && (l.prevChar(2) != esc || doubleEscape)) || l.ch == 0 {
 			break
 		}
-
 		chars = append(chars, string(l.ch))
 		doubleEscape = false
 	}

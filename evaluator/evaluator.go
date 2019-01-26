@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/abs-lang/abs/ast"
@@ -317,15 +318,14 @@ func evalInfixExpression(
 		}
 
 		return right
-	case operator == "+=":
-		fmt.Printf("%s %s %s", operator, left, right)
-		return nil
 	case left.Type() == object.NUMBER_OBJ && right.Type() == object.NUMBER_OBJ:
 		return evalNumberInfixExpression(tok, operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
 		return evalStringInfixExpression(tok, operator, left, right)
 	case left.Type() == object.ARRAY_OBJ && right.Type() == object.ARRAY_OBJ:
 		return evalArrayInfixExpression(tok, operator, left, right)
+	case operator == "in" && right.Type() == object.ARRAY_OBJ:
+		return evalInExpression(left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
@@ -491,22 +491,54 @@ func evalArrayInfixExpression(
 	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
 }
 
+func evalInExpression(
+	left, right object.Object,
+) object.Object {
+	var found bool
+	array := right.(*object.Array)
+
+	switch needle := left.(type) {
+	case *object.String:
+		for _, v := range array.Elements {
+			if v.Inspect() == needle.Value && v.Type() == object.STRING_OBJ {
+				found = true
+				break // Let's get outta here!
+			}
+		}
+	case *object.Number:
+		for _, v := range array.Elements {
+			// Quite ghetto but also the easiest way out
+			// Instead of doing type checking on the argument,
+			// we received back its string representation.
+			// If they match, we then check that its type was
+			// integer.
+			if v.Inspect() == strconv.Itoa(int(needle.Value)) && v.Type() == object.NUMBER_OBJ {
+				found = true
+				break // Let's get outta here!
+			}
+		}
+	}
+
+	return &object.Boolean{Token: tok, Value: found}
+}
+
 func evalIfExpression(
 	ie *ast.IfExpression,
 	env *object.Environment,
 ) object.Object {
-	condition := Eval(ie.Condition, env)
-	if isError(condition) {
-		return condition
+	for _, scenario := range ie.Scenarios {
+		condition := Eval(scenario.Condition, env)
+
+		if isError(condition) {
+			return condition
+		}
+
+		if isTruthy(condition) {
+			return Eval(scenario.Consequence, env)
+		}
 	}
 
-	if isTruthy(condition) {
-		return Eval(ie.Consequence, env)
-	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative, env)
-	} else {
-		return NULL
-	}
+	return NULL
 }
 
 func evalWhileExpression(

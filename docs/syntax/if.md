@@ -8,13 +8,15 @@ if x > 0 {
 }
 ```
 
-as well as `else` alternatives:
+as well as `else` and `else if` alternatives:
 
 ``` bash
 if x > 0 {
-    echo("hello world")
+    echo("x is high")
+} else if x < 0 {
+    echo("x is low")
 } else {
-    echo("hello globe")
+    echo("x is actually zero!")
 }
 ```
 
@@ -26,9 +28,6 @@ if (x > 0) {
     echo("hello world")
 }
 ```
-
-Note that `else if` clauses are not supported,
-although they are planned (see [#27](https://github.com/abs-lang/abs/issues/27)).
 
 ## Next
 

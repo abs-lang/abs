@@ -31,59 +31,59 @@ With `make run` you can get inside a container built for ABS'
 development, and `make test` will run all tests.
 
 ## Testing
-You can run the interpreter error location tests by invoking this bash script: `tests/test-abs.sh`.
+### Interpreter Error Location
+You can run the interpreter error location tests by invoking this bash script: `tests/test-abs.sh`. This script iterates over the `test-parser.abs` and `test-eval.abs` test scripts.
 ```
 $ tests/test-abs.sh
-
 =======================================
 Test Parser
 tests/test-parser.abs
  parser errors:
 	no prefix parse function for '=' found
-	[4:11]	m.a = 'abc'
+	[4:5]	m.a = 'abc'
 	no prefix parse function for '=' found
-	[7:16]	d/d = $(command);
+	[7:5]	d/d = $(command);
 	no prefix parse function for '=' found
-	[10:16]	c/c = $(command)
+	[10:5]	c/c = $(command)
 	no prefix parse function for '%' found
-	[13:6]	b %% c
+	[13:4]	b %% c
 	no prefix parse function for '&&' found
-	[22:4]	&&||!-/*5;
-	no prefix parse function for 'OR' found
-	[22:5]	&&||!-/*5;
+	[22:1]	&&||!-/*5;
+	no prefix parse function for '||' found
+	[22:3]	&&||!-/*5;
 	no prefix parse function for '/' found
-	[22:8]	&&||!-/*5;
+	[22:7]	&&||!-/*5;
 	no prefix parse function for '<=>' found
-	[25:3]	<=>
-	expected next token to be ], got , instead
-	[44:3]	[1, 2];
+	[25:2]	<=>
+	expected next token to be NUMBER, got , instead
+	[44:2]	[1, 2];
 	no prefix parse function for ',' found
-	[44:5]	[1, 2];
+	[44:3]	[1, 2];
 	no prefix parse function for ']' found
-	[44:7]	[1, 2];
+	[44:6]	[1, 2];
 	no prefix parse function for '%' found
 	[68:2]	~%
 	no prefix parse function for '-=' found
-	[70:2]	-=
+	[70:1]	-=
 	no prefix parse function for '/=' found
-	[72:2]	/=
+	[72:1]	/=
 	no prefix parse function for '%=' found
-	[74:2]	%=
+	[74:1]	%=
 	no prefix parse function for '^' found
-	[79:4]	&^>><<
+	[79:2]	&^>><<
 	no prefix parse function for '<<' found
-	[79:6]	&^>><<
+	[79:5]	&^>><<
 	Illegal token '$111'
-	[80:4]	$111
-	no prefix parse function for 'ILLEGAL' found
-	[76:7]	1.str()
+	[80:1]	$111
+	no prefix parse function for '$111' found
+	[80:1]	$111
 Exit code: 99
 
 =======================================
 Test Eval()
 tests/test-eval.abs
 ERROR: type mismatch: STRING + NUMBER
-	[8:35]	    s = s + 1   # this is a comment
+	[8:11]	    s = s + 1   # this is a comment
 Exit code: 99
 
 ERROR: invalid property 'junk' on type ARRAY
@@ -91,13 +91,62 @@ ERROR: invalid property 'junk' on type ARRAY
 Exit code: 99
 
 ERROR: index operator not supported: f(x) {x} on HASH
-	[19:29]	    {"name": "Abs"}[f(x) {x}];  
+	[19:20]	    {"name": "Abs"}[f(x) {x}];  
 Exit code: 99
-
 ```
+### String tests
+String handling tests can be run from `abs tests/test-strings.abs`
+```
+$ abs tests/test-strings.abs
+=====================
+>>> Testing string with expanded LFs:
+echo("a\nb\nc")
+a
+b
+c
+=====================
+>>> Testing string with expanded TABs:
+echo("a\tb\tc")
+a	b	c
+=====================
+>>> Testing string with expanded CRs:
+echo("a\rb\rc")
+c
+=====================
+>>> Testing string with mixed expanded LFs and escaped LFs:
+echo("a\\nb\\nc\n%s\n", "x\ny\nz")
+a\\nb\\nc
+x
+y
+z
+
+=====================
+>>> Testing string with multiple escapes:
+echo("hel\\\\lo")
+hel\\\\lo
+=====================
+>>> Testing split and join strings with expanded LFs:
+s = split("a\nb\nc", "\n")
+echo(s)
+[a, b, c]
+ss = join(s, "\n")
+echo(ss)
+a
+b
+c
+=====================
+>>> Testing split and join strings with literal LFs:
+s = split('a\nb\nc', '\n')
+echo(s)
+[a, b, c]
+ss = join(s, '\n')
+echo(ss)
+a\nb\nc
+```
+
 ## Roadmap
 
-We're currently working on [1.0](https://github.com/abs-lang/abs/milestone/5).
+We're currently working on [1.1](https://github.com/abs-lang/abs/milestone/6).
 
 ## Next
 

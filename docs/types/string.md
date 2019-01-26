@@ -47,6 +47,72 @@ a value that evaluates to `false` when casted to boolean:
 !!"" # false
 ```
 
+## Special characters embedded in strings
+Double and single quoted strings behave differently if the string contains escaped special ASCII line control characters such as `LF "\n"`, `CR "\r"`, and `TAB "\t"`. 
+
+If the string is double quoted these characters will be expanded to their ASCII codes. On the other hand, if the string is single quoted, these characters will be considered as escaped literals. 
+
+This means, for example, that double quoted LFs will cause line feeds to appear in the output:
+
+```bash
+⧐  echo("a\nb\nc")
+a
+b
+c
+⧐  
+```
+Conversely, single quoted LFs will appear as escaped literal strings:
+
+```bash
+⧐  echo('a\nb\nc')
+a\nb\nc
+⧐  
+```
+
+And if you need to mix escaped and unescaped special characters, then you can do this with double escapes within double quoted strings:
+```bash
+⧐  echo("a\\nb\nc")
+a\\nb
+c
+⧐  
+```
+### Working with special characters in string functions
+Special characters also work with `split()` and `join()` and other string functions as well.
+
+1) Double quoted expanded special characters:
+```bash
+⧐  s = split("a\nb\nc", "\n")
+⧐  echo(s)
+[a, b, c]
+⧐  ss = join(s, "\n")
+⧐  echo(ss)
+a
+b
+c
+⧐ 
+```
+
+2) Single quoted literal special characters:
+```bash
+⧐  s = split('a\nb\nc', '\n')
+⧐  echo(s)
+[a, b, c]
+⧐  ss = join(s, '\n')
+⧐  echo(ss)
+a\nb\nc
+⧐  
+```
+
+3) Double quoted, double escaped special characters:
+```bash
+⧐  s = split("a\\nb\\nc", "\\n")
+⧐  echo(s)
+[a, b, c]
+⧐  ss = join(s, "\\n")
+⧐  echo(ss)
+a\\nb\\nc
+⧐  
+```
 ## Supported functions
 
 ### len()

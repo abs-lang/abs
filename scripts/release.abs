@@ -16,6 +16,19 @@
 # "dragonfly/amd64"
 # "android/arm"
 # "solaris/amd64"
+
+# freebsd and netbsd can be easily
+# built, but we opt to keep them
+# out as the userbase doesn't seem
+# to be there.
+#
+# "freebsd/386",
+# "freebsd/amd64",
+# "freebsd/arm",
+# "netbsd/386",
+# "netbsd/amd64",
+# "netbsd/arm"
+
 platforms = [
     "linux/386",
     "linux/amd64",
@@ -28,13 +41,7 @@ platforms = [
     "windows/amd64",
     "windows/386",
     "darwin/amd64",
-    "darwin/386",
-    "freebsd/386",
-    "freebsd/amd64",
-    "freebsd/arm",
-    "netbsd/386",
-    "netbsd/amd64",
-    "netbsd/arm"
+    "darwin/386"
 ]
 
 echo("Deleting previous builds...")

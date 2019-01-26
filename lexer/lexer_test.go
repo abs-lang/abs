@@ -19,6 +19,8 @@ result = add(five, ten);
 <=>
 if (5 < 10) {
 	return true;
+} else if x {
+	return 0;
 } else {
 	return false;
 }
@@ -144,6 +146,14 @@ $111
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.ELSE, "else"},
+		{token.IF, "if"},
+		{token.IDENT, "x"},
+		{token.LBRACE, "{"},
+		{token.RETURN, "return"},
+		{token.NUMBER, "0"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.ELSE, "else"},
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},
 		{token.FALSE, "false"},
@@ -237,12 +247,12 @@ $111
 		{token.IDENT, "tree"},
 		{token.STRING, "hel\"lo"},
 		{token.STRING, "hel\\lo"},
-		{token.STRING, "hel\\\\lo"},
+		{token.STRING, `hel\\\\lo`},
 		{token.STRING, "\"hello\""},
 		{token.STRING, "\"he\"\"llo\""},
 		{token.STRING, "hello\\"},
-		{token.STRING, "hello\\\\"},
-		{token.STRING, "\\\\hello"},
+		{token.STRING, `hello\\\`},
+		{token.STRING, `\\\\hello`},
 		{token.EXPONENT, "**"},
 		{token.NUMBER, "1"},
 		{token.RANGE, ".."},
@@ -310,7 +320,7 @@ func TestRewind(t *testing.T) {
 		}
 
 		if tok.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
+			t.Errorf("tests[%d] - literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
 		}
 	}
 
