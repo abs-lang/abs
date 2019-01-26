@@ -146,7 +146,7 @@ a\nb\nc
 
 ## Roadmap
 
-We're currently working on [1.0](https://github.com/abs-lang/abs/milestone/5).
+We're currently working on [1.1](https://github.com/abs-lang/abs/milestone/6).
 
 ## Next
 
