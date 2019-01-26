@@ -428,6 +428,222 @@ func TestBooleanExpression(t *testing.T) {
 	}
 }
 
+func TestIfIfElseExpression(t *testing.T) {
+	input := `if x < y { x } else if x > y { y } else if x == y { z }`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
+			1, len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+
+	exp, ok := stmt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.IfExpression. got=%T",
+			stmt.Expression)
+	}
+
+	if len(exp.Scenarios) != 3 {
+		t.Errorf("expression does not have 4 scenarios. got=%d\n",
+			len(exp.Scenarios))
+	}
+
+	// First scenario
+	scenario := exp.Scenarios[0]
+
+	if !testInfixExpression(t, scenario.Condition, "x", "<", "y") {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok := scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "x") {
+		return
+	}
+
+	// Second scenario
+	scenario = exp.Scenarios[1]
+
+	if !testInfixExpression(t, scenario.Condition, "x", ">", "y") {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok = scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "y") {
+		return
+	}
+
+	// Third scenario
+	scenario = exp.Scenarios[2]
+
+	if !testInfixExpression(t, scenario.Condition, "x", "==", "y") {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok = scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "z") {
+		return
+	}
+}
+
+func TestIfIfElseElseExpression(t *testing.T) {
+	input := `if x < y { x } else if x > y { y } else if x == y { z } else { a }`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
+			1, len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+
+	exp, ok := stmt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.IfExpression. got=%T",
+			stmt.Expression)
+	}
+
+	if len(exp.Scenarios) != 4 {
+		t.Errorf("expression does not have 4 scenarios. got=%d\n",
+			len(exp.Scenarios))
+	}
+
+	// First scenario
+	scenario := exp.Scenarios[0]
+
+	if !testInfixExpression(t, scenario.Condition, "x", "<", "y") {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok := scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "x") {
+		return
+	}
+
+	// Second scenario
+	scenario = exp.Scenarios[1]
+
+	if !testInfixExpression(t, scenario.Condition, "x", ">", "y") {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok = scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "y") {
+		return
+	}
+
+	// Third scenario
+	scenario = exp.Scenarios[2]
+
+	if !testInfixExpression(t, scenario.Condition, "x", "==", "y") {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok = scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "z") {
+		return
+	}
+
+	// Fourth scenario, the else
+	scenario = exp.Scenarios[3]
+
+	if !testBooleanLiteral(t, scenario.Condition, true) {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok = scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "a") {
+		return
+	}
+}
+
 func TestIfExpression(t *testing.T) {
 	input := `if x < y { x }`
 
@@ -453,83 +669,30 @@ func TestIfExpression(t *testing.T) {
 			stmt.Expression)
 	}
 
-	if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
+	if len(exp.Scenarios) != 1 {
+		t.Errorf("expression does not have 4 scenarios. got=%d\n",
+			len(exp.Scenarios))
+	}
+
+	// First scenario
+	scenario := exp.Scenarios[0]
+
+	if !testInfixExpression(t, scenario.Condition, "x", "<", "y") {
 		return
 	}
 
-	if len(exp.Consequence.Statements) != 1 {
+	if len(scenario.Consequence.Statements) != 1 {
 		t.Errorf("consequence is not 1 statements. got=%d\n",
-			len(exp.Consequence.Statements))
+			len(scenario.Consequence.Statements))
 	}
 
-	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	consequence, ok := scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
-			exp.Consequence.Statements[0])
+			scenario.Consequence.Statements[0])
 	}
 
 	if !testIdentifier(t, consequence.Expression, "x") {
-		return
-	}
-
-	if exp.Alternative != nil {
-		t.Errorf("exp.Alternative.Statements was not nil. got=%+v", exp.Alternative)
-	}
-}
-
-func TestIfElseExpression(t *testing.T) {
-	input := `if x < y { x } else { y }`
-
-	l := lexer.New(input)
-	p := New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
-
-	if len(program.Statements) != 1 {
-		t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
-			1, len(program.Statements))
-	}
-
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
-			program.Statements[0])
-	}
-
-	exp, ok := stmt.Expression.(*ast.IfExpression)
-	if !ok {
-		t.Fatalf("stmt.Expression is not ast.IfExpression. got=%T", stmt.Expression)
-	}
-
-	if !testInfixExpression(t, exp.Condition, "x", "<", "y") {
-		return
-	}
-
-	if len(exp.Consequence.Statements) != 1 {
-		t.Errorf("consequence is not 1 statements. got=%d\n",
-			len(exp.Consequence.Statements))
-	}
-
-	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
-			exp.Consequence.Statements[0])
-	}
-
-	if !testIdentifier(t, consequence.Expression, "x") {
-		return
-	}
-
-	if len(exp.Alternative.Statements) != 1 {
-		t.Errorf("exp.Alternative.Statements does not contain 1 statements. got=%d\n", len(exp.Alternative.Statements))
-	}
-
-	alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Alternative.Statements[0])
-	}
-
-	if !testIdentifier(t, alternative.Expression, "y") {
 		return
 	}
 }
