@@ -19,6 +19,8 @@ result = add(five, ten);
 <=>
 if (5 < 10) {
 	return true;
+} else if x {
+	return 0;
 } else {
 	return false;
 }
@@ -141,6 +143,14 @@ $111
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},
 		{token.TRUE, "true"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.ELSE, "else"},
+		{token.IF, "if"},
+		{token.IDENT, "x"},
+		{token.LBRACE, "{"},
+		{token.RETURN, "return"},
+		{token.NUMBER, "0"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.ELSE, "else"},

@@ -500,29 +500,62 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 
 // if x {
 //   return x
-// } esle {
+// } else if y {
 //   return y
+// } else {
+//   return z
 // }
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
+	scenarios := []*ast.Scenario{}
 
 	p.nextToken()
-	expression.Condition = p.parseExpression(LOWEST)
+	scenario := &ast.Scenario{}
+	scenario.Condition = p.parseExpression(LOWEST)
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
 	}
 
-	expression.Consequence = p.parseBlockStatement()
+	scenario.Consequence = p.parseBlockStatement()
+	scenarios = append(scenarios, scenario)
 
-	if p.peekTokenIs(token.ELSE) {
+	// If we encounter ELSEs then let's add more
+	// scenarios to our expression.
+	for p.peekTokenIs(token.ELSE) {
 		p.nextToken()
-		if !p.expectPeek(token.LBRACE) {
-			return nil
+		p.nextToken()
+		scenario := &ast.Scenario{}
+
+		// ELSE IF
+		if p.curTokenIs(token.IF) {
+			p.nextToken()
+			scenario.Condition = p.parseExpression(LOWEST)
+
+			if !p.expectPeek(token.LBRACE) {
+				return nil
+			}
+		} else {
+			// This is a regular ELSE block.
+			//
+			// In order not to have a weird data structure
+			// representing an IF expression, we simply define
+			// it as a list of scenarios.
+			// In case a simple ELSE if encountered, we set the
+			// condition of this scenario to true, so that it always
+			// evaluates to true.
+			tok := &token.Token{Position: -99, Literal: "true", Type: token.LookupIdent(token.TRUE)}
+			scenario.Condition = &ast.Boolean{Token: *tok, Value: true}
 		}
 
-		expression.Alternative = p.parseBlockStatement()
+		scenario.Consequence = p.parseBlockStatement()
+		scenarios = append(scenarios, scenario)
+
+		if !p.peekTokenIs(token.ELSE) {
+			p.nextToken()
+		}
 	}
+	expression.Scenarios = scenarios
 	return expression
 }
 
