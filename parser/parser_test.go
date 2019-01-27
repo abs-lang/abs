@@ -696,6 +696,63 @@ func TestIfExpression(t *testing.T) {
 		return
 	}
 }
+func TestMoreComplexIfExpression(t *testing.T) {
+	input := `x = 1; y = 1; if x > y {
+	x
+} else {
+	y
+}
+
+echo(1)
+`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 4 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 4, len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[2].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	exp, ok := stmt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.IfExpression. got=%T", stmt.Expression)
+	}
+
+	if len(exp.Scenarios) != 2 {
+		t.Errorf("expression does not have 2 scenarios. got=%d\n", len(exp.Scenarios))
+	}
+
+	// First scenario
+	scenario := exp.Scenarios[0]
+
+	if !testInfixExpression(t, scenario.Condition, "x", ">", "y") {
+		return
+	}
+
+	if len(scenario.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(scenario.Consequence.Statements))
+	}
+
+	consequence, ok := scenario.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			scenario.Consequence.Statements[0])
+	}
+
+	if !testIdentifier(t, consequence.Expression, "x") {
+		return
+	}
+
+	return
+}
 
 func TestWhileExpression(t *testing.T) {
 	input := `

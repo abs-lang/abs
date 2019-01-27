@@ -519,7 +519,6 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 	scenario.Consequence = p.parseBlockStatement()
 	scenarios = append(scenarios, scenario)
-
 	// If we encounter ELSEs then let's add more
 	// scenarios to our expression.
 	for p.peekTokenIs(token.ELSE) {
@@ -550,11 +549,8 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 		scenario.Consequence = p.parseBlockStatement()
 		scenarios = append(scenarios, scenario)
-
-		if !p.peekTokenIs(token.ELSE) {
-			p.nextToken()
-		}
 	}
+
 	expression.Scenarios = scenarios
 	return expression
 }
