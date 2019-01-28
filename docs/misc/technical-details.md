@@ -33,7 +33,7 @@ development, and `make test` will run all tests.
 ## Testing
 ### Interpreter Error Location
 You can run the interpreter error location tests by invoking this bash script: `tests/test-abs.sh`. This script iterates over the `test-parser.abs` and `test-eval.abs` test scripts.
-```
+```bash
 $ tests/test-abs.sh
 =======================================
 Test Parser
@@ -96,7 +96,7 @@ Exit code: 99
 ```
 ### String tests
 String handling tests can be run from `abs tests/test-strings.abs`
-```
+```bash
 $ abs tests/test-strings.abs
 =====================
 >>> Testing string with expanded LFs:
@@ -142,6 +142,65 @@ echo(s)
 ss = join(s, '\n')
 echo(ss)
 a\nb\nc
+```
+
+### Array and hash assignment tests 
+Array and hash assignment tests can be run from `abs tests/test-assign-index.abs `.
+```bash
+=====================
+Test assignment to array indexed objects
+>>> a = [1, 2, 3, 4]
+[1, 2, 3, 4]
+>>> a[0] = 99
+[99, 2, 3, 4]
+>>> a[1] += 10
+[99, 12, 3, 4]
+>>> a += [88]
+[99, 12, 3, 4, 88]
+>>> a[2] = "string"
+[99, 12, string, 4, 88]
+>>> a[6] = 66
+[99, 12, string, 4, 88, null, 66]
+>>> a[5] = 55
+[99, 12, string, 4, 88, 55, 66]
+=====================
+Test assignment to hash indexed objects
+>>> h = {"a": 1, "b": 2, "c": 3}
+{a: 1, b: 2, c: 3}
+>>> h["a"] = 99
+{a: 99, b: 2, c: 3}
+>>> h["a"] += 1
+{a: 100, b: 2, c: 3}
+>>> h += {"c": 33, "d": 44, "e": 55}
+{a: 100, b: 2, c: 33, d: 44, e: 55}
+h["z"] = {"x": 10, "y": 20}
+{a: 100, b: 2, c: 33, d: 44, e: 55, z: {x: 10, y: 20}}
+h["1.23"] = "string"
+{1.23: string, a: 100, b: 2, c: 33, d: 44, e: 55, z: {x: 10, y: 20}}
+h.d = 99
+{1.23: string, a: 100, b: 2, c: 33, d: 99, e: 55, z: {x: 10, y: 20}}
+h.d += 1
+{1.23: string, a: 100, b: 2, c: 33, d: 100, e: 55, z: {x: 10, y: 20}}
+h.z.x = 66
+{1.23: string, a: 100, b: 2, c: 33, d: 100, e: 55, z: {x: 66, y: 20}}
+h.f = 88
+{1.23: string, a: 100, b: 2, c: 33, d: 100, e: 55, f: 88, z: {x: 66, y: 20}}
+=====================
+Error: assign to non-hash property
+s = "string"
+s.ok = true
+ERROR: can only assign to hash property, got STRING
+	[66:2]	s.ok = true
+=====================
+Error: add number to null hash property
+h.g += 1
+ERROR: type mismatch: NULL + NUMBER
+	[72:5]	h.g += 1
+=====================
+Error: add number to null hash element
+>>> h["g"] += 1
+ERROR: type mismatch: NULL + NUMBER
+	[78:8]	h["g"] += 1
 ```
 
 ## Roadmap

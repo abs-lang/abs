@@ -1,0 +1,82 @@
+echo("=====================")
+echo('Test assignment to array indexed objects')
+echo('>>> a = [1, 2, 3, 4]')
+a = [1, 2, 3, 4]
+echo(a)
+echo('>>> a[0] = 99')
+a[0] = 99
+echo(a)
+echo('>>> a[1] += 10')
+a[1] += 10
+echo(a)
+echo('>>> a += [88]')
+a += [88]
+echo(a)
+echo('>>> a[2] = "string"')
+a[2] = "string"
+echo(a)
+echo('>>> a[6] = 66')
+a[6] = 66
+echo(a)
+echo('>>> a[5] = 55')
+a[5] = 55
+echo(a)
+
+echo("=====================")
+echo('Test assignment to hash indexed objects')
+echo('>>> h = {"a": 1, "b": 2, "c": 3}')
+h = {"a":1, "b":2, "c": 3}
+echo(h)
+echo('>>> h["a"] = 99')
+h["a"] = 99
+echo(h)
+echo('>>> h["a"] += 1')
+h["a"] += 1
+echo(h)
+echo('>>> h += {"c": 33, "d": 44, "e": 55}')
+h += {"c": 33, "d": 44, "e": 55}
+echo(h)
+echo('h["z"] = {"x": 10, "y": 20}')
+h["z"] = {"x": 10, "y": 20}
+echo(h)
+echo('h["1.23"] = "string"')
+h["1.23"] = "string"
+echo(h)
+echo('h.d = 99')
+h.d = 99
+echo(h)
+echo('h.d += 1')
+h.d += 1
+echo(h)
+echo('h.z.x = 66')
+h.z.x = 66
+echo(h)
+echo('h.f = 88')
+h.f = 88
+echo(h)
+
+
+# Error tests
+
+echo("=====================")
+echo('Error: assign to non-hash property')
+echo('s = "string"')
+s = "string"
+echo('s.ok = true')
+s.ok = true
+echo(s.ok)
+
+echo("=====================")
+echo('Error: add number to null hash property')
+echo('h.g += 1')
+h.g += 1
+echo(h)
+
+echo("=====================")
+echo('Error: add number to null hash element')
+echo('>>> h["g"] += 1')
+h["g"] += 1
+echo(h)
+
+
+

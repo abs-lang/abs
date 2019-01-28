@@ -116,15 +116,35 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(left) {
 			return left
 		}
-
 		right := Eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
-
-		expr := evalInfixExpression(node.Token, node.Operator[:len(node.Operator)-1], left, right)
+		// multi-character operators like "+=" and "**=" are reduced to "+" or "**" for evalInfixExpression()
+		op := node.Operator
+		if len(op) >= 2 {
+			op = op[:len(op)-1]
+		}
+		// get the result of the infix operation
+		expr := evalInfixExpression(node.Token, op, left, right)
+		if isError(expr) {
+			return expr
+		}
+		switch nodeLeft := node.Left.(type) {
+		case *ast.Identifier:
+			env.Set(nodeLeft.String(), expr)
+			return NULL
+		case *ast.IndexExpression:
+			// support index assignment expressions: a[0] += 1, h["a"] += 1
+			return evalIndexAssignment(nodeLeft, expr, env)
+		case *ast.PropertyExpression:
+			// support assignment to hash property: h.a += 1
+			return evalPropertyAssignment(nodeLeft, expr, env)
+		}
+		// otherwise
 		env.Set(node.Left.String(), expr)
 		return NULL
+
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 
@@ -173,6 +193,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.PropertyExpression:
 		return evalPropertyExpression(node, env)
+
 	case *ast.ArrayLiteral:
 		elements := evalExpressions(node.Elements, env)
 		if len(elements) == 1 && isError(elements[0]) {
@@ -237,6 +258,57 @@ func evalBlockStatement(
 	return result
 }
 
+// support index assignment expressions: a[0] = 1, h["a"] = 1
+func evalIndexAssignment(iex *ast.IndexExpression, expr object.Object, env *object.Environment) object.Object {
+	leftObj := Eval(iex.Left, env)
+	index := Eval(iex.Index, env)
+	if leftObj.Type() == object.ARRAY_OBJ {
+		arrayObject := leftObj.(*object.Array)
+		idx := index.(*object.Number).Int()
+		elems := arrayObject.Elements
+		if idx < 0 {
+			return newError(iex.Token, "index out of range: %d", idx)
+		}
+		if idx >= len(elems) {
+			// expand the array by appending Null objects
+			for i := len(elems); i <= idx; i++ {
+				elems = append(elems, NULL)
+			}
+			arrayObject.Elements = elems
+		}
+		elems[idx] = expr
+		return NULL
+	}
+	if leftObj.Type() == object.HASH_OBJ {
+		hashObject := leftObj.(*object.Hash)
+		key, ok := index.(object.Hashable)
+		if !ok {
+			return newError(iex.Token, "unusable as hash key: %s", index.Type())
+		}
+		hashed := key.HashKey()
+		pair := object.HashPair{Key: index, Value: expr}
+		hashObject.Pairs[hashed] = pair
+		return NULL
+	}
+	return NULL
+}
+
+// support assignment to hash property: h.a = 1
+func evalPropertyAssignment(pex *ast.PropertyExpression, expr object.Object, env *object.Environment) object.Object {
+	leftObj := Eval(pex.Object, env)
+	if leftObj.Type() == object.HASH_OBJ {
+		hashObject := leftObj.(*object.Hash)
+		prop := &object.String{Token: pex.Token, Value: pex.Property.String()}
+		hashed := prop.HashKey()
+		pair := object.HashPair{Key: prop, Value: expr}
+		hashObject.Pairs[hashed] = pair
+		return NULL
+	} else {
+		return newError(pex.Token, "can only assign to hash property, got %s", leftObj.Type())
+	}
+	return NULL
+}
+
 func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Object {
 	val := Eval(as.Value, env)
 	if isError(val) {
@@ -246,6 +318,7 @@ func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Obj
 	// regular assignment x = 0
 	if as.Name != nil {
 		env.Set(as.Name.Value, val)
+		return nil
 	}
 
 	// destructuring x, y = [1, 2]
@@ -264,7 +337,15 @@ func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Obj
 
 			env.Set(name.String(), NULL)
 		}
-
+		return nil
+	}
+	// support assignment to indexed expressions: a[0] = 1, h["a"] = 1
+	if as.Index != nil {
+		return evalIndexAssignment(as.Index, val, env)
+	}
+	// support assignment to hash property h.a = 1
+	if as.Property != nil {
+		return evalPropertyAssignment(as.Property, val, env)
 	}
 
 	return nil
@@ -324,6 +405,8 @@ func evalInfixExpression(
 		return evalStringInfixExpression(tok, operator, left, right)
 	case left.Type() == object.ARRAY_OBJ && right.Type() == object.ARRAY_OBJ:
 		return evalArrayInfixExpression(tok, operator, left, right)
+	case left.Type() == object.HASH_OBJ && right.Type() == object.HASH_OBJ:
+		return evalHashInfixExpression(tok, operator, left, right)
 	case operator == "in" && right.Type() == object.ARRAY_OBJ:
 		return evalInExpression(left, right)
 	case operator == "==":
@@ -389,7 +472,6 @@ func evalNumberInfixExpression(
 ) object.Object {
 	leftVal := left.(*object.Number).Value
 	rightVal := right.(*object.Number).Value
-
 	switch operator {
 	case "+":
 		return &object.Number{Token: tok, Value: leftVal + rightVal}
@@ -456,6 +538,7 @@ func evalStringInfixExpression(
 	operator string,
 	left, right object.Object,
 ) object.Object {
+
 	if operator == "+" {
 		leftVal := left.(*object.String).Value
 		rightVal := right.(*object.String).Value
@@ -486,6 +569,27 @@ func evalArrayInfixExpression(
 		leftVal := left.(*object.Array).Elements
 		rightVal := right.(*object.Array).Elements
 		return &object.Array{Token: tok, Elements: append(leftVal, rightVal...)}
+	}
+
+	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
+}
+
+func evalHashInfixExpression(
+	tok token.Token,
+	operator string,
+	left, right object.Object,
+) object.Object {
+	leftHashObject := left.(*object.Hash)
+	rightHashObject := right.(*object.Hash)
+	if operator == "+" {
+		leftVal := leftHashObject.Pairs
+		rightVal := rightHashObject.Pairs
+		for _, rightPair := range rightVal {
+			key := rightPair.Key
+			hashed := key.(object.Hashable).HashKey()
+			leftVal[hashed] = object.HashPair{Key: key, Value: rightPair.Value}
+		}
+		return &object.Hash{Token: tok, Pairs: leftVal}
 	}
 
 	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
