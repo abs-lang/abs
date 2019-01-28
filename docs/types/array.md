@@ -39,6 +39,36 @@ x += [3]
 x # [1, 2, 3]
 ```
 
+It is also possible to modify an existing array element using `array[index]` assignment. This also works with compound operators such as `+=` :
+```bash
+a = [1, 2, 3, 4]
+a # [1, 2, 3, 4]
+
+# index assignment
+a[0] = 99
+a # [99, 2, 3, 4]
+
+# compound assignment
+a[0] += 1
+a # [100, 2, 3, 4]
+```
+
+An array can also be extended by using an index beyond the end of the existing array. Note that intervening array elements will be set to `null`. This means that they can be set to another value later:
+```bash
+a = [1, 2, 3, 4]
+a # [1, 2, 3, 4]
+
+# indexes beyond end of array expand the array
+a[4] = 99
+a # [1, 2, 3, 4, 99]
+a[6] = 66
+a # [1, 2, 3, 4, 99, null, 66]
+
+# assign to a null element
+a[5] = 55
+a # [1, 2, 3, 4, 99, 55, 66]
+```
+
 An array is defined as "homogeneous" when all its elements
 are of a single type:
 
@@ -124,19 +154,6 @@ Returns a new array with only the elements that returned
 ["hello", 0, 1, 2].filter(f(x){type(x) == "NUMBER"}) # [0, 1, 2]
 ```
 
-### json()
-
-Parses the string as JSON, returning an [hash](/types/hash):
-
-``` bash
-"{}".json() # {}
-```
-
-Note that currently only JSON objects are supported,
-and if the objects contain floats this method will
-return an error. Support for floats is coming (see [#29](https://github.com/abs-lang/abs/issues/29))
-as well as being able to parse all valid JSON expressions (see [#54](https://github.com/abs-lang/abs/issues/54)).
-
 ### contains(e)
 
 > This function is deprecated and might be removed in future versions.
@@ -144,8 +161,8 @@ as well as being able to parse all valid JSON expressions (see [#54](https://git
 > Use the "in" operator instead: 3 in [1, 2, 3]
 
 Checks whether `e` is present in the array. `e` can only be
-a string or number and the array needs to be a heterogeneous array
-of strings or number:
+a string or number and the array needs to be a homogeneous array
+of strings or numbers:
 
 ``` bash
 [1, 2, 3].contains(3) # true

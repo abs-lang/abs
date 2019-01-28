@@ -51,10 +51,12 @@ func (p *Program) String() string {
 
 // Statements
 type AssignStatement struct {
-	Token token.Token // the token.ASSIGN token
-	Name  *Identifier
-	Names []Expression
-	Value Expression
+	Token    token.Token // the token.ASSIGN token
+	Name     *Identifier
+	Names    []Expression
+	Index    *IndexExpression    // support assignment to indexed expressions: a[0] = 1, h["a"] = 1
+	Property *PropertyExpression // support assignment to hash properties: h.a = 1
+	Value    Expression
 }
 
 func (as *AssignStatement) statementNode()       {}
@@ -64,6 +66,16 @@ func (as *AssignStatement) String() string {
 
 	if as.Name != nil {
 		out.WriteString(as.Name.String())
+	} else if len(as.Names) > 0 {
+		out.WriteString(as.Names[0].String())
+		for i := 1; i < len(as.Names); i++ {
+			out.WriteString(", ")
+			out.WriteString(as.Names[i].String())
+		}
+	} else if as.Index != nil {
+		out.WriteString(as.Index.String())
+	} else if as.Property != nil {
+		out.WriteString(as.Property.String())
 	}
 
 	out.WriteString(" = ")

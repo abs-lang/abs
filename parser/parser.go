@@ -72,6 +72,12 @@ type Parser struct {
 	curToken  token.Token
 	peekToken token.Token
 
+	// support assignment to index expressions: a[0] = 1, h["a"] = 1
+	prevIndexExpression *ast.IndexExpression
+
+	// support assignment to hash property h.a = 1
+	prevPropertyExpression *ast.PropertyExpression
+
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns  map[token.TokenType]infixParseFn
 }
@@ -188,7 +194,6 @@ func (p *Parser) peekError(tok token.Token) {
 
 func (p *Parser) noPrefixParseFnError(tok token.Token) {
 	msg := fmt.Sprintf("no prefix parse function for '%s' found", tok.Literal)
-	// match := fmt.Sprintf("%s", t)
 	p.reportError(msg, tok)
 }
 
@@ -256,8 +261,10 @@ func (p *Parser) parseDestructuringIdentifiers() []ast.Expression {
 	return list
 }
 
-// x = y
-// x, y = [z, zz]
+// assign to variable: x = y
+// destructuring assignment: x, y = [z, zz]
+// assign to index expressions: a[0] = 1, h["a"] = 1
+// assign to hash property expressions: h.a = 1
 func (p *Parser) parseAssignStatement() ast.Statement {
 	stmt := &ast.AssignStatement{}
 
@@ -275,8 +282,28 @@ func (p *Parser) parseAssignStatement() ast.Statement {
 			p.Rewind(lexerPosition)
 			return nil
 		}
-	} else {
+	} else if p.curTokenIs(token.IDENT) {
 		stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	} else if p.curTokenIs(token.ASSIGN) {
+		stmt.Token = p.curToken
+		if p.prevIndexExpression != nil {
+			// support assignment to indexed expressions: a[0] = 1, h["a"] = 1
+			stmt.Index = p.prevIndexExpression
+			p.nextToken()
+			stmt.Value = p.parseExpression(LOWEST)
+			// consume the IndexExpression
+			p.prevIndexExpression = nil
+			return stmt
+		}
+		if p.prevPropertyExpression != nil {
+			// support assignment to hash properties: h.a = 1
+			stmt.Property = p.prevPropertyExpression
+			p.nextToken()
+			stmt.Value = p.parseExpression(LOWEST)
+			// consume the PropertyExpression
+			p.prevPropertyExpression = nil
+			return stmt
+		}
 	}
 
 	if !p.peekTokenIs(token.ASSIGN) {
@@ -292,7 +319,6 @@ func (p *Parser) parseAssignStatement() ast.Statement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
-
 	return stmt
 }
 
@@ -458,14 +484,10 @@ func (p *Parser) parseDottedExpression(object ast.Expression) ast.Expression {
 		exp.Arguments = p.parseExpressionList(token.RPAREN)
 		return exp
 	} else {
+		// support assignment to hash property h.a = 1
 		exp := &ast.PropertyExpression{Token: t, Object: object}
-
-		if !p.curTokenIs(token.IDENT) {
-			msg := fmt.Sprintf("property needs to be an identifier, got '%s'", p.curToken.Literal)
-			p.reportError(msg, p.curToken)
-		}
-
 		exp.Property = p.parseIdentifier()
+		p.prevPropertyExpression = exp
 		return exp
 	}
 }
@@ -775,6 +797,8 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	if !p.expectPeek(token.RBRACKET) {
 		return nil
 	}
+	// support assignment to index expression: a[0] = 1
+	p.prevIndexExpression = exp
 
 	return exp
 }
