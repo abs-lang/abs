@@ -3,6 +3,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -242,6 +243,8 @@ func (h *Hash) Inspect() string {
 	for _, pair := range h.Pairs {
 		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(), pair.Value.Inspect()))
 	}
+	// create stable key ordered output
+	sort.Strings(pairs)
 
 	out.WriteString("{")
 	out.WriteString(strings.Join(pairs, ", "))
