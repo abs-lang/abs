@@ -90,7 +90,7 @@ echo(x) # Error: x is not defined
 ```
 
 Worth to note that if a variable gets re-defined within these expressions,
-it will temporaraly assume its new value, but will rollback to the original
+it will temporarily assume its new value, but will rollback to the original
 one once the expression is over:
 
 ``` bash
