@@ -12,7 +12,7 @@
 
 # The ABS programming language
 
-ABS is a scripting language that works best when you're on
+ABS is a scripting language that works best when you're scripting on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
 

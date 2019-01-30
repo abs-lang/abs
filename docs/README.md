@@ -10,7 +10,7 @@
   <a href="https://github.com/abs-lang/abs"><img alt="Version" src="https://img.shields.io/github/release-pre/abs-lang/abs.svg"></a>
 </p>
 
-ABS is a scripting language that works best when you're on
+ABS is a scripting language that works best when you're scripting on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
 
