@@ -520,6 +520,8 @@ func evalNumberInfixExpression(
 		return &object.Number{Token: tok, Value: float64(uint64(leftVal) << uint64(rightVal))}
 	case "^":
 		return &object.Number{Token: tok, Value: float64(int64(leftVal) ^ int64(rightVal))}
+	case "~":
+		return &object.Boolean{Token: tok, Value: int64(leftVal) == int64(rightVal)}
 	// A range results in an array of integers from left to right
 	case "..":
 		a := make([]object.Object, 0)

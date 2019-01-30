@@ -248,12 +248,21 @@ Even though there is no double negation operator, using
 
 ## ~
 
-The tilde (meaning "around") is used to do a case-insensitive
-comparison between strings:
+The tilde (meaning "around") is used to do similarity comparisons
+(x "is almost" y).
+
+In case of strings, it will compare them case-insensitively
 
 ``` bash
 "hello" == "HELLO" # false
 "hello" ~ "HELLO" # true
+```
+
+In case of integers, it will compare their integer values:
+
+``` bash
+1 == 1.5 # false
+1 ~ 1.5 # true
 ```
 
 When in front of a number, it will instead be used as a
