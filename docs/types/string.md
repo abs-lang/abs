@@ -178,16 +178,16 @@ Splits a string by newline:
 
 ### json()
 
-Parses the string as JSON, returning an [hash](/types/hash):
+Parses the string as JSON, returning a [hash](/types/hash):
 
 ``` bash
-"{}".json() # {}
+⧐  s = '{"a": 1, "b": "string", "c": true, "d": {"x": 10, "y": 20}}'
+⧐  h = s.json()
+⧐  h
+{a: 1, b: string, c: true, d: {x: 10, y: 20}}
+⧐  h.d
+{x: 10, y: 20}
 ```
-
-Note that currently only JSON objects are supported,
-and if the objects contain floats this method will
-return an error. Support for floats is coming (see [#29](https://github.com/abs-lang/abs/issues/29))
-as well as being able to parse all valid JSON expressions (see [#54](https://github.com/abs-lang/abs/issues/54)).
 
 ### contains(str)
 
