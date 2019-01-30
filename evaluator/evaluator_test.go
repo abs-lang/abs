@@ -1323,3 +1323,90 @@ func testNullObject(t *testing.T, obj object.Object) bool {
 	}
 	return true
 }
+
+func TestEvalStringSpecialChars(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`
+		s = "a\nb\nc"
+		s
+		`,
+			`a
+b
+c`,
+		},
+		{`
+		s = "a\tb\tc"
+		s
+		`, `a	b	c`,
+		},
+		{`
+		s = fmt("a\\nb\\nc\n%s\n", "x\ny\nz")
+		s
+		`, `a\\nb\\nc
+x
+y
+z
+`,
+		},
+		{`
+		a = split("a\nb\nc", "\n")
+		str(a)
+		`, `[a, b, c]`,
+		},
+		{`
+		a = split("a\nb\nc", "\n")
+		s = join(a, "\n")
+		s
+		`, `a
+b
+c`,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestEvalAssignIndex(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`
+		a = [1, 2, 3, 4]
+		a[0] = 99
+		a[1] += 10
+		a += [88]
+		a[2] = "string"
+		a[6] = 66
+		a[5] = 55
+		str(a)
+		`,
+			"[99, 12, string, 4, 88, 55, 66]",
+		},
+		{`
+		h = {"a": 1, "b": 2, "c": 3}
+		h["a"] = 99
+		h["a"] += 1
+		h += {"c": 33, "d": 44, "e": 55}
+		h["z"] = {"x": 10, "y": 20}
+		h["1.23"] = "string"
+		h.d = 99
+		h.d += 1
+		h.z.x = 66
+		h.f = 88
+		str(h)
+		`, "{1.23: string, a: 100, b: 2, c: 33, d: 100, e: 55, f: 88, z: {x: 66, y: 20}}",
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expected)
+	}
+}
