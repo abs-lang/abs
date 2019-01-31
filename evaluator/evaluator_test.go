@@ -968,6 +968,10 @@ func TestInExpressions(t *testing.T) {
 		{`"1" in [1]`, false},
 		{`1 in [1, 2]`, true},
 		{`"hello" in [1, 2]`, false},
+		{`"str" in "string"`, true},
+		{`"xyz" in "string"`, false},
+		{`"abc" in ["abc", "def"]`, true},
+		{`"xyz" in ["abc", "def"]`, false},
 	}
 
 	for _, tt := range tests {
@@ -1405,6 +1409,33 @@ func TestEvalAssignIndex(t *testing.T) {
 		h.f = 88
 		str(h)
 		`, "{1.23: string, a: 100, b: 2, c: 33, d: 100, e: 55, f: 88, z: {x: 66, y: 20}}",
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestHashFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`
+		h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}
+		hk = h.keys()
+		hk = keys(h)
+		hv = h.values()
+		hv = values(h)
+		hi = h.items()
+		hi = items(h)
+		hp = h.pop("a")
+		hp = pop(h, "c")
+		hp = h.pop("d")
+		str(h)
+		`, "{b: 2}",
 		},
 	}
 

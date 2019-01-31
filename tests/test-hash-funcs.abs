@@ -1,0 +1,59 @@
+echo("=====================")
+echo('Test hash functions')
+echo('>>> h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}')
+h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}
+echo(h)
+
+echo('>>> hk = h.keys()')
+hk = h.keys()
+echo(hk)
+echo('>>> hk = keys(h)')
+hk = keys(h)
+echo(hk)
+
+echo('>>> hv = h.values()')
+hv = h.values()
+echo(hv)
+echo('>>> hv = values(h)')
+hv = values(h)
+echo(hv)
+
+echo('>>> hi = h.items()')
+hi = h.items()
+echo(hi)
+echo('>>> hi = items(h)')
+hi = items(h)
+echo(hi)
+
+echo('>>> hp = h.pop("a")')
+hp = h.pop("a")
+echo(hp)
+echo('>>> h')
+echo(h)
+echo('>>> hp = pop(h, "c")')
+hp = pop(h, "c")
+echo(hp)
+echo('>>> h')
+echo(h)
+echo('>>> hp = h.pop("d")')
+hp = h.pop("d")
+echo(hp)
+echo('>>> h')
+echo(h)
+
+
+
+
+# Error tests
+
+# echo("=====================")
+# echo('Error: assign to non-hash property')
+# echo('s = "string"')
+# s = "string"
+# echo('s.ok = true')
+# s.ok = true
+# echo(s.ok)
+
+
+
+
