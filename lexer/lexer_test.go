@@ -39,6 +39,7 @@ for x = 0; x < 10; x = x + 1 {
 "foo bar"
 [1, 2];
 $(echo "()");
+` + "`echo '()'`" + `;
 {"foo": "bar"}
 $(curl icanhazip.com -X POST)
 $(ls *.go);
@@ -212,6 +213,8 @@ $111
 		{token.RBRACKET, "]"},
 		{token.SEMICOLON, ";"},
 		{token.COMMAND, `echo "()"`},
+		{token.SEMICOLON, ";"},
+		{token.COMMAND, `echo '()'`},
 		{token.SEMICOLON, ";"},
 		{token.LBRACE, "{"},
 		{token.STRING, "foo"},
