@@ -1,7 +1,5 @@
 package token
 
-// import "github.com/abs-lang/abs/lexer"
-
 type TokenType string
 
 const (
