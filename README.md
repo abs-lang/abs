@@ -8,6 +8,8 @@
   <a href="https://travis-ci.com/abs-lang/abs"><img alt="Travis Status" src="https://travis-ci.com/abs-lang/abs.svg?branch=master"></a>
   <a href="https://github.com/abs-lang/abs"><img alt="License" src="https://img.shields.io/github/license/abs-lang/abs.svg"></a>
   <a href="https://github.com/abs-lang/abs"><img alt="Version" src="https://img.shields.io/github/release-pre/abs-lang/abs.svg"></a>
+  <a href='https://coveralls.io/github/abs-lang/abs'><img src='https://coveralls.io/repos/github/abs-lang/abs/badge.svg' alt='Coverage Status' /></a>
+
 </p>
 
 # The ABS programming language
