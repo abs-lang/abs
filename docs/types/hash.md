@@ -37,17 +37,36 @@ h.y = 20
 h # {a: 88, b: 2, c: 3, x: 10, y: 20}
 ```
 
-It is also possible to extend a hash using the `+=` operator with another hash. Note that existing keys in the left side will be replaced with the same key on the right side.
+It is also possible to extend a hash using the `+=` operator with another hash. Note that any existing keys on the left side will be replaced with the same key from the right side.
+
 ```bash
 h = {"a": 1, "b": 2, "c": 3}
-h # {a: 1, b: 2, c: 3}
+h   # {a: 1, b: 2, c: 3}
 
 # extending a hash by += compound operator
 h += {"c": 33, "d": 4, "e": 5}
-h # {a: 1, b: 2, c: 33, d: 4, e: 5}
+h   # {a: 1, b: 2, c: 33, d: 4, e: 5}
 ```
 
-If the left side is a `hash["key"]` or `hash.key` and the right side is a hash, then the resulting hash will have a new nested hash at the `hash.new`. This includes `hash["newkey"]` or `hash.newkey` as well.
+In a similar way, we can make a **shallow** copy of a hash using the `+` operator with an empty hash. Be careful, the empty hash must be on the left side of the `+` operator.
+
+```bash
+a = {"a": 1, "b": 2, "c": 3}
+a   # {a: 1, b: 2, c: 3}
+
+# shallow copy a hash using the + operator with an empty hash
+# note well that the empty hash must be on the left side of the +
+b = {} + a
+b   # {a: 1, b: 2, c: 3}
+
+# modify the shallow copy without changing the original
+b.a = 99
+b   # {a: 99, b: 2, c: 3}
+a   # {a: 1, b: 2, c: 3}
+```
+
+If the left side is a `hash["key"]` or `hash.key` and the right side is a hash, then the resulting hash will have a new nested hash at `hash.newkey`. This includes `hash["newkey"]` or `hash.newKey` as well.
+
 ```bash
 h = {"a": 1, "b": 2, "c": 3}
 h # {a: 1, b: 2, c: 3}
@@ -64,17 +83,66 @@ h # {a: 1, b: 2, c: {x: 10, y: 20}, z: {xx: 11, yy: 21}}
 ## Supported functions
 
 ### str()
-
 Returns the string representation of the hash:
 
 ``` bash
-{"k": "v"}.str() # "{k: v}"
+h = {"k": "v"}
+h.str() # "{k: v}"
+str(h)  # "{k: v}"
 ```
 
-Note that hashes are set to receive a substantial
-boost in the future, as most hash-related
-functions didn't make the cut to ABS' first public
-release (see [#36](https://github.com/abs-lang/abs/issues/36)).
+### keys()
+Returns an array of keys to the hash. 
+
+Note well that only the first level keys are returned.
+
+``` bash
+h = {"a": 1, "b": 2, "c": 3}
+h.keys() # [a, b, c]
+keys(h) # [a, b, c]
+```
+
+### values()
+Returns an array of values in the hash. 
+
+Note well that only the first level values are returned.
+
+``` bash
+h = {"a": 1, "b": 2, "c": 3}
+h.values()  # [1, 2, 3]
+values(h)   # [1, 2, 3]
+```
+
+### items()
+Returns an array of [key, value] tuples for each item in the hash.
+
+Note well that only the first level items are returned.
+
+``` bash
+h = {"a": 1, "b": 2, "c": 3}
+h.items()   # [[a, 1], [b, 2], [c, 3]]
+items(h)    # [[a, 1], [b, 2], [c, 3]]
+```
+
+### pop(k)
+Removes and returns the matching `{"key": value}` item from the hash. If the key does not exist `hash.pop("key")` returns `null`.
+
+Note well that only the first level items can be popped.
+
+``` bash
+h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}
+
+h.pop("a")  # {a: 1}
+h   # {b: 2, c: {x: 10, y: 20}}
+
+pop(h, "c")  # {c: {x: 10, y: 20}}
+h   # {b: 2}
+
+pop(h, "d") # null
+h   # {b: 2}
+
+```
+
 
 ## Next
 
