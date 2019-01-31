@@ -100,12 +100,14 @@ a /= 2 # a is now 5
 
 ## in
 
-Checks whether a value is in an array:
+Checks whether a value is in an array or a substring within a string:
 
 ``` bash
 1 in [1, 2, 3] # true
 9 in [1, 2, 3] # false
 9 in 9 # unknown operator: NUMBER in NUMBER
+"str" in "string" # true
+"xyz" in "string" # false
 ```
 
 ## **
