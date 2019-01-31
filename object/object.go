@@ -237,6 +237,12 @@ type Hash struct {
 }
 
 func (h *Hash) Type() ObjectType { return HASH_OBJ }
+func (h *Hash) GetPair(key string) (HashPair, bool) {
+	record, ok := h.Pairs[HashKey{Type: "STRING", Value: key}]
+
+	return record, ok
+}
+
 func (h *Hash) Inspect() string {
 	var out bytes.Buffer
 
