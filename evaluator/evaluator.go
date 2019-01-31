@@ -302,10 +302,8 @@ func evalPropertyAssignment(pex *ast.PropertyExpression, expr object.Object, env
 		pair := object.HashPair{Key: prop, Value: expr}
 		hashObject.Pairs[hashed] = pair
 		return NULL
-	} else {
-		return newError(pex.Token, "can only assign to hash property, got %s", leftObj.Type())
 	}
-	return NULL
+	return newError(pex.Token, "can only assign to hash property, got %s", leftObj.Type())
 }
 
 func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Object {
@@ -406,7 +404,7 @@ func evalInfixExpression(
 		return evalArrayInfixExpression(tok, operator, left, right)
 	case left.Type() == object.HASH_OBJ && right.Type() == object.HASH_OBJ:
 		return evalHashInfixExpression(tok, operator, left, right)
-	case operator == "in" && right.Type() == object.ARRAY_OBJ:
+	case operator == "in" && (right.Type() == object.ARRAY_OBJ || right.Type() == object.STRING_OBJ):
 		return evalInExpression(left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
@@ -558,6 +556,10 @@ func evalStringInfixExpression(
 		return &object.Boolean{Token: tok, Value: strings.ToLower(left.(*object.String).Value) == strings.ToLower(right.(*object.String).Value)}
 	}
 
+	if operator == "in" {
+		return evalInExpression(left, right)
+	}
+
 	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
 }
 
@@ -600,27 +602,33 @@ func evalInExpression(
 	left, right object.Object,
 ) object.Object {
 	var found bool
-	array := right.(*object.Array)
 
-	switch needle := left.(type) {
-	case *object.String:
-		for _, v := range array.Elements {
-			if v.Inspect() == needle.Value && v.Type() == object.STRING_OBJ {
-				found = true
-				break // Let's get outta here!
+	switch rightObj := right.(type) {
+	case *object.Array:
+		switch needle := left.(type) {
+		case *object.String:
+			for _, v := range rightObj.Elements {
+				if v.Inspect() == needle.Value && v.Type() == object.STRING_OBJ {
+					found = true
+					break // Let's get outta here!
+				}
+			}
+		case *object.Number:
+			for _, v := range rightObj.Elements {
+				// Quite ghetto but also the easiest way out
+				// Instead of doing type checking on the argument,
+				// we received back its string representation.
+				// If they match, we then check that its type was
+				// integer.
+				if v.Inspect() == strconv.Itoa(int(needle.Value)) && v.Type() == object.NUMBER_OBJ {
+					found = true
+					break // Let's get outta here!
+				}
 			}
 		}
-	case *object.Number:
-		for _, v := range array.Elements {
-			// Quite ghetto but also the easiest way out
-			// Instead of doing type checking on the argument,
-			// we received back its string representation.
-			// If they match, we then check that its type was
-			// integer.
-			if v.Inspect() == strconv.Itoa(int(needle.Value)) && v.Type() == object.NUMBER_OBJ {
-				found = true
-				break // Let's get outta here!
-			}
+	case *object.String:
+		if left.Type() == object.STRING_OBJ {
+			found = strings.Contains(right.Inspect(), left.Inspect())
 		}
 	}
 

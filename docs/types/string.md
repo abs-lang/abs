@@ -47,6 +47,13 @@ a value that evaluates to `false` when casted to boolean:
 !!"" # false
 ```
 
+To test for the existence of substrings within strings use the `in` operator:
+
+``` bash
+"str" in "string"   # true
+"xyz" in "string"   # false
+```
+
 ## Special characters embedded in strings
 Double and single quoted strings behave differently if the string contains escaped special ASCII line control characters such as `LF "\n"`, `CR "\r"`, and `TAB "\t"`. 
 
@@ -190,6 +197,11 @@ Parses the string as JSON, returning a [hash](/types/hash):
 ```
 
 ### contains(str)
+
+> This function is deprecated and might be removed in future versions.
+>
+> Use the "in" operator instead: `"str" in "string"`
+
 
 Checks whether `str` is present in the string:
 

@@ -39,6 +39,23 @@ x += [3]
 x # [1, 2, 3]
 ```
 
+In a similar way, we can make a **shallow** copy of an array using the `+` operator with an empty array. Be careful, the empty array must be on the left side of the `+` operator.
+
+```bash
+a = [1, 2, 3]
+a   # [1, 2, 3]
+
+# shallow copy an array using the + operator with an empty array
+# note well that the empty array must be on the left side of the +
+b = [] + a
+b   # [1, 2, 3]
+
+# modify the shallow copy without changing the original
+b[0] = 99
+b   # [99, 2, 3]
+a   # [1, 2, 3]
+```
+
 It is also possible to modify an existing array element using `array[index]` assignment. This also works with compound operators such as `+=` :
 ```bash
 a = [1, 2, 3, 4]
@@ -145,7 +162,7 @@ Returns the first element that returns `true` when applied to the function `f`:
 ["hello", 0, 1, 2].find(f(x){type(x) == "NUMBER"}) # 0
 ```
 
-### find(f)
+### filter(f)
 
 Returns a new array with only the elements that returned
 `true` when applied to the function `f`:
