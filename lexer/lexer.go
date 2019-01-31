@@ -253,6 +253,10 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Type = token.STRING
 		tok.Position = l.position
 		tok.Literal = l.readString('\'')
+	case '`':
+		tok.Type = token.COMMAND
+		tok.Position = l.position
+		tok.Literal = l.readString('`')
 	case '$':
 		if l.peekChar() == '(' {
 			tok.Type = token.COMMAND

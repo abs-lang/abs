@@ -4,11 +4,11 @@ Executing system commands is one of the most important features
 of ABS, as it allows the mixing of conveniency of the shell with
 the syntax of a modern programming language.
 
-Commands are executed with `$()`, which resembles Bash's
-syntax to execute commands in a subshell:
+Commands are executed either with `$(command)` or `` `command` ``, which resemble Bash's syntax to execute commands in a subshell:
 
 ``` bash
 date = $(date) # "Sun Apr 1 04:30:59 +01 1995"
+date = `date` # "Sun Apr 1 04:30:59 +01 1995"
 ```
 
 As you can see, the return value of a command is a simple
@@ -31,6 +31,12 @@ ls = $(ls -la)
 if ls.ok {
     echo("hello world")
 }
+
+# or
+
+if `ls -la`.ok {
+    echo("hello world")
+}
 ```
 
 You can also replace parts of the command with variables
@@ -50,9 +56,10 @@ $(echo $PWD) # "" since the ABS variable PWD doesn't exist
 $(echo \$PWD) # "/go/src/github.com/abs-lang/abs"
 ```
 
-Currently, commands need to be on their own line, meaning
-that you will not be able to have additional code
-on the same line. This will throw an error:
+Currently, commands that use the `$()` syntax need to be
+on their own line, meaning that you will not
+be able to have additional code on the same line.
+This will throw an error:
 
 ``` bash
 $(sleep 10); echo("hello world")
