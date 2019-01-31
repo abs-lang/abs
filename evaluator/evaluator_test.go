@@ -487,7 +487,9 @@ func TestAssignStatements(t *testing.T) {
 		{"a = 5; b = a; b;", 5},
 		{"a = 5; b = a; c = a + b + 5; c;", 15},
 		{"a, b, c = [1]; a;", 1},
+		{`a, b, c = {"a": 1}; a;`, 1},
 		{"a, b, c = [1]; b;", nil},
+		{`a, b, c = {"a": 1}; b;`, nil},
 		{`a = 10 + 1 + 2
 b, c = [1, 2]; b`, 1},
 		{`a = 10 + 1 + 2

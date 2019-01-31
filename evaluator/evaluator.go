@@ -82,8 +82,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Number{Token: node.Token, Value: node.Value}
 
 	case *ast.NullLiteral:
-		return &object.Null{Token: node.Token}
-		// return NULL
+		return NULL
 
 	case *ast.StringLiteral:
 		return &object.String{Token: node.Token, Value: node.Value}
@@ -321,20 +320,31 @@ func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Obj
 
 	// destructuring x, y = [1, 2]
 	if len(as.Names) > 0 {
-		if val.Type() != object.ARRAY_OBJ {
+		switch v := val.(type) {
+		case *object.Array:
+			elements := v.Elements
+			for i, name := range as.Names {
+				if i < len(elements) {
+					env.Set(name.String(), elements[i])
+					continue
+				}
+
+				env.Set(name.String(), NULL)
+			}
+		case *object.Hash:
+			for _, name := range as.Names {
+				x, ok := v.GetPair(name.String())
+
+				if ok {
+					env.Set(name.String(), x.Value)
+				} else {
+					env.Set(name.String(), NULL)
+				}
+			}
+		default:
 			return newError(as.Token, "wrong assignment, expected identifier or array destructuring, got %s (%s)", val.Type(), val.Inspect())
 		}
 
-		elements := val.(*object.Array).Elements
-
-		for i, name := range as.Names {
-			if i < len(elements) {
-				env.Set(name.String(), elements[i])
-				continue
-			}
-
-			env.Set(name.String(), NULL)
-		}
 		return nil
 	}
 	// support assignment to indexed expressions: a[0] = 1, h["a"] = 1
