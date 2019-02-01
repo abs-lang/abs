@@ -767,28 +767,28 @@ func evalForInExpression(
 			i.Reset()
 		}()
 
-		return loopIterable(i.Next, env, fie, 0)
+		return loopIterable(i.Next, env, fie)
 	case *object.Builtin:
 		if i.Next == nil {
 			return newError(fie.Token, "builtin function cannot be used in loop")
 		}
 
-		return loopIterable(i.Next, env, fie, 0)
+		return loopIterable(i.Next, env, fie)
 	default:
 		return newError(fie.Token, "'%s' is a %s, not an iterable, cannot be used in for loop", i.Inspect(), i.Type())
 	}
 }
 
-func loopIterable(next func(int) (int, object.Object), env *object.Environment, fie *ast.ForInExpression, pos int) object.Object {
-	k, v := next(pos)
+func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression) object.Object {
+	k, v := next()
 
-	if k < 0 || v == EOF {
+	if k == nil || v == EOF {
 		return NULL
 	}
 
 	// set the special k v variables in the
 	// environment
-	env.Set(fie.Key, &object.Number{Token: fie.Token, Value: float64(k)})
+	env.Set(fie.Key, k)
 	env.Set(fie.Value, v)
 	err := Eval(fie.Block, env)
 
@@ -796,8 +796,8 @@ func loopIterable(next func(int) (int, object.Object), env *object.Environment, 
 		return err
 	}
 
-	if k >= 0 {
-		return loopIterable(next, env, fie, pos+1)
+	if k != nil {
+		return loopIterable(next, env, fie)
 	}
 
 	return NULL

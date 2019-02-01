@@ -48,7 +48,7 @@ type Object interface {
 }
 
 type Iterable interface {
-	Next(int) (int, Object)
+	Next() (Object, Object)
 	Reset()
 }
 
@@ -164,7 +164,7 @@ func (s *String) HashKey() HashKey {
 type Builtin struct {
 	Token    token.Token
 	Fn       BuiltinFunction
-	Next     func(int) (int, Object)
+	Next     func() (Object, Object)
 	Types    []string
 	Iterable bool
 }
@@ -179,14 +179,14 @@ type Array struct {
 }
 
 func (ao *Array) Type() ObjectType { return ARRAY_OBJ }
-func (ao *Array) Next(pos int) (int, Object) {
+func (ao *Array) Next() (Object, Object) {
 	position := ao.position
 	if len(ao.Elements) > position {
 		ao.position = position + 1
-		return position, ao.Elements[position]
+		return &Number{Value: float64(position)}, ao.Elements[position]
 	}
 
-	return -1, nil
+	return nil, nil
 }
 func (ao *Array) Reset() {
 	ao.position = 0
@@ -231,8 +231,9 @@ type HashPair struct {
 }
 
 type Hash struct {
-	Token token.Token
-	Pairs map[HashKey]HashPair
+	Token    token.Token
+	Pairs    map[HashKey]HashPair
+	Position int
 }
 
 func (h *Hash) Type() ObjectType { return HASH_OBJ }
@@ -251,4 +252,36 @@ func (h *Hash) Inspect() string {
 	out.WriteString("}")
 
 	return out.String()
+}
+
+// Pretty convoluted logic here we could
+// refactor.
+// First we sort the hash keys alphabetically
+// and then we loop through them until
+// we reach the required position within
+// the loop.
+func (h *Hash) Next() (Object, Object) {
+	curPosition := 0
+	pairs := make(map[string]HashPair)
+	var keys []string
+	for _, v := range h.Pairs {
+		pairs[v.Key.Inspect()] = v
+		keys = append(keys, v.Key.Inspect())
+	}
+
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		if h.Position == curPosition {
+			h.Position += 1
+			return pairs[k].Key, pairs[k].Value
+		}
+
+		curPosition += 1
+	}
+
+	return nil, nil
+}
+func (h *Hash) Reset() {
+	h.Position = 0
 }

@@ -20,6 +20,7 @@ import (
 
 var scanner *bufio.Scanner
 var tok token.Token
+var scannerPosition int
 
 func init() {
 	scanner = bufio.NewScanner(os.Stdin)
@@ -507,14 +508,17 @@ func stdinFn(args ...object.Object) object.Object {
 
 	return &object.String{Token: tok, Value: scanner.Text()}
 }
-func stdinNextFn(pos int) (int, object.Object) {
+func stdinNextFn() (object.Object, object.Object) {
 	v := scanner.Scan()
 
 	if !v {
-		return pos, EOF
+		return nil, EOF
 	}
 
-	return pos, &object.String{Token: tok, Value: scanner.Text()}
+	defer func() {
+		scannerPosition += 1
+	}()
+	return &object.Number{Value: float64(scannerPosition)}, &object.String{Token: tok, Value: scanner.Text()}
 }
 
 // env(variable:"PWD")
