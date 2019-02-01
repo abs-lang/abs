@@ -116,10 +116,35 @@ type("") # "STRING"
 type({}) # "HASH"
 ```
 
+### cd() or cd(path)
+
+Sets the current working directory to `$HOME` or the given path.
+
+Note that the path may have a `"~/"` prefix which will be replaced
+with `$HOME/`. 
+
+The path to the current working directory can be seen with `pwd()`
+
+``` bash
+cd()
+pwd()   # /home/user
+
+cd("~/git/abs")
+pwd()   # /home/user/git/abs
+
+cd("/usr/local/bin")
+pwd()   # /usr/local/bin
+```
+
 ### pwd()
 
-Returns the working directory where the script was started for -- equivalent
-to `env("PWD")`:
+Returns the path to the current working directory -- equivalent
+to `env("PWD")`. 
+
+If executed from a script this will initially be the directory
+containing the script.
+
+To change the working directory, see `cd()`.
 
 ``` bash
 pwd() # /go/src/github.com/abs-lang/abs

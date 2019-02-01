@@ -57,6 +57,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{},
 			Fn:    pwdFn,
 		},
+		// cd(path)
+		"cd": &object.Builtin{
+			Types: []string{},
+			Fn:    cdFn,
+		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
 			Types: []string{},
@@ -409,6 +414,28 @@ func pwdFn(args ...object.Object) object.Object {
 		return newError(tok, err.Error())
 	}
 	return &object.String{Token: tok, Value: dir}
+}
+
+// cd(path)
+func cdFn(args ...object.Object) object.Object {
+	// Default cd $HOME
+	path := os.Getenv("HOME")
+	if len(args) == 1 {
+		// arg: path
+		pathStr := args[0].(*object.String)
+		rawPath := pathStr.Value
+		// expand ~/ path prefix
+		if strings.HasPrefix(rawPath, "~/") {
+			path = strings.Replace(rawPath, "~/", path+"/", 1)
+		} else if len(rawPath) > 0 {
+			path = rawPath
+		}
+	}
+	error := os.Chdir(path)
+	if error != nil {
+		return newError(tok, error.Error())
+	}
+	return NULL
 }
 
 // echo(arg:"hello")

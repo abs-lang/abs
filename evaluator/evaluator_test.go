@@ -657,6 +657,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
 		{`arg(3)`, ""},
 		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1).suffix("/evaluator")`, true}, // Little trick to get travis to run this test, as the base path is not /go/src/
+		{`cd("/usr/bin"); pwd()`, "/usr/bin"},
 		{`rand(1)`, 0},
 		{`int(10)`, 10},
 		{`int(10.5)`, 10},
