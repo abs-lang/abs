@@ -298,6 +298,8 @@ func TestForInExpressions(t *testing.T) {
 		{"a = 0; for k, x in 1..10 { a = a + 1}; a", 10},
 		{"a = 0; for x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
 		{"a = 0; for x in 1..10 { a = a + 1}; a", 10},
+		{`a = 0; for k, v in {"a": 10} { a = v}; a`, 10},
+		{`a = ""; b = "abc"; for k, v in {"a": 1, "b": 2, "c": 3} { a += k}; a == b`, true},
 		{`a = 0; for k, v in ["x", "y", "z"] { a = a + k}; a`, 3},
 		{`for k, v in ["x", "y", "z"] {}; k`, "identifier not found: k"},
 		{`for k, v in ["x", "y", "z"] {}; v`, "identifier not found: v"},
@@ -309,16 +311,19 @@ func TestForInExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		integer, ok := tt.expected.(int)
-		if ok {
-			testNumberObject(t, evaluated, float64(integer))
-		} else {
+
+		switch ev := tt.expected.(type) {
+		case int:
+			testNumberObject(t, evaluated, float64(ev))
+		case bool:
+			testBooleanObject(t, evaluated, ev)
+		default:
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
 				continue
 			}
-			logErrorWithPosition(t, errObj.Message, tt.expected)
+			logErrorWithPosition(t, errObj.Message, ev)
 		}
 	}
 }
