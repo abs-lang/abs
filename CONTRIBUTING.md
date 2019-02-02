@@ -1,6 +1,6 @@
 ## Contributing to the ABS language
 
-## A little explnatexplanationion first...
+## A little explanation first...
 
 ABS uses version branches to keep track of changes, meaning
 that you will see branches such as [1.0.x](https://github.com/abs-lang/abs/tree/1.0.x) and [1.1.x](https://github.com/abs-lang/abs/tree/1.1.x) in the
