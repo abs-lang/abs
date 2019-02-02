@@ -19,6 +19,9 @@ import (
 	"github.com/abs-lang/abs/util"
 )
 
+// using import alias to prevent IDE autoremove unused import
+import osUser "os/user"
+
 var scanner *bufio.Scanner
 var tok token.Token
 var scannerPosition int
@@ -423,26 +426,35 @@ func pwdFn(args ...object.Object) object.Object {
 	return &object.String{Token: tok, Value: dir}
 }
 
-// cd(path)
+// cd() or cd(path) returns expanded path and path.ok
 func cdFn(args ...object.Object) object.Object {
-	// Default cd $HOME
-	path := os.Getenv("HOME")
+	user, ok := osUser.Current()
+	if ok != nil {
+		return newError(tok, ok.Error())
+	}
+	// Default: cd to user's homeDir
+	path := user.HomeDir
 	if len(args) == 1 {
-		// arg: path
+		// arg: rawPath
 		pathStr := args[0].(*object.String)
 		rawPath := pathStr.Value
-		// expand ~/ path prefix
+		// expand bash-style ~/ path prefix to homeDir (also works in windows)
 		if strings.HasPrefix(rawPath, "~/") {
 			path = strings.Replace(rawPath, "~/", path+"/", 1)
 		} else if len(rawPath) > 0 {
 			path = rawPath
 		}
 	}
+	// NB. windows os.Chdir(path) will convert any '/' in path to '\', however linux will not
 	error := os.Chdir(path)
 	if error != nil {
-		return newError(tok, error.Error())
+		// path does not exist, return null string and !path.ok
+		return &object.String{Token: tok, Value: "", Ok: &object.Boolean{Token: tok, Value: false}}
 	}
-	return NULL
+	// return the full path we cd()'d into and path.ok
+	// this will also test true/false for cd("path/to/somewhere") && `ls`
+	dir, _ := os.Getwd()
+	return &object.String{Token: tok, Value: dir, Ok: &object.Boolean{Token: tok, Value: true}}
 }
 
 // echo(arg:"hello")
