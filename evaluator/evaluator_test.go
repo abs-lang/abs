@@ -979,6 +979,9 @@ func TestInExpressions(t *testing.T) {
 		{`"xyz" in "string"`, false},
 		{`"abc" in ["abc", "def"]`, true},
 		{`"xyz" in ["abc", "def"]`, false},
+		{`"x" in {"x": 0}`, true},
+		{`"y" in {"x": 0}`, false},
+		{`"y" in 12`, "'in' operator not supported on NUMBER"},
 	}
 
 	for _, tt := range tests {
@@ -987,7 +990,16 @@ func TestInExpressions(t *testing.T) {
 		switch expected := tt.expected.(type) {
 		case bool:
 			testBooleanObject(t, evaluated, bool(expected))
+		default:
+			errObj, ok := evaluated.(*object.Error)
+
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated)
+				continue
+			}
+			logErrorWithPosition(t, errObj.Message, expected)
 		}
+
 	}
 }
 
