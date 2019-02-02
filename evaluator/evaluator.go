@@ -344,6 +344,7 @@ func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Obj
 		default:
 			return newError(as.Token, "wrong assignment, expected identifier or array destructuring, got %s (%s)", val.Type(), val.Inspect())
 		}
+
 		return nil
 	}
 	// support assignment to indexed expressions: a[0] = 1, h["a"] = 1
