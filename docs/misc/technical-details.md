@@ -21,17 +21,12 @@ interpreter without relying on many external dependencies
 
 ## Development & contributing
 
-The best way to start developing *for* ABS is to clone the repository
-and run a `make build`: this will build a docker container with all
-the necessary dependencies for developing locally (for experienced
-Gophers: you might want to skip this altogether as your environment
-will probably work perfectly).
-
-With `make run` you can get inside a container built for ABS'
-development, and `make test` will run all tests.
+Please see [github.com/abs-lang/abs/blob/master/CONTRIBUTING.md](https://github.com/abs-lang/abs/blob/master/CONTRIBUTING.md)
 
 ## Testing
+
 ### Interpreter Error Location
+
 You can run the interpreter error location tests by invoking this bash script: `tests/test-abs.sh`. This script iterates over the `test-parser.abs` and `test-eval.abs` test scripts.
 ```bash
 $ tests/test-abs.sh
@@ -94,8 +89,11 @@ ERROR: index operator not supported: f(x) {x} on HASH
 	[19:20]	    {"name": "Abs"}[f(x) {x}];  
 Exit code: 99
 ```
+
 ### String tests
-String handling tests can be run from `abs tests/test-strings.abs`
+
+String handling tests can be run from `abs tests/test-strings.abs`:
+
 ```bash
 $ abs tests/test-strings.abs
 =====================
@@ -145,7 +143,9 @@ a\nb\nc
 ```
 
 ### Array and hash assignment tests 
-Array and hash assignment tests can be run from `abs tests/test-assign-index.abs `.
+
+Array and hash assignment tests can be run from `abs tests/test-assign-index.abs `:
+
 ```bash
 =====================
 Test assignment to array indexed objects
@@ -205,7 +205,7 @@ ERROR: type mismatch: NULL + NUMBER
 
 ## Roadmap
 
-We're currently working on [1.1](https://github.com/abs-lang/abs/milestone/6).
+We're currently working on [1.2](https://github.com/abs-lang/abs/milestone/9).
 
 ## Next
 

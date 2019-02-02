@@ -12,7 +12,10 @@ Note that the `hash.key` hash property form is the preferred one, as it's more c
 
 Accessing a key that does not exist returns null.
 
-An individual hash element may be assigned to via its `hash["key"]` index or its property `hash.key`. This includes compound operators such as `+=`. Note that a new key may be created as well using `hash["newkey"]` or `hash.newkey`.
+An individual hash element may be assigned to via its `hash["key"]`
+index or its property `hash.key`. This includes compound operators 
+such as `+=`. Note that a new key may be created as well using `hash["newkey"]` or `hash.newkey`:
+
 ```bash
 h = {"a": 1, "b": 2, "c": 3}
 h # {a: 1, b: 2, c: 3}
@@ -37,7 +40,9 @@ h.y = 20
 h # {a: 88, b: 2, c: 3, x: 10, y: 20}
 ```
 
-It is also possible to extend a hash using the `+=` operator with another hash. Note that any existing keys on the left side will be replaced with the same key from the right side.
+It is also possible to extend a hash using the `+=` operator
+with another hash. Note that any existing keys on the left side 
+will be replaced with the same key from the right side:
 
 ```bash
 h = {"a": 1, "b": 2, "c": 3}
@@ -48,7 +53,9 @@ h += {"c": 33, "d": 4, "e": 5}
 h   # {a: 1, b: 2, c: 33, d: 4, e: 5}
 ```
 
-In a similar way, we can make a **shallow** copy of a hash using the `+` operator with an empty hash. Be careful, the empty hash must be on the left side of the `+` operator.
+In a similar way, we can make a **shallow** copy of a hash using
+the `+` operator with an empty hash. Be careful, the empty hash 
+must be on the left side of the `+` operator:
 
 ```bash
 a = {"a": 1, "b": 2, "c": 3}
@@ -65,7 +72,10 @@ b   # {a: 99, b: 2, c: 3}
 a   # {a: 1, b: 2, c: 3}
 ```
 
-If the left side is a `hash["key"]` or `hash.key` and the right side is a hash, then the resulting hash will have a new nested hash at `hash.newkey`. This includes `hash["newkey"]` or `hash.newKey` as well.
+If the left side is a `hash["key"]` or `hash.key` and the
+right side is a hash, then the resulting hash will have a
+new nested hash at `hash.newkey`. This includes `hash["newkey"]`
+or `hash.newKey` as well:
 
 ```bash
 h = {"a": 1, "b": 2, "c": 3}

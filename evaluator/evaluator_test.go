@@ -298,6 +298,8 @@ func TestForInExpressions(t *testing.T) {
 		{"a = 0; for k, x in 1..10 { a = a + 1}; a", 10},
 		{"a = 0; for x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
 		{"a = 0; for x in 1..10 { a = a + 1}; a", 10},
+		{`a = 0; for k, v in {"a": 10} { a = v}; a`, 10},
+		{`a = ""; b = "abc"; for k, v in {"a": 1, "b": 2, "c": 3} { a += k}; a == b`, true},
 		{`a = 0; for k, v in ["x", "y", "z"] { a = a + k}; a`, 3},
 		{`for k, v in ["x", "y", "z"] {}; k`, "identifier not found: k"},
 		{`for k, v in ["x", "y", "z"] {}; v`, "identifier not found: v"},
@@ -309,16 +311,19 @@ func TestForInExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		integer, ok := tt.expected.(int)
-		if ok {
-			testNumberObject(t, evaluated, float64(integer))
-		} else {
+
+		switch ev := tt.expected.(type) {
+		case int:
+			testNumberObject(t, evaluated, float64(ev))
+		case bool:
+			testBooleanObject(t, evaluated, ev)
+		default:
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
 				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
 				continue
 			}
-			logErrorWithPosition(t, errObj.Message, tt.expected)
+			logErrorWithPosition(t, errObj.Message, ev)
 		}
 	}
 }
@@ -487,7 +492,9 @@ func TestAssignStatements(t *testing.T) {
 		{"a = 5; b = a; b;", 5},
 		{"a = 5; b = a; c = a + b + 5; c;", 15},
 		{"a, b, c = [1]; a;", 1},
+		{`a, b, c = {"a": 1}; a;`, 1},
 		{"a, b, c = [1]; b;", nil},
+		{`a, b, c = {"a": 1}; b;`, nil},
 		{`a = 10 + 1 + 2
 b, c = [1, 2]; b`, 1},
 		{`a = 10 + 1 + 2
@@ -770,6 +777,7 @@ c")`, []string{"a", "b", "c"}},
 		{`"A great movie".upper()`, "A GREAT MOVIE"},
 		{`"  A great movie  ".trim()`, "A great movie"},
 		{`"  A great movie  ".trim_by(" A")`, "great movie"},
+		{`sleep(1000)`, nil},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -973,6 +981,9 @@ func TestInExpressions(t *testing.T) {
 		{`"xyz" in "string"`, false},
 		{`"abc" in ["abc", "def"]`, true},
 		{`"xyz" in ["abc", "def"]`, false},
+		{`"x" in {"x": 0}`, true},
+		{`"y" in {"x": 0}`, false},
+		{`"y" in 12`, "'in' operator not supported on NUMBER"},
 	}
 
 	for _, tt := range tests {
@@ -981,7 +992,16 @@ func TestInExpressions(t *testing.T) {
 		switch expected := tt.expected.(type) {
 		case bool:
 			testBooleanObject(t, evaluated, bool(expected))
+		default:
+			errObj, ok := evaluated.(*object.Error)
+
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+			logErrorWithPosition(t, errObj.Message, expected)
 		}
+
 	}
 }
 

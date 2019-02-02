@@ -82,8 +82,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Number{Token: node.Token, Value: node.Value}
 
 	case *ast.NullLiteral:
-		return &object.Null{Token: node.Token}
-		// return NULL
+		return NULL
 
 	case *ast.StringLiteral:
 		return &object.String{Token: node.Token, Value: node.Value}
@@ -321,19 +320,29 @@ func evalAssignment(as *ast.AssignStatement, env *object.Environment) object.Obj
 
 	// destructuring x, y = [1, 2]
 	if len(as.Names) > 0 {
-		if val.Type() != object.ARRAY_OBJ {
-			return newError(as.Token, "wrong assignment, expected identifier or array destructuring, got %s (%s)", val.Type(), val.Inspect())
-		}
+		switch v := val.(type) {
+		case *object.Array:
+			elements := v.Elements
+			for i, name := range as.Names {
+				if i < len(elements) {
+					env.Set(name.String(), elements[i])
+					continue
+				}
 
-		elements := val.(*object.Array).Elements
-
-		for i, name := range as.Names {
-			if i < len(elements) {
-				env.Set(name.String(), elements[i])
-				continue
+				env.Set(name.String(), NULL)
 			}
+		case *object.Hash:
+			for _, name := range as.Names {
+				x, ok := v.GetPair(name.String())
 
-			env.Set(name.String(), NULL)
+				if ok {
+					env.Set(name.String(), x.Value)
+				} else {
+					env.Set(name.String(), NULL)
+				}
+			}
+		default:
+			return newError(as.Token, "wrong assignment, expected identifier or array destructuring, got %s (%s)", val.Type(), val.Inspect())
 		}
 		return nil
 	}
@@ -405,7 +414,7 @@ func evalInfixExpression(
 		return evalArrayInfixExpression(tok, operator, left, right)
 	case left.Type() == object.HASH_OBJ && right.Type() == object.HASH_OBJ:
 		return evalHashInfixExpression(tok, operator, left, right)
-	case operator == "in" && (right.Type() == object.ARRAY_OBJ || right.Type() == object.STRING_OBJ):
+	case operator == "in":
 		return evalInExpression(left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
@@ -631,6 +640,13 @@ func evalInExpression(
 		if left.Type() == object.STRING_OBJ {
 			found = strings.Contains(right.Inspect(), left.Inspect())
 		}
+	case *object.Hash:
+		if left.Type() == object.STRING_OBJ {
+			_, ok := rightObj.GetPair(left.(*object.String).Value)
+			found = ok
+		}
+	default:
+		return newError(tok, "'in' operator not supported on %s", right.Type())
 	}
 
 	return &object.Boolean{Token: tok, Value: found}
@@ -768,28 +784,28 @@ func evalForInExpression(
 			i.Reset()
 		}()
 
-		return loopIterable(i.Next, env, fie, 0)
+		return loopIterable(i.Next, env, fie)
 	case *object.Builtin:
 		if i.Next == nil {
 			return newError(fie.Token, "builtin function cannot be used in loop")
 		}
 
-		return loopIterable(i.Next, env, fie, 0)
+		return loopIterable(i.Next, env, fie)
 	default:
 		return newError(fie.Token, "'%s' is a %s, not an iterable, cannot be used in for loop", i.Inspect(), i.Type())
 	}
 }
 
-func loopIterable(next func(int) (int, object.Object), env *object.Environment, fie *ast.ForInExpression, pos int) object.Object {
-	k, v := next(pos)
+func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression) object.Object {
+	k, v := next()
 
-	if k < 0 || v == EOF {
+	if k == nil || v == EOF {
 		return NULL
 	}
 
 	// set the special k v variables in the
 	// environment
-	env.Set(fie.Key, &object.Number{Token: fie.Token, Value: float64(k)})
+	env.Set(fie.Key, k)
 	env.Set(fie.Value, v)
 	err := Eval(fie.Block, env)
 
@@ -797,8 +813,8 @@ func loopIterable(next func(int) (int, object.Object), env *object.Environment, 
 		return err
 	}
 
-	if k >= 0 {
-		return loopIterable(next, env, fie, pos+1)
+	if k != nil {
+		return loopIterable(next, env, fie)
 	}
 
 	return NULL
