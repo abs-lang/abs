@@ -56,10 +56,14 @@ echo(y) # 9
 ## In form
 
 The "in" form of the `for` loops allows you to iterate over
-an array:
+an array or an hash:
 
 ``` bash
 for x in [1, 2, 3] {
+    # x is 1, 2, 3
+}
+
+for x in {"a": 1, "b": 2, "c": 3} {
     # x is 1, 2, 3
 }
 ```
@@ -71,6 +75,11 @@ for k, v in [1, 2, 3] {
     # k is 0, 1, 2
     # v is 1, 2, 3
 }
+
+for k, v in {"a": 1, "b": 2, "c": 3} {
+    # k is a, b, c
+    # v is 1, 2, 3
+}
 ```
 
 In terms of scoping, the "in" form follows the same rules
@@ -79,13 +88,13 @@ as the standard one, meaning that:
 ``` bash
 k = "hello world"
 
-for v in [1, 2, 3] {
+for k, v in [1, 2, 3] {
     # k is 0, 1, 2
     # v is 1, 2, 3
 }
 
-echo(v) # "hello world"
-echo(k) # v is not defined
+echo(k) # "hello world"
+echo(v) # v is not defined
 ```
 
 ## Next
