@@ -82,8 +82,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Number{Token: node.Token, Value: node.Value}
 
 	case *ast.NullLiteral:
-		return &object.Null{Token: node.Token}
-		// return NULL
+		return NULL
 
 	case *ast.StringLiteral:
 		return &object.String{Token: node.Token, Value: node.Value}
