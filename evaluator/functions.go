@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/abs-lang/abs/ast"
 	"github.com/abs-lang/abs/lexer"
@@ -270,6 +271,11 @@ func getFns() map[string]*object.Builtin {
 		"join": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    joinFn,
+		},
+		// sleep(3000)
+		"sleep": &object.Builtin{
+			Types: []string{object.NUMBER_OBJ},
+			Fn:    sleepFn,
 		},
 	}
 }
@@ -1268,4 +1274,16 @@ func joinFn(args ...object.Object) object.Object {
 	}
 
 	return &object.String{Token: tok, Value: strings.Join(newElements, args[1].(*object.String).Value)}
+}
+
+func sleepFn(args ...object.Object) object.Object {
+	err := validateArgs("sleep", args, 1, [][]string{{object.NUMBER_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	ms := args[0].(*object.Number)
+	time.Sleep(time.Duration(ms.Value) * time.Millisecond)
+
+	return NULL
 }
