@@ -415,7 +415,7 @@ func evalInfixExpression(
 		return evalArrayInfixExpression(tok, operator, left, right)
 	case left.Type() == object.HASH_OBJ && right.Type() == object.HASH_OBJ:
 		return evalHashInfixExpression(tok, operator, left, right)
-	case operator == "in" && (right.Type() == object.ARRAY_OBJ || right.Type() == object.STRING_OBJ):
+	case operator == "in":
 		return evalInExpression(left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
@@ -641,6 +641,13 @@ func evalInExpression(
 		if left.Type() == object.STRING_OBJ {
 			found = strings.Contains(right.Inspect(), left.Inspect())
 		}
+	case *object.Hash:
+		if left.Type() == object.STRING_OBJ {
+			_, ok := rightObj.GetPair(left.(*object.String).Value)
+			found = ok
+		}
+	default:
+		return newError(tok, "'in' operator not supported on %s", right.Type())
 	}
 
 	return &object.Boolean{Token: tok, Value: found}
