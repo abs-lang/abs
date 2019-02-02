@@ -776,6 +776,7 @@ c")`, []string{"a", "b", "c"}},
 		{`"A great movie".upper()`, "A GREAT MOVIE"},
 		{`"  A great movie  ".trim()`, "A great movie"},
 		{`"  A great movie  ".trim_by(" A")`, "great movie"},
+		{`sleep(1000)`, nil},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
