@@ -100,7 +100,7 @@ a /= 2 # a is now 5
 
 ## in
 
-Checks whether a value is in an array or a substring within a string:
+Membership test operator (find whether a needle is in the haystack):
 
 ``` bash
 1 in [1, 2, 3] # true
@@ -108,6 +108,8 @@ Checks whether a value is in an array or a substring within a string:
 9 in 9 # unknown operator: NUMBER in NUMBER
 "str" in "string" # true
 "xyz" in "string" # false
+"x" in {"x": 1} # true
+"y" in {"x": 1} # false
 ```
 
 ## **

@@ -191,6 +191,14 @@ Type 'quit' when you're done, 'help' if you get lost!
 STRING
 ```
 
+### sleep(ms)
+
+Halts the process for as many `ms` you specified:
+
+``` bash
+sleep(1000) # sleeps for 1 second
+```
+
 ## Next
 
 That's about it for this section!
