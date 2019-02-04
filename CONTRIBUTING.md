@@ -1,6 +1,10 @@
 ## Contributing to the ABS language
 
+<<<<<<< HEAD
+## A little explanation first...
+=======
 ## A little explnatexplanationion first...
+>>>>>>> 087eeb29e15ecc4a08e64887f70e9a279d849303
 
 ABS uses version branches to keep track of changes, meaning
 that you will see branches such as [1.0.x](https://github.com/abs-lang/abs/tree/1.0.x) and [1.1.x](https://github.com/abs-lang/abs/tree/1.1.x) in the
@@ -85,4 +89,8 @@ We also encourage you to start discussions around the language
 or submit RFCs: ABS is nothing without a community that shapes
 its direction. [This](https://github.com/abs-lang/abs/issues/124)
 is an example of the community proposing a change and the ABS
+<<<<<<< HEAD
 team happily `+1` it.
+=======
+team happily `+1` it.
+>>>>>>> 087eeb29e15ecc4a08e64887f70e9a279d849303

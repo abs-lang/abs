@@ -118,22 +118,39 @@ type({}) # "HASH"
 
 ### cd() or cd(path)
 
-Sets the current working directory to `$HOME` or the given path.
+Sets the current working directory to `homeDir` or the given `path`
+in both Linux and Windows.
 
-Note that the path may have a `"~/"` prefix which will be replaced
-with `$HOME/`. 
+Note that the path may have a `'~/'` prefix which will be replaced
+with `'homeDir/'`. Also, in Windows, any `'/'` path separator will be
+replaced with `'\'` and path names are not case-sensitive.
 
-The path to the current working directory can be seen with `pwd()`
+Returns the `'/fully/expanded/path'` to the new current working directory and `path.ok`. If `path.ok` is `false`, then the `path`
+is a `null string` and the current working directory is unchanged.
+This supports compound tests such as ``cd() && `ls` ``.
 
 ``` bash
-cd()
-pwd()   # /home/user
+path = cd()
+path.ok     # true
+path        # /home/user or C:\Users\user
 
-cd("~/git/abs")
-pwd()   # /home/user/git/abs
+here = pwd()
+path = cd("/path/to/nowhere")
+path.ok         # false
+path            # null string
+here == pwd()   # true
 
-cd("/usr/local/bin")
-pwd()   # /usr/local/bin
+cd("~/git/abs") # /home/user/git/abs or C:\Users\user\git\abs
+
+cd("..")        # /home/user/git or C:\Users\user\git
+
+cd("/usr/local/bin") # /usr/local/bin
+
+dirs = cd() && `ls`.split("\n")
+len(dirs)   # number of directories in homeDir
+
+dirs = cd("/path/to/nowhere") && `ls`.split("\n")
+len(dirs)   # 0
 ```
 
 ### pwd()
