@@ -110,7 +110,8 @@ $ abs path/to/scripts.abs
 
 ## Documentation
 
-Visit [abs-lang.org](https://www.abs-lang.org)
+Visit [abs-lang.org](https://www.abs-lang.org) or check the [examples directory](https://github.com/abs-lang/abs/tree/master/examples),
+which contains a few brief scripts.
 
 ## Contributing
 
