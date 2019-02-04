@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"os/user"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,9 +19,6 @@ import (
 	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
 )
-
-// using import alias to prevent IDE autoremove unused import
-import osUser "os/user"
 
 var scanner *bufio.Scanner
 var tok token.Token
@@ -428,7 +426,7 @@ func pwdFn(args ...object.Object) object.Object {
 
 // cd() or cd(path) returns expanded path and path.ok
 func cdFn(args ...object.Object) object.Object {
-	user, ok := osUser.Current()
+	user, ok := user.Current()
 	if ok != nil {
 		return newError(tok, ok.Error())
 	}
