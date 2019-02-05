@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"os/user"
 	"sort"
 	"strconv"
 	"strings"
@@ -58,6 +59,11 @@ func getFns() map[string]*object.Builtin {
 		"pwd": &object.Builtin{
 			Types: []string{},
 			Fn:    pwdFn,
+		},
+		// cd() or cd(path)
+		"cd": &object.Builtin{
+			Types: []string{},
+			Fn:    cdFn,
 		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
@@ -416,6 +422,37 @@ func pwdFn(args ...object.Object) object.Object {
 		return newError(tok, err.Error())
 	}
 	return &object.String{Token: tok, Value: dir}
+}
+
+// cd() or cd(path) returns expanded path and path.ok
+func cdFn(args ...object.Object) object.Object {
+	user, ok := user.Current()
+	if ok != nil {
+		return newError(tok, ok.Error())
+	}
+	// Default: cd to user's homeDir
+	path := user.HomeDir
+	if len(args) == 1 {
+		// arg: rawPath
+		pathStr := args[0].(*object.String)
+		rawPath := pathStr.Value
+		// expand bash-style ~/ path prefix to homeDir (also works in windows)
+		if strings.HasPrefix(rawPath, "~/") {
+			path = strings.Replace(rawPath, "~/", path+"/", 1)
+		} else if len(rawPath) > 0 {
+			path = rawPath
+		}
+	}
+	// NB. windows os.Chdir(path) will convert any '/' in path to '\', however linux will not
+	error := os.Chdir(path)
+	if error != nil {
+		// path does not exist, return null string and !path.ok
+		return &object.String{Token: tok, Value: "", Ok: &object.Boolean{Token: tok, Value: false}}
+	}
+	// return the full path we cd()'d into and path.ok
+	// this will also test true/false for cd("path/to/somewhere") && `ls`
+	dir, _ := os.Getwd()
+	return &object.String{Token: tok, Value: dir, Ok: &object.Boolean{Token: tok, Value: true}}
 }
 
 // echo(arg:"hello")
