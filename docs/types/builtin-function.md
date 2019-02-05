@@ -116,10 +116,52 @@ type("") # "STRING"
 type({}) # "HASH"
 ```
 
+### cd() or cd(path)
+
+Sets the current working directory to `homeDir` or the given `path`
+in both Linux and Windows.
+
+Note that the path may have a `'~/'` prefix which will be replaced
+with `'homeDir/'`. Also, in Windows, any `'/'` path separator will be
+replaced with `'\'` and path names are not case-sensitive.
+
+Returns the `'/fully/expanded/path'` to the new current working directory and `path.ok`. If `path.ok` is `false`, then the `path`
+is a `null string` and the current working directory is unchanged.
+This supports compound tests such as ``cd() && `ls` ``.
+
+``` bash
+path = cd()
+path.ok     # true
+path        # /home/user or C:\Users\user
+
+here = pwd()
+path = cd("/path/to/nowhere")
+path.ok         # false
+path            # null string
+here == pwd()   # true
+
+cd("~/git/abs") # /home/user/git/abs or C:\Users\user\git\abs
+
+cd("..")        # /home/user/git or C:\Users\user\git
+
+cd("/usr/local/bin") # /usr/local/bin
+
+dirs = cd() && `ls`.lines()
+len(dirs)   # number of directories in homeDir
+
+dirs = cd("/path/to/nowhere") && `ls`.lines()
+len(dirs)   # 0
+```
+
 ### pwd()
 
-Returns the working directory where the script was started for -- equivalent
-to `env("PWD")`:
+Returns the path to the current working directory -- equivalent
+to `env("PWD")`. 
+
+If executed from a script this will initially be the directory
+containing the script.
+
+To change the working directory, see `cd()`.
 
 ``` bash
 pwd() # /go/src/github.com/abs-lang/abs
