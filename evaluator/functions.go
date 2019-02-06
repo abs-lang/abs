@@ -447,7 +447,7 @@ func cdFn(args ...object.Object) object.Object {
 	error := os.Chdir(path)
 	if error != nil {
 		// path does not exist, return null string and !path.ok
-		return &object.String{Token: tok, Value: "", Ok: &object.Boolean{Token: tok, Value: false}}
+		return &object.String{Token: tok, Value: error.Error(), Ok: &object.Boolean{Token: tok, Value: false}}
 	}
 	// return the full path we cd()'d into and path.ok
 	// this will also test true/false for cd("path/to/somewhere") && `ls`
