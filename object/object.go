@@ -11,7 +11,7 @@ import (
 	"github.com/abs-lang/abs/token"
 )
 
-type BuiltinFunction func(args ...Object) Object
+type BuiltinFunction func(tok token.Token, args ...Object) Object
 
 type ObjectType string
 
