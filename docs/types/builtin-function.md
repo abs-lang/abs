@@ -125,9 +125,8 @@ Note that the path may have a `'~/'` prefix which will be replaced
 with `'homeDir/'`. Also, in Windows, any `'/'` path separator will be
 replaced with `'\'` and path names are not case-sensitive.
 
-Returns the `'/fully/expanded/path'` to the new current working directory and `path.ok`. If `path.ok` is `false`, then the `path`
-is a `null string` and the current working directory is unchanged.
-This supports compound tests such as ``cd() && `ls` ``.
+Returns the `'/fully/expanded/path'` to the new current working directory and `path.ok`.
+If `path.ok` is `false`, that means there was an error changing directory:
 
 ``` bash
 path = cd()
@@ -137,7 +136,7 @@ path        # /home/user or C:\Users\user
 here = pwd()
 path = cd("/path/to/nowhere")
 path.ok         # false
-path            # null string
+path            # 'chdir /path/to/nowhere: no such file or directory'
 here == pwd()   # true
 
 cd("~/git/abs") # /home/user/git/abs or C:\Users\user\git\abs
@@ -148,9 +147,6 @@ cd("/usr/local/bin") # /usr/local/bin
 
 dirs = cd() && `ls`.lines()
 len(dirs)   # number of directories in homeDir
-
-dirs = cd("/path/to/nowhere") && `ls`.lines()
-len(dirs)   # 0
 ```
 
 ### pwd()
