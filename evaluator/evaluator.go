@@ -937,7 +937,7 @@ func applyFunction(tok token.Token, fn object.Object, args []object.Object) obje
 		return unwrapReturnValue(evaluated)
 
 	case *object.Builtin:
-		return fn.Fn(args...)
+		return fn.Fn(tok, args...)
 
 	default:
 		return newError(tok, "not a function: %s", fn.Type())
@@ -956,7 +956,7 @@ func applyMethod(tok token.Token, o object.Object, method string, args []object.
 	}
 
 	args = append([]object.Object{o}, args...)
-	return f.Fn(args...)
+	return f.Fn(tok, args...)
 }
 
 func extendFunctionEnv(
