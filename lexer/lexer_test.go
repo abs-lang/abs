@@ -76,6 +76,11 @@ nullo
 &^>><<
 $111
 '123'
+12+12
+12e10
+12e+10
+12e-10
+12e
 `
 
 	tests := []struct {
@@ -282,6 +287,13 @@ $111
 		{token.BIT_LSHIFT, "<<"},
 		{token.ILLEGAL, "$111"},
 		{token.STRING, "123"},
+		{token.NUMBER, "12"},
+		{token.PLUS, "+"},
+		{token.NUMBER, "12"},
+		{token.NUMBER, "12e10"},
+		{token.NUMBER, "12e+10"},
+		{token.NUMBER, "12e-10"},
+		{token.ILLEGAL, ""},
 		{token.EOF, ""},
 	}
 
