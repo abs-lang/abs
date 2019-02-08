@@ -48,6 +48,9 @@ func TestEvalNumberExpression(t *testing.T) {
 		input    string
 		expected float64
 	}{
+		{"1e1", 10},
+		{"1e-1", 0.1},
+		{"1e+1", 10},
 		{"5.5", 5.5},
 		{"1.1 + 2.1", 3.2},
 		{"5.5 + 2.2", 7.7},
