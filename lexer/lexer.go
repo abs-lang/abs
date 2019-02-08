@@ -346,17 +346,40 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[position:l.position]
 }
 
+// 12
+// 12.2
+// 12e-1
+// 12e+1
+// 12e1
 func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 	position := l.position
 	kind = token.NUMBER
 	hasDot := false
+	hasExponent := false
 
-	for isDigit(l.ch) || l.ch == '.' {
+	// List of character that can appear in a "number"
+	for isDigit(l.ch) || l.ch == '.' || l.ch == '+' || l.ch == '-' || l.ch == 'e' {
+		// If we have a plus / minus but there was no exponent
+		// in this number, it means we're at the end of the
+		// number and we're at an addition / subtraction.
+		if (l.ch == '+' || l.ch == '-') && !hasExponent {
+			return l.input[position:l.position], kind
+		}
+
+		// If the number contains as 'e',
+		// we're using scientific notation
+		if l.ch == 'e' {
+			hasExponent = true
+		}
+
+		// If we have a dot, let's check whether this is a range
+		// or maybe a method call (122.string())
 		if l.ch == '.' && (l.peekChar() == '.' || !isDigit(l.peekChar())) {
 			return l.input[position:l.position], token.NUMBER
 		}
 
 		if l.ch == '.' {
+			// If we have 2 dots in a number, there's a problem
 			if hasDot {
 				return "", token.ILLEGAL
 			}
@@ -365,6 +388,12 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 			kind = token.NUMBER
 		}
 		l.readChar()
+	}
+
+	// If the number ends with the exponent,
+	// there's a problem.
+	if l.input[l.position-1] == 'e' {
+		return "", token.ILLEGAL
 	}
 
 	return l.input[position:l.position], kind
