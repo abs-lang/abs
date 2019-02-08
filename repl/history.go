@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -36,7 +37,11 @@ func getHistoryConfiguration() (string, int) {
 	if len(maxHistoryLines) == 0 {
 		maxHistoryLines = ABS_MAX_HISTORY_LINES
 	}
-	maxLines, _ := strconv.Atoi(maxHistoryLines)
+	maxLines, ok := strconv.Atoi(maxHistoryLines)
+	if ok != nil {
+		maxLines, _ = strconv.Atoi(ABS_MAX_HISTORY_LINES)
+		fmt.Printf("ABS_MAX_HISTORY_LINES must be an integer: %s; using default: %d\n", maxHistoryLines, maxLines)
+	}
 	// ABS_HISTORY_FILE
 	historyFile := os.Getenv("ABS_HISTORY_FILE")
 	if len(historyFile) == 0 {
@@ -46,11 +51,10 @@ func getHistoryConfiguration() (string, int) {
 		// expand the ABS_HISTORY_FILE to the user's HomeDir
 		filePath, err := util.ExpandPath(historyFile)
 		if err != nil {
+			fmt.Printf("Unable to expand ABS history file path: %s\nError: %s\n", historyFile, err.Error())
 			os.Exit(99)
 		}
 		historyFile = filePath
-	} else {
-		historyFile = ""
 	}
 	return historyFile, maxLines
 }
@@ -63,7 +67,11 @@ func getHistory(historyFile string, maxLines int) []string {
 		return history
 	}
 	// verify the expanded historyFile exists, if not create it now
-	fd, _ := os.OpenFile(historyFile, os.O_RDONLY|os.O_CREATE, 0666)
+	fd, ok := os.OpenFile(historyFile, os.O_RDONLY|os.O_CREATE, 0666)
+	if ok != nil {
+		fmt.Printf("Cannot create or read ABS history file: %s\nError: %s\n", historyFile, ok.Error())
+		os.Exit(99)
+	}
 	fd.Close()
 	// read the file and split the lines into history[...]
 	bytes, err := ioutil.ReadFile(historyFile)
@@ -107,5 +115,8 @@ func saveHistory(historyFile string, maxLines int, history []string) {
 	}
 	// write the augmented local history back out to the file
 	historyStr := strings.Join(history, "\n")
-	ioutil.WriteFile(historyFile, []byte(historyStr), 0664)
+	err := ioutil.WriteFile(historyFile, []byte(historyStr), 0664)
+	if err != nil {
+		fmt.Printf("Cannot write to ABS history file: %s\nError: %s\n", historyFile, err.Error())
+	}
 }
