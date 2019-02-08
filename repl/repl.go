@@ -23,8 +23,18 @@ var env *object.Environment
 // be available here so that other features,
 // such as suggestions, work by inspecting
 // the environment.
+
+// Support for persistent history in interactive REPL
+var (
+	historyFile string
+	maxLines    int
+	history     []string
+)
+
 func init() {
 	env = object.NewEnvironment()
+	historyFile, maxLines = getHistoryConfiguration()
+	history = getHistory(historyFile, maxLines)
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
@@ -57,8 +67,11 @@ func Start(in io.Reader, out io.Writer) {
 		prompt.OptionPrefix("⧐  "),
 		prompt.OptionLivePrefix(changeLivePrefix),
 		prompt.OptionTitle("abs-repl"),
+		prompt.OptionHistory(history),
 	)
 	p.Run()
+	// we get here on ^D from the prompt
+	saveHistory(historyFile, maxLines, history)
 }
 
 // The executor simply reads what
@@ -68,8 +81,8 @@ func Start(in io.Reader, out io.Writer) {
 // or evaluate code.
 func executor(line string) {
 	if line == "quit" {
-		fmt.Printf("%s", "Adios!")
-		fmt.Printf("%s", "\n")
+		fmt.Printf("%s\n", "Adios!")
+		saveHistory(historyFile, maxLines, history)
 		os.Exit(0)
 	}
 
@@ -87,6 +100,9 @@ func executor(line string) {
 		fmt.Printf("%s", "\n")
 		return
 	}
+
+	// record this line for posterity
+	history = addToHistory(history, maxLines, line)
 
 	Run(line, true)
 }
