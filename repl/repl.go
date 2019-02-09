@@ -33,8 +33,6 @@ var (
 
 func init() {
 	env = object.NewEnvironment()
-	historyFile, maxLines = getHistoryConfiguration()
-	history = getHistory(historyFile, maxLines)
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
@@ -61,6 +59,10 @@ func changeLivePrefix() (string, bool) {
 }
 
 func Start(in io.Reader, out io.Writer) {
+	// get history file only when interactive REPL is running
+	historyFile, maxLines = getHistoryConfiguration()
+	history = getHistory(historyFile, maxLines)
+
 	p := prompt.New(
 		executor,
 		completer,
