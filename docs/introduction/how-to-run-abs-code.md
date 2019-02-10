@@ -67,7 +67,8 @@ ERROR: not a function: STRING
 94.204.178.37
 ```
 ### REPL Command History
-Interactive REPL sessions can now restore and save the command 
+
+Interactive REPL sessions can restore and save the command 
 history to a history file containing a maximum number of command lines. 
 
 The prompt live history is restored from the history file when
