@@ -94,9 +94,24 @@ Wondering how you can run this code? Simply grab the latest
 $ abs script.abs
 ```
 
+## Installation
+
+The easiest way is to:
+
+``` bash
+bash <(curl https://www.abs-lang.org/installer.sh)
+```
+
+then you can:
+
+``` bash
+$ abs path/to/scripts.abs
+```
+
 ## Documentation
 
-Visit [abs-lang.org](https://www.abs-lang.org)
+Visit [abs-lang.org](https://www.abs-lang.org) or check the [examples directory](https://github.com/abs-lang/abs/tree/master/examples),
+which contains a few brief scripts.
 
 ## Contributing
 
