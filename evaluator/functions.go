@@ -435,12 +435,7 @@ func cdFn(tok token.Token, args ...object.Object) object.Object {
 		// arg: rawPath
 		pathStr := args[0].(*object.String)
 		rawPath := pathStr.Value
-		// expand bash-style ~/ path prefix to homeDir (also works in windows)
-		if strings.HasPrefix(rawPath, "~/") {
-			path = strings.Replace(rawPath, "~/", path+"/", 1)
-		} else if len(rawPath) > 0 {
-			path = rawPath
-		}
+		path, _ = util.ExpandPath(rawPath)
 	}
 	// NB. windows os.Chdir(path) will convert any '/' in path to '\', however linux will not
 	error := os.Chdir(path)
