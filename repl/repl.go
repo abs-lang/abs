@@ -3,12 +3,16 @@ package repl
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"os/user"
+	"strings"
 
 	"github.com/abs-lang/abs/evaluator"
 	"github.com/abs-lang/abs/lexer"
 	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/parser"
+	"github.com/abs-lang/abs/util"
 
 	prompt "github.com/c-bata/go-prompt"
 )
@@ -62,7 +66,7 @@ func Start(in io.Reader, out io.Writer) {
 	// get history file only when interactive REPL is running
 	historyFile, maxLines = getHistoryConfiguration()
 	history = getHistory(historyFile, maxLines)
-
+	// create and start the command prompt run loop
 	p := prompt.New(
 		executor,
 		completer,
@@ -155,4 +159,70 @@ func printParserErrors(errors []string) {
 	for _, msg := range errors {
 		fmt.Printf("%s", "\t"+msg+"\n")
 	}
+}
+
+// support for ABS init file
+const ABS_INIT_FILE = "~/.absrc"
+
+func getAbsInitFile(interactive bool) {
+	// get ABS_INIT_FILE from OS environment or default
+	initFile := os.Getenv("ABS_INIT_FILE")
+	if len(initFile) == 0 {
+		initFile = ABS_INIT_FILE
+	}
+	// expand the ABS_INIT_FILE to the user's HomeDir
+	filePath, err := util.ExpandPath(initFile)
+	if err != nil {
+		fmt.Printf("Unable to expand ABS init file path: %s\nError: %s\n", initFile, err.Error())
+		os.Exit(99)
+	}
+	initFile = filePath
+	// read and eval the abs init file
+	code, err := ioutil.ReadFile(initFile)
+	if err != nil {
+		// abs init file is optional -- nothing to do here
+		return
+	}
+	Run(string(code), interactive)
+}
+
+// BeginRepl (args) -- the REPL, both interactive and script modes begin here
+// This allows us to prime the global env with ABS_INTERACTIVE = true/false
+// and load the ABS_INIT_FILE into the global env
+func BeginRepl(args []string, version string) {
+	// if we're called without arguments, this is interactive REPL, otherwise a script
+	var interactive bool
+	if len(args) == 1 || strings.HasPrefix(args[1], "-") {
+		interactive = true
+		env.Set("ABS_INTERACTIVE", evaluator.TRUE)
+	} else {
+		interactive = false
+		env.Set("ABS_INTERACTIVE", evaluator.FALSE)
+	}
+
+	// get abs init file
+	// user may test ABS_INTERACTIVE to decide what code to run
+	getAbsInitFile(interactive)
+
+	if interactive {
+		// launch the interactive REPL
+		user, err := user.Current()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Hello %s, welcome to the ABS (%s) programming language!\n", user.Username, version)
+		fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")
+		Start(os.Stdin, os.Stdout)
+	} else {
+		// this is a script
+		// let's parse our argument as a file and run it
+		code, err := ioutil.ReadFile(args[1])
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(99)
+		}
+
+		Run(string(code), false)
+	}
+
 }

@@ -1,0 +1,11 @@
+# source some files
+
+source("tests/test-hash-funcs.abs")
+echo("sourced hash h = %v", h)
+
+# src("tests/test-assign-index.abs")
+# echo("sourced hash h = %v", h)
+# echo("sourced array a = %v", a)
+
+# test recursion at max depth = 5
+src("tests/test-source-file.abs")

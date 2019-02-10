@@ -1,0 +1,4 @@
+if ABS_INTERACTIVE {
+    ABS_HISTORY_FILE = "~/.abs_hist"
+    ABS_MAX_HISTORY_LINES = "500"
+}

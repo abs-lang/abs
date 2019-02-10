@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/rand"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"os"
 	"os/user"
@@ -282,6 +283,16 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    sleepFn,
 		},
+		// source("fileName")
+		"source": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    sourceFn,
+		},
+		// src("fileName") -- short form for source()
+		"src": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    sourceFn,
+		},
 	}
 }
 
@@ -435,7 +446,12 @@ func cdFn(tok token.Token, args ...object.Object) object.Object {
 		// arg: rawPath
 		pathStr := args[0].(*object.String)
 		rawPath := pathStr.Value
-		path, _ = util.ExpandPath(rawPath)
+		// expand bash-style ~/ path prefix to homeDir (also works in windows)
+		if strings.HasPrefix(rawPath, "~/") {
+			path = strings.Replace(rawPath, "~/", path+"/", 1)
+		} else if len(rawPath) > 0 {
+			path = rawPath
+		}
 	}
 	// NB. windows os.Chdir(path) will convert any '/' in path to '\', however linux will not
 	error := os.Chdir(path)
@@ -1316,6 +1332,59 @@ func sleepFn(tok token.Token, args ...object.Object) object.Object {
 
 	ms := args[0].(*object.Number)
 	time.Sleep(time.Duration(ms.Value) * time.Millisecond)
+
+	return NULL
+}
+
+// source("fileName")
+var sourceMaxRecursionDepth = 5
+
+func sourceFn(tok token.Token, args ...object.Object) object.Object {
+	// limit source file recursion depth
+	if sourceMaxRecursionDepth <= 0 {
+		return newError(tok, "maximum source file recursion depth exceeded")
+	}
+	// mark this source recursion level
+	sourceMaxRecursionDepth--
+
+	err := validateArgs(tok, "source", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+	// load the source file
+	fileName := args[0].Inspect()
+	code, error := ioutil.ReadFile(fileName)
+	if error != nil {
+		// source file path does not exist
+		return newError(tok, "source file not found: %s", fileName)
+	}
+	// parse it
+	l := lexer.New(string(code))
+	p := parser.New(l)
+	program := p.ParseProgram()
+	errors := p.Errors()
+	if len(errors) != 0 {
+		errMsg := fmt.Sprintf("%s", " parser errors:\n")
+		for _, msg := range errors {
+			errMsg += fmt.Sprintf("%s", "\t"+msg+"\n")
+		}
+		return newError(tok, "source file: %s\n%s", fileName, errMsg)
+	}
+	// invoke BeginEval() passing in the sourced program, globalEnv, and our lexer
+	// we save the current global lexer and restore it after we return from BeginEval()
+	savedLexer := lex
+	evaluated := BeginEval(program, globalEnv, l)
+	lex = savedLexer
+	if evaluated != nil {
+		isError := evaluated.Type() == object.ERROR_OBJ
+		if isError {
+			errMsg := evaluated.Inspect()
+			fmt.Printf("%s\n", errMsg)
+			return newError(tok, "found in source file: %s", fileName)
+		}
+	}
+	// restore this source recursion level
+	sourceMaxRecursionDepth++
 
 	return NULL
 }
