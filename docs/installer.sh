@@ -48,8 +48,7 @@ do
 done < "/dev/stdin"
 
 BIN=abs-${VERSION}-${OS}-${ARCH}
-wget https://github.com/abs-lang/abs/releases/download/${VERSION}/${BIN}
-mv ${BIN} ./abs
+wget https://github.com/abs-lang/abs/releases/download/${VERSION}/${BIN} -O ./abs
 chmod +x ./abs
 
 echo "ABS installation completed!"
