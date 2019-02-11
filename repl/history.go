@@ -54,11 +54,12 @@ func getHistoryConfiguration() (string, int) {
 	}
 	// ABS_HISTORY_FILE
 	var historyFile string
+	ok = false
 	historyFileObj, ok := env.Get("ABS_HISTORY_FILE")
 	if ok {
 		historyFile = historyFileObj.Inspect()
 	} else {
-		historyFile := os.Getenv("ABS_HISTORY_FILE")
+		historyFile = os.Getenv("ABS_HISTORY_FILE")
 		if len(historyFile) == 0 {
 			historyFile = ABS_HISTORY_FILE
 		}

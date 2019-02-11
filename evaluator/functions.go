@@ -284,12 +284,28 @@ func getFns() map[string]*object.Builtin {
 			Fn:    sleepFn,
 		},
 		// source("fileName")
+		// aka src(), include(), import(), require()
 		"source": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
 		},
-		// src("fileName") -- short form for source()
+		// src("fileName") -- alias for source()
 		"src": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    sourceFn,
+		},
+		// include("fileName") -- alias for source()
+		"include": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    sourceFn,
+		},
+		// import("fileName") -- alias for source()
+		"import": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    sourceFn,
+		},
+		// require("fileName") -- alias for source()
+		"require": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
 		},
@@ -1332,6 +1348,7 @@ func sleepFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // source("fileName")
+// aka src(), include(), import(), require()
 var sourceMaxRecursionDepth = 5
 
 func sourceFn(tok token.Token, args ...object.Object) object.Object {

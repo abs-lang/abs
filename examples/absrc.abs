@@ -1,0 +1,10 @@
+# ABS init script ~/.absrc
+
+# For interactive REPL, override default history filename and size
+# if ABS_INTERACTIVE {
+#     ABS_HISTORY_FILE = "~/.abs_history"
+#     ABS_MAX_HISTORY_LINES = 1000
+# }
+
+# source your function libraries here
+# source("/path/to/abs/lib/library.abs")

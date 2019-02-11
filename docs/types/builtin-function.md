@@ -212,6 +212,60 @@ Halts the process for as many `ms` you specified:
 sleep(1000) # sleeps for 1 second
 ```
 
+### source(fileName) -- aka src(), include(), import(), or require() 
+
+Evaluates the ABS script `fileName` in the context of the ABS global
+environment. The results of any expressions in the file become
+available to other commands in the REPL command line or to other
+scripts in the current script execution chain. 
+
+This is most useful for creating `library functions` in a script
+that can be used by many other scripts. Often the library functions
+are loaded via the ABS Init File `~/.absrc`. See [ABS Init File](/introduction/how-to-run-abs-code).
+
+For example:
+```bash
+$ cat ~/abs/lib/library.abs
+# Useful function library ~/abs/lib/library.abs
+adder = f(n, i) { n + i }
+
+$ cat ~/.absrc
+# ABS init file ~/.absrc
+source("~/abs/lib/library.abs")
+
+$ abs
+Hello user, welcome to the ABS (1.1.0) programming language!
+Type 'quit' when you are done, 'help' if you get lost!
+⧐ adder(1, 2)
+3
+⧐
+```
+
+In addition to source file inclusion in scripts, you can also use
+`source()` in the interactive REPL to load a script being
+debugged. When the loaded script completes, the REPL command line
+will have access to all variables and functions evaluated in the
+script.
+
+For example:
+```bash
+⧐  source("~/git/abs/tests/test-strings.abs")
+...
+=====================
+>>> Testing split and join strings with expanded LFs:
+s = split("a\nb\nc", "\n")
+echo(s)
+[a, b, c]
+...
+⧐  s
+[a, b, c]
+⧐ 
+```
+
+Note well that `source file recursion` is limited for safety to a
+`depth of 5 levels` to prevent infinite recursion. This is usually
+due to a bug in the script.
+
 ## Next
 
 That's about it for this section!

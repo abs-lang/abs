@@ -20,7 +20,10 @@ Afterwards, you can run ABS scripts with:
 $ abs path/to/scripts.abs
 ```
 You can also run an executable abs script directly from bash
- using a bash shebang line at the top of the script file:
+using a bash shebang line at the top of the script file. 
+
+In this example the abs executable is linked to `/usr/local/bin/abs`
+and the abs script `~/bin/remote.abs` has its execute permissions set.
 ```bash
 $ cat ~/bin/remote.abs
 #! /usr/local/bin/abs
@@ -80,9 +83,12 @@ by using the up and down arrow keys at the prompt.
 lines, but the saved history will only contain a single command
 when the previous command and the current command are the same.
 
-The history file name and the maximum number of lines are
-configurable through the OS environment. The default values are
-`ABS_HISTORY_FILE="~/.abs_history"` and `ABS_MAX_HISTORY_LINES=1000`.
+The history file name and the maximum number of history lines are
+configurable through 
+1) the ABS environment (set by the ABS init file; see below)
+2) the OS environment
+3) The default values are `ABS_HISTORY_FILE="~/.abs_history"` 
+and `ABS_MAX_HISTORY_LINES=1000`.
 
 + If you wish to suppress the command line history completely, just 
 set `ABS_MAX_HISTORY_LINES=0`. In this case the history file
@@ -111,9 +117,41 @@ echo("hello")
 $
 ```
 
+## ABS Init File
+
+When the ABS interpreter starts running, it will load an optional
+ABS script as its init file. The ABS init file path can be 
+configured via the OS environment variable `ABS_INIT_FILE`. The
+default value is `ABS_INIT_FILE=~/.absrc`.
+
+If the `ABS_INIT_FILE` exists, it will be evaluated before the
+interpreter begins in both interactive REPL or script modes.
+The result of all expressions evaluated in the init file become
+part of the ABS global environment which are available to command
+line expressions or script programs.
+
+Also, note that the `ABS_INTERACTIVE` global environment variable
+is pre-set to `true` or `false` so that the init file can determine
+which mode is running. This is useful if you wish to set the ABS
+history configuration variables in the init file to preset the history
+parameters for the interactive REPL. 
+See [REPL Command History](#REPL_Command_History) above.
+
+For example: 
+```bash
+# ABS init script ~/.absrc 
+# For interactive REPL, override default history filename and size
+if ABS_INTERACTIVE {
+    ABS_HISTORY_FILE = "~/.abs_hist"
+    ABS_MAX_HISTORY_LINES = 500
+}
+```
+
+Also see a `template ABS Init File` at [examples](https://github.com/abs-lang/abs/tree/master/examples/absrc.abs).
+
 ## Why is abs interpreted?
 
-ABS' goal is to be a portable, pragmatic, coincise, simple language:
+ABS' goal is to be a portable, pragmatic, concise, simple language:
 great performance comes second.
 
 With this in mind, we made a deliberate choice to avoid
