@@ -133,15 +133,16 @@ line expressions or script programs.
 Also, note that the `ABS_INTERACTIVE` global environment variable
 is pre-set to `true` or `false` so that the init file can determine
 which mode is running. This is useful if you wish to set the ABS
-history configuration variables in the init file to preset the history
-parameters for the interactive REPL. 
+prompt or history configuration variables in the init file. This
+will preset the prompt and history parameters for the interactive REPL. 
 See [REPL Command History](#REPL_Command_History) above.
 
 For example: 
 ```bash
 # ABS init script ~/.absrc 
-# For interactive REPL, override default history filename and size
+# For interactive REPL, override default prompt, history filename and size
 if ABS_INTERACTIVE {
+    ABS_PROMPT_PREFIX = pwd() + ": "
     ABS_HISTORY_FILE = "~/.abs_hist"
     ABS_MAX_HISTORY_LINES = 500
 }

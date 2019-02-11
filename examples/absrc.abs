@@ -1,7 +1,8 @@
 # ABS init script ~/.absrc
 
-# For interactive REPL, override default history filename and size
+# For interactive REPL, override default prompt, history filename and size
 # if ABS_INTERACTIVE {
+#     ABS_PROMPT_PREFIX = pwd() + ": "
 #     ABS_HISTORY_FILE = "~/.abs_history"
 #     ABS_MAX_HISTORY_LINES = 1000
 # }
