@@ -36,34 +36,14 @@ const (
 func getHistoryConfiguration() (string, int) {
 	// obtain any ABS global environment vars or OS environment vars
 	// ABS_MAX_HISTORY_LINES
-	var ok bool
-	var maxHistoryLines string
-	maxHistoryLinesObj, ok := env.Get("ABS_MAX_HISTORY_LINES")
-	if ok {
-		maxHistoryLines = maxHistoryLinesObj.Inspect()
-	} else {
-		maxHistoryLines = os.Getenv("ABS_MAX_HISTORY_LINES")
-		if len(maxHistoryLines) == 0 {
-			maxHistoryLines = ABS_MAX_HISTORY_LINES
-		}
-	}
+	maxHistoryLines := util.GetEnvVar(env, "ABS_MAX_HISTORY_LINES", ABS_MAX_HISTORY_LINES)
 	maxLines, err := strconv.Atoi(maxHistoryLines)
 	if err != nil {
 		maxLines, _ = strconv.Atoi(ABS_MAX_HISTORY_LINES)
 		fmt.Printf("ABS_MAX_HISTORY_LINES must be an integer: %s; using default: %d\n", maxHistoryLines, maxLines)
 	}
 	// ABS_HISTORY_FILE
-	var historyFile string
-	ok = false
-	historyFileObj, ok := env.Get("ABS_HISTORY_FILE")
-	if ok {
-		historyFile = historyFileObj.Inspect()
-	} else {
-		historyFile = os.Getenv("ABS_HISTORY_FILE")
-		if len(historyFile) == 0 {
-			historyFile = ABS_HISTORY_FILE
-		}
-	}
+	historyFile := util.GetEnvVar(env, "ABS_HISTORY_FILE", ABS_HISTORY_FILE)
 	if maxLines > 0 {
 		// expand the ABS_HISTORY_FILE to the user's HomeDir
 		filePath, err := util.ExpandPath(historyFile)

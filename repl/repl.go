@@ -67,18 +67,7 @@ const ABS_PROMPT_PREFIX = "⧐  "
 
 func getAbsPromptPrefix() string {
 	// ABS_PROMPT_PREFIX
-	var promptPrefix string
-	var ok bool
-	promptPrefixObj, ok := env.Get("ABS_PROMPT_PREFIX")
-	if ok {
-		promptPrefix = promptPrefixObj.Inspect()
-	} else {
-		promptPrefix = os.Getenv("ABS_PROMPT_PREFIX")
-		if len(promptPrefix) == 0 {
-			promptPrefix = ABS_PROMPT_PREFIX
-		}
-	}
-	return promptPrefix
+	return util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_PROMPT_PREFIX)
 }
 
 func Start(in io.Reader, out io.Writer) {
