@@ -470,10 +470,15 @@ func cdFn(tok token.Token, args ...object.Object) object.Object {
 		// path does not exist, return error string and !path.ok
 		return &object.String{Token: tok, Value: error.Error(), Ok: &object.Boolean{Token: tok, Value: false}}
 	}
-	// return the full path we cd()'d into and path.ok
-	// this will also test true/false for cd("path/to/somewhere") && `ls`
-	dir, _ := os.Getwd()
-	return &object.String{Token: tok, Value: dir, Ok: &object.Boolean{Token: tok, Value: true}}
+	// do not return cwd if live prompt is active
+	livePrompt := util.GetEnvVar(globalEnv, "ABS_PROMPT_LIVE_PREFIX", "false")
+	if livePrompt == "false" {
+		// return the full path we cd()'d into and path.ok
+		// this will also test true/false for cd("path/to/somewhere") && `ls`
+		dir, _ := os.Getwd()
+		return &object.String{Token: tok, Value: dir, Ok: &object.Boolean{Token: tok, Value: true}}
+	}
+	return NULL
 }
 
 // echo(arg:"hello")
