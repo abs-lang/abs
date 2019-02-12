@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -1094,8 +1095,17 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 		return v.Inspect()
 	})
 
-	commands := []string{"-c", cmd}
-	c := exec.Command("bash", commands...)
+	// thanks to @haifenghuang
+	var commands []string
+	var executor string
+	if runtime.GOOS == "windows" {
+		commands = []string{"/C", cmd}
+		executor = "cmd.exe"
+	} else { //assume it's linux, darwin, freebsd, openbsd, solaris, etc
+		commands = []string{"-c", cmd}
+		executor = "bash"
+	}
+	c := exec.Command(executor, commands...)
 	c.Env = os.Environ()
 	var out bytes.Buffer
 	var stderr bytes.Buffer
