@@ -800,6 +800,8 @@ c")`, []string{"a", "b", "c"}},
 		{`1.66.ceil()`, 2},
 		{`"1.23".ceil()`, 2},
 		{`"1.66".ceil()`, 2},
+		{`sleep(0.01)`, nil},
+		{`$()`, ""},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -1131,6 +1133,13 @@ func TestCommand(t *testing.T) {
 			{"`echo -n hello world`", "hello world"},
 			{"`echo hello world | xargs echo -n`", "hello world"},
 			{"`echo \\$CONTEXT`", "abs"},
+			{"`sleep 0.01`", ""},
+			{"`sleep 0.01`.done", true},
+			{"`sleep 0.01`.ok", true},
+			{"`sleep 0.01 &`", ""},
+			{"`sleep 0.01 &`.done", false},
+			{"`sleep 0.01 &`.ok", false},
+			{"`sleep 0.01 &`.wait().ok", false},
 		}
 	}
 	for _, tt := range tests {

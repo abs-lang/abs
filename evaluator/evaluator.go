@@ -19,10 +19,10 @@ import (
 )
 
 var (
-	NULL  = &object.Null{}
-	EOF   = &object.Error{Message: "EOF"}
-	TRUE  = &object.Boolean{Value: true}
-	FALSE = &object.Boolean{Value: false}
+	NULL  = object.NULL
+	EOF   = object.EOF
+	TRUE  = object.TRUE
+	FALSE = object.FALSE
 	Fns   map[string]*object.Builtin
 )
 
@@ -51,7 +51,6 @@ func BeginEval(program ast.Node, env *object.Environment, lexer *lexer.Lexer) ob
 }
 
 func Eval(node ast.Node, env *object.Environment) object.Object {
-
 	switch node := node.(type) {
 	// Statements
 	case *ast.Program:
@@ -918,6 +917,14 @@ func evalPropertyExpression(pe *ast.PropertyExpression, env *object.Environment)
 
 			return FALSE
 		}
+		// Special .done property of commands
+		if pe.Property.String() == "done" {
+			if obj.Done != nil {
+				return obj.Done
+			}
+
+			return FALSE
+		}
 	case *object.Hash:
 		return evalHashIndexExpression(obj.Token, obj, &object.String{Token: pe.Token, Value: pe.Property.String()})
 	}
@@ -1068,6 +1075,7 @@ func evalHashIndexExpression(tok token.Token, hash, index object.Object) object.
 }
 
 func evalCommandExpression(tok token.Token, cmd string, env *object.Environment) object.Object {
+	cmd = strings.Trim(cmd, " ")
 	// Match all strings preceded by
 	// a $ or a \$
 	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
@@ -1095,6 +1103,18 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 		return v.Inspect()
 	})
 
+	// A background command ends with a '&'
+	background := len(cmd) > 1 && cmd[len(cmd)-1] == '&'
+	// If this is a background command
+	// we'll remove the trailing '&' and
+	// execute it in background ourselves
+	if background {
+		cmd = cmd[:len(cmd)-2]
+	}
+
+	// The string holding the command
+	s := &object.String{}
+
 	// thanks to @haifenghuang
 	var commands []string
 	var executor string
@@ -1105,18 +1125,61 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 		commands = []string{"-c", cmd}
 		executor = "bash"
 	}
+
 	c := exec.Command(executor, commands...)
 	c.Env = os.Environ()
-	var out bytes.Buffer
-	var stderr bytes.Buffer
 	c.Stdin = os.Stdin
-	c.Stdout = &out
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	c.Stdout = &stdout
 	c.Stderr = &stderr
-	err := c.Run()
+
+	s.Stdout = &stdout
+	s.Stderr = &stderr
+	s.Cmd = c
+	s.Token = tok
+
+	var err error
+	if background {
+		// If we want to run the command in background,
+		// let's set it as running. With this, others can
+		// wait for it by calling s.Wait().
+		s.SetRunning()
+		go evalCommandInBackground(c, s)
+	} else {
+		err = c.Run()
+	}
+
+	if !background {
+		if err != nil {
+			s.SetCmdResult(FALSE)
+		} else {
+			s.SetCmdResult(TRUE)
+		}
+	}
+
+	return s
+}
+
+// Runs a background command.
+// We will start it, set its result
+// and then mark it as done, so that
+// callers stuck on s.Wait() can resume.
+func evalCommandInBackground(c *exec.Cmd, s *object.String) {
+	defer s.SetDone()
+	err := c.Start()
 
 	if err != nil {
-		return &object.String{Token: tok, Value: stderr.String(), Ok: FALSE}
+		s.SetCmdResult(FALSE)
+		return
 	}
-	// trim space at both ends of out.String(); works in both linux and windows
-	return &object.String{Token: tok, Value: strings.TrimSpace(out.String()), Ok: TRUE}
+
+	err = c.Wait()
+
+	if err != nil {
+		s.SetCmdResult(FALSE)
+		return
+	}
+
+	s.SetCmdResult(TRUE)
 }

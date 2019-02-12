@@ -1,0 +1,33 @@
+# Simple background command
+cmd = `sleep 1; ls -la &`
+echo("Started")
+sleep(1100)
+echo("finished")
+echo(cmd)
+echo(cmd.ok)
+
+# Simple background command, we get the output by sleeping
+cmd = `sleep 1; ls -la &`
+echo("Started")
+sleep(1100)
+echo("finished")
+echo(cmd)
+echo(cmd.ok)
+
+# Background command wait
+cmd = `sleep 1; ls -la &`
+echo("Started")
+cmd.wait()
+echo("finished")
+echo(cmd)
+echo(cmd.ok)
+
+# Background command wait with error
+cmd = `sleep 1; ls la &`
+echo("Started")
+cmd.wait()
+echo("finished")
+echo(cmd)
+echo(cmd.ok)
+
+# TODO make cmd.wait() work

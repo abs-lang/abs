@@ -40,6 +40,41 @@ if `ls -la`.ok {
 }
 ```
 
+## Executing commands in background
+
+Sometimes you might want to execute a command in
+background, so that the script keeps executing
+while the command is running. In order to do so,
+you can simply add an `&` at the end of your script:
+
+``` bash
+`sleep 10 &`
+echo("This will be printed right away!")
+```
+
+You might also want to check whether a command
+is "done", by checking the boolean `.done` property:
+
+``` bash
+cmd = `sleep 10 &`
+cmd.done # false
+`sleep 11`
+cmd.done # true
+```
+
+If, at some point, you want to wait for the command
+to finish before running additional code, you can
+use the `wait` method:
+
+``` bash
+cmd = `sleep 10 &`
+echo("This will be printed right away!")
+cmd.wait()
+echo("This will be printed after 10s")
+```
+
+## Interpolation
+
 You can also replace parts of the command with variables
 declared within your program using the `$` symbol:
 
@@ -57,6 +92,8 @@ $(echo $PWD) # "" since the ABS variable PWD doesn't exist
 $(echo \$PWD) # "/go/src/github.com/abs-lang/abs"
 ```
 
+## Limitations
+
 Currently, commands that use the `$()` syntax need to be
 on their own line, meaning that you will not
 be able to have additional code on the same line.
@@ -68,10 +105,6 @@ $(sleep 10); echo("hello world")
 
 Note that this is currently a limitation that will likely
 be removed in the future (see [#41](https://github.com/abs-lang/abs/issues/41)).
-
-Commands are blocking and cannot be run in parallel, although
-we're planning to support background execution in the future
-(see [#70](https://github.com/abs-lang/abs/issues/70)).
 
 Also note that, currently, the implementation of system commands
 requires the `bash` executable to [be available on the system](https://github.com/abs-lang/abs/blob/5b5b0abf3115a5dd4dfe8485501f8765985ad0db/evaluator/evaluator.go#L696-L722).
