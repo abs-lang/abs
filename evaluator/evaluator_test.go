@@ -3,6 +3,7 @@ package evaluator
 import (
 	"flag"
 	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -508,7 +509,10 @@ b, c = [1, 2]; b`, 1},
 		a.int()
 				`, 10},
 	}
-
+	if runtime.GOOS == "windows" {
+		// these tests are posix only for now
+		return
+	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		switch expected := tt.expected.(type) {
@@ -1022,7 +1026,10 @@ func TestBuiltinProperties(t *testing.T) {
 		{`{1: 1}.1`, "unusable as hash key: NUMBER"},
 		{`[].a`, "invalid property 'a' on type ARRAY"},
 	}
-
+	if runtime.GOOS == "windows" {
+		// these tests are posix only for now
+		return
+	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 
@@ -1101,7 +1108,10 @@ func TestCommand(t *testing.T) {
 		{"`echo hello world | xargs echo -n`", "hello world"},
 		{"`echo \\$CONTEXT`", "abs"},
 	}
-
+	if runtime.GOOS == "windows" {
+		// these tests are posix only for now
+		return
+	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 
