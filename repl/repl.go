@@ -59,23 +59,26 @@ var LivePrefixState struct {
 }
 
 func changeLivePrefix() (string, bool) {
-	return LivePrefixState.LivePrefix, LivePrefixState.IsEnable
+	pwd, _ := os.Getwd()
+	livePrefix := pwd + LivePrefixState.LivePrefix
+	return livePrefix, LivePrefixState.IsEnable
 }
 
 // support for user config of ABS REPL prompt string
 const ABS_PROMPT_PREFIX = "⧐  "
-
-func getAbsPromptPrefix() string {
-	// ABS_PROMPT_PREFIX
-	return util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_PROMPT_PREFIX)
-}
 
 func Start(in io.Reader, out io.Writer) {
 	// get history file only when interactive REPL is running
 	historyFile, maxLines = getHistoryConfiguration()
 	history = getHistory(historyFile, maxLines)
 	// get prompt prefix
-	promptPrefix := getAbsPromptPrefix()
+	promptPrefix := util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_PROMPT_PREFIX)
+	// get live prompt
+	livePrompt := util.GetEnvVar(env, "ABS_PROMPT_LIVE_PREFIX", "false")
+	if livePrompt == "true" {
+		LivePrefixState.LivePrefix = promptPrefix
+		LivePrefixState.IsEnable = true
+	}
 
 	// create and start the command prompt run loop
 	p := prompt.New(

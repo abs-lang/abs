@@ -137,15 +137,30 @@ prompt or history configuration variables in the init file. This
 will preset the prompt and history parameters for the interactive REPL. 
 See [REPL Command History](#REPL_Command_History) above.
 
-For example: 
+The REPL prompt may be configured using `ABS_PROMPT_LIVE_PREFIX` and
+`ABS_PROMPT_PREFIX` from these ABS or OS environment variables. 
+The live prompt follows the current working directory set by `cd()`
+when it is enabled. The prompt prefix replaces the default prefix
+which follows the live current working directory if it is enabled.
+
+For example, you can create a bash-style prompt: 
 ```bash
+$ cat ~/.absrc
 # ABS init script ~/.absrc 
 # For interactive REPL, override default prompt, history filename and size
 if ABS_INTERACTIVE {
-    ABS_PROMPT_PREFIX = pwd() + ": "
+    ABS_PROMPT_LIVE_PREFIX = true
+    ABS_PROMPT_PREFIX = "$ "
     ABS_HISTORY_FILE = "~/.abs_hist"
     ABS_MAX_HISTORY_LINES = 500
 }
+$ abs
+Hello user, welcome to the ABS (1.1.0) programming language!
+Type 'quit' when you are done, 'help' if you get lost!
+/home/user/git/abs$ cwd = cd()
+/home/user$ `ls .absrc`
+.absrc
+/home/user$ 
 ```
 
 Also see a `template ABS Init File` at [examples](https://github.com/abs-lang/abs/tree/master/examples/absrc.abs).
