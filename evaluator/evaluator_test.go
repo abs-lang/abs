@@ -1096,11 +1096,9 @@ func TestCommand(t *testing.T) {
 			{`a = "A"; b = "B"; $(echo $a$a$b$b$c$c)`, "AABB"},
 			{`$(echo 123)`, "123"},
 			{`$(echo hello world)`, "hello world"},
-			{`$(echo \$CONTEXT)`, "abs"},
 			{"a = 'A'; b = 'B'; `echo $a$a$b$b$c$c`", "AABB"},
 			{"`echo 123`", "123"},
 			{"`echo hello world`", "hello world"},
-			{"`echo \\$CONTEXT`", "abs"},
 		}
 	} else {
 		// bash commands
