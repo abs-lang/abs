@@ -1117,6 +1117,6 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 	if err != nil {
 		return &object.String{Token: tok, Value: stderr.String(), Ok: FALSE}
 	}
-
-	return &object.String{Token: tok, Value: strings.Trim(out.String(), "\n"), Ok: TRUE}
+	// trim space at both ends of out.String(); works in both linux and windows
+	return &object.String{Token: tok, Value: strings.TrimSpace(out.String()), Ok: TRUE}
 }
