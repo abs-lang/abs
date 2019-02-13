@@ -1016,7 +1016,7 @@ func TestBuiltinProperties(t *testing.T) {
 	}{
 		{`"a".ok`, false},
 		{`"a".inv`, "invalid property 'inv' on type STRING"},
-		{"a = cd();\na.ok", true},
+		{"a = $(echo hello);\na.ok", true},
 		{`{}.a`, nil},
 		{`{"a": 1}.a`, 1},
 		{`{1: 1}.1`, "unusable as hash key: NUMBER"},
@@ -1093,14 +1093,14 @@ func TestCommand(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		// cmd.exe commands
 		tests = []testLine{
-			{`a = "A"; b = "B"; $(echo $a$a$b$b$c$c)`, "AABB\r"},
-			{`$(echo 123)`, "123\r"},
-			{`$(echo hello world)`, "hello world\r"},
-			{`$(echo \$CONTEXT)`, "abs\r"},
-			{"a = 'A'; b = 'B'; `echo $a$a$b$b$c$c`", "AABB\r"},
-			{"`echo 123`", "123\r"},
-			{"`echo hello world`", "hello world\r"},
-			{"`echo \\$CONTEXT`", "abs\r"},
+			{`a = "A"; b = "B"; $(echo $a$a$b$b$c$c)`, "AABB"},
+			{`$(echo 123)`, "123"},
+			{`$(echo hello world)`, "hello world"},
+			{`$(echo \$CONTEXT)`, "abs"},
+			{"a = 'A'; b = 'B'; `echo $a$a$b$b$c$c`", "AABB"},
+			{"`echo 123`", "123"},
+			{"`echo hello world`", "hello world"},
+			{"`echo \\$CONTEXT`", "abs"},
 		}
 	} else {
 		// bash commands
