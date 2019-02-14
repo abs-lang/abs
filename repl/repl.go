@@ -59,25 +59,49 @@ var LivePrefixState struct {
 }
 
 func changeLivePrefix() (string, bool) {
-	pwd, _ := os.Getwd()
-	livePrefix := pwd + LivePrefixState.LivePrefix
+	livePrefix := formatLivePrefix(LivePrefixState.LivePrefix)
 	return livePrefix, LivePrefixState.IsEnable
 }
 
 // support for user config of ABS REPL prompt string
 const ABS_PROMPT_PREFIX = "⧐  "
 
+// format ABS_PROMPT_PREFIX = "{user}@{host}:{dir} $"
+func formatLivePrefix(prefix string) string {
+	livePrefix := prefix
+	if strings.Contains(prefix, "{") {
+		userInfo, _ := user.Current()
+		user := userInfo.Username
+		host, _ := os.Hostname()
+		dir, _ := os.Getwd()
+		// shorten homedir to ~/
+		homeDir := userInfo.HomeDir
+		dir = strings.Replace(dir, homeDir, "~", 1)
+		// format the livePrefix
+		livePrefix = strings.Replace(livePrefix, "{user}", user, 1)
+		livePrefix = strings.Replace(livePrefix, "{host}", host, 1)
+		livePrefix = strings.Replace(livePrefix, "{dir}", dir, 1)
+	}
+	return livePrefix
+}
+
 func Start(in io.Reader, out io.Writer) {
 	// get history file only when interactive REPL is running
 	historyFile, maxLines = getHistoryConfiguration()
 	history = getHistory(historyFile, maxLines)
-	// get prompt prefix
+	// get prompt prefix template string
 	promptPrefix := util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_PROMPT_PREFIX)
-	// get live prompt
+	// get live prompt boolean
 	livePrompt := util.GetEnvVar(env, "ABS_PROMPT_LIVE_PREFIX", "false")
 	if livePrompt == "true" {
 		LivePrefixState.LivePrefix = promptPrefix
 		LivePrefixState.IsEnable = true
+	} else {
+		if promptPrefix != formatLivePrefix(promptPrefix) {
+			// we have a template string when livePrompt mode is turned off
+			// use default static prompt instead
+			promptPrefix = ABS_PROMPT_PREFIX
+		}
 	}
 
 	// create and start the command prompt run loop

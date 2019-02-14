@@ -132,35 +132,49 @@ line expressions or script programs.
 
 Also, note that the `ABS_INTERACTIVE` global environment variable
 is pre-set to `true` or `false` so that the init file can determine
-which mode is running. This is useful if you wish to set the ABS
-prompt or history configuration variables in the init file. This
-will preset the prompt and history parameters for the interactive REPL. 
-See [REPL Command History](#REPL_Command_History) above.
+which mode is running. This is useful if you wish to set the ABS REPL
+command line prompt or history configuration variables in the init file.
+This will preset the prompt and history parameters for the interactive
+REPL. See [REPL Command History](#REPL_Command_History) above.
 
-The REPL prompt may be configured using `ABS_PROMPT_LIVE_PREFIX` and
-`ABS_PROMPT_PREFIX` from these ABS or OS environment variables. 
-The live prompt follows the current working directory set by `cd()`
-when it is enabled. The prompt prefix replaces the default prefix
-which follows the live current working directory if it is enabled.
+### Configuring the ABS REPL Command Line Prompt
+The ABS REPL command line prompt may be configured at start up using
+`ABS_PROMPT_LIVE_PREFIX` and `ABS_PROMPT_PREFIX` variables from either
+the ABS or OS environments. The default values are
+`ABS_PROMPT_LIVE_PREFIX=false` and `ABS_PROMPT_PREFIX="⧐  "`.
 
-For example, you can create a bash-style prompt: 
+REPL `live prompt` mode follows the current working directory 
+set by `cd()` when `ABS_PROMPT_LIVE_PREFIX=true` and the
+`ABS_PROMPT_PREFIX` variable contains a `template string`.
+A `template string` may contain the following named placeholders:
+* `{user}`: the current userId
+* `{host}`: the local hostname
+* `{dir}`:  the current working directory following `cd()`
+
+REPL `static prompt` mode will be configured if `ABS_PROMPT_PREFIX`
+contains no `template string` or if `ABS_PROMPT_LIVE_PREFIX = false`.
+The `static prompt` will be the value of the `ABS_PROMPT_PREFIX` string
+(if present) or the default prompt `"⧐  "`. Static prompt mode is
+the default for the REPL.
+
+For example, you can create a `bash`-style live prompt: 
 ```bash
 $ cat ~/.absrc
 # ABS init script ~/.absrc 
 # For interactive REPL, override default prompt, history filename and size
 if ABS_INTERACTIVE {
     ABS_PROMPT_LIVE_PREFIX = true
-    ABS_PROMPT_PREFIX = "$ "
+    ABS_PROMPT_PREFIX = "{user}@{host}:{dir}$ "
     ABS_HISTORY_FILE = "~/.abs_hist"
     ABS_MAX_HISTORY_LINES = 500
 }
 $ abs
 Hello user, welcome to the ABS (1.1.0) programming language!
 Type 'quit' when you are done, 'help' if you get lost!
-/home/user/git/abs$ cwd = cd()
-/home/user$ `ls .absrc`
+user@hostname:~/git/abs$ cwd = cd()
+user@hostname:~$ `ls .absrc`
 .absrc
-/home/user$ 
+user@hostname:~$  
 ```
 
 Also see a `template ABS Init File` at [examples](https://github.com/abs-lang/abs/tree/master/examples/absrc.abs).
