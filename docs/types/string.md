@@ -83,7 +83,9 @@ a\\nb
 c
 ⧐  
 ```
+
 ### Working with special characters in string functions
+
 Special characters also work with `split()` and `join()` and other string functions as well.
 
 1) Double quoted expanded special characters:
@@ -160,11 +162,54 @@ Use this function when `"...".number()` might return an error.
 
 ### int()
 
-Converts a string to integer, if possible:
+Converts a string to a number, and then rounds it
+**down** to the closest integer.
+The string must represent a number.
 
 ``` bash
 "99.5".int() # 99
 "a".int() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
+```
+
+### round(precision?)
+
+Converts a string to a number, and then rounds
+the number with the given precision.
+
+The precision argument is optional, and set to `0`
+by default.
+
+The string must represent a number.
+
+``` bash
+"10.3".round() # 10
+"10.6".round() # 11
+"10.333".round(1) # 10.3
+"a".round() # ERROR: round(...) can only be called on strings which represent numbers, 'a' given
+```
+
+### ceil()
+
+Converts a string to a number, and then rounds the
+number up to the closest integer.
+
+The string must represent a number.
+
+``` bash
+"10.3".ceil() # 11
+"a".ceil() # ERROR: ceil(...) can only be called on strings which represent numbers, 'a' given
+```
+
+### floor()
+
+Converts a string to a number, and then rounds the
+number down to the closest integer.
+
+The string must represent a number.
+
+``` bash
+"10.9".floor() # 10
+"a".floor() # ERROR: floor(...) can only be called on strings which represent numbers, 'a' given
 ```
 
 ### split(separator)
