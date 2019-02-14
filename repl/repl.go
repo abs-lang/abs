@@ -226,8 +226,9 @@ func getAbsInitFile(interactive bool) {
 }
 
 // BeginRepl (args) -- the REPL, both interactive and script modes begin here
-// This allows us to prime the global env with ABS_INTERACTIVE = true/false
-// and load the ABS_INIT_FILE into the global env
+// This allows us to prime the global env with ABS_INTERACTIVE = true/false,
+// load the builtin Fns names for the use of command completion, and
+// load the ABS_INIT_FILE into the global env
 func BeginRepl(args []string, version string) {
 	// if we're called without arguments, this is interactive REPL, otherwise a script
 	var interactive bool
@@ -244,6 +245,10 @@ func BeginRepl(args []string, version string) {
 	getAbsInitFile(interactive)
 
 	if interactive {
+		// preload the ABS global env with the builtin Fns names
+		for k, v := range evaluator.Fns {
+			env.Set(k, v)
+		}
 		// launch the interactive REPL
 		user, err := user.Current()
 		if err != nil {
