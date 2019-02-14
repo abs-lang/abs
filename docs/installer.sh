@@ -24,7 +24,7 @@ MACHINE_TYPE=$(uname -m)
 if [ "${MACHINE_TYPE}" = 'x86_64' ]; then
   ARCH="amd64"
 fi
-VERSION=1.1.0
+VERSION=1.2.0
 
 echo "Trying to detect the details of your architecture."
 echo ""
@@ -48,8 +48,7 @@ do
 done < "/dev/stdin"
 
 BIN=abs-${VERSION}-${OS}-${ARCH}
-wget https://github.com/abs-lang/abs/releases/download/${VERSION}/${BIN}
-mv ${BIN} ./abs
+wget https://github.com/abs-lang/abs/releases/download/${VERSION}/${BIN} -O ./abs
 chmod +x ./abs
 
 echo "ABS installation completed!"
