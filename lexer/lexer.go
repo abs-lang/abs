@@ -381,7 +381,7 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 		if l.ch == '.' {
 			// If we have 2 dots in a number, there's a problem
 			if hasDot {
-				return "", token.ILLEGAL
+				return l.input[position : l.position+1], token.ILLEGAL
 			}
 
 			hasDot = true
@@ -393,7 +393,7 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 	// If the number ends with the exponent,
 	// there's a problem.
 	if l.input[l.position-1] == 'e' {
-		return "", token.ILLEGAL
+		return l.input[position:l.position], token.ILLEGAL
 	}
 
 	return l.input[position:l.position], kind

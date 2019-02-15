@@ -81,6 +81,7 @@ $111
 12e+10
 12e-10
 12e
+1.2.3
 `
 
 	tests := []struct {
@@ -293,7 +294,10 @@ $111
 		{token.NUMBER, "12e10"},
 		{token.NUMBER, "12e+10"},
 		{token.NUMBER, "12e-10"},
-		{token.ILLEGAL, ""},
+		{token.ILLEGAL, "12e"},
+		{token.ILLEGAL, "1.2."},
+		{token.DOT, "."},
+		{token.NUMBER, "3"},
 		{token.EOF, ""},
 	}
 
