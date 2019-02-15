@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"math/big"
 	"os"
 	"os/user"
@@ -71,9 +72,28 @@ func getFns() map[string]*object.Builtin {
 			Fn:    echoFn,
 		},
 		// int(string:"123")
+		// int(number:"123")
 		"int": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    intFn,
+		},
+		// round(string:"123.1")
+		// round(number:"123.1", 2)
+		"round": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
+			Fn:    roundFn,
+		},
+		// floor(string:"123.1")
+		// floor(number:123.1)
+		"floor": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
+			Fn:    floorFn,
+		},
+		// ceil(string:"123.1")
+		// ceil(number:123.1)
+		"ceil": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
+			Fn:    ceilFn,
 		},
 		// number(string:"1.23456")
 		"number": &object.Builtin{
@@ -497,26 +517,87 @@ func echoFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // int(string:"123")
+// int(number:123)
 func intFn(tok token.Token, args ...object.Object) object.Object {
 	err := validateArgs(tok, "int", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 	if err != nil {
 		return err
 	}
 
-	switch arg := args[0].(type) {
+	return applyMathFunction(args[0], func(n float64) float64 {
+		return float64(int64(n))
+	}, "int")
+}
+
+// round(string:"123.1")
+// round(number:123.1)
+func roundFn(tok token.Token, args ...object.Object) object.Object {
+	// Validate first argument
+	err := validateArgs(tok, "round", args[:1], 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	decimal := float64(1)
+
+	// If we have a second argument, let's validate it
+	if len(args) > 1 {
+		err := validateArgs(tok, "round", args[1:], 1, [][]string{{object.NUMBER_OBJ}})
+		if err != nil {
+			return err
+		}
+
+		decimal = float64(math.Pow(10, args[1].(*object.Number).Value))
+	}
+
+	return applyMathFunction(args[0], func(n float64) float64 {
+		return math.Round(n*decimal) / decimal
+	}, "round")
+}
+
+// floor(string:"123.1")
+// floor(number:123.1)
+func floorFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "floor", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	return applyMathFunction(args[0], math.Floor, "floor")
+}
+
+// ceil(string:"123.1")
+// ceil(number:123.1)
+func ceilFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "ceil", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	return applyMathFunction(args[0], math.Ceil, "ceil")
+}
+
+// Base function to do math operations. This is here
+// so that we abstract away some of the common logic
+// between all math functions, for example:
+// - allowing to be called on strings as well ("1.23".ceil())
+// - handling errors
+func applyMathFunction(arg object.Object, fn func(float64) float64, fname string) object.Object {
+	switch arg := arg.(type) {
 	case *object.Number:
-		return &object.Number{Token: tok, Value: float64(int64(arg.Value))}
+		return &object.Number{Token: tok, Value: float64(fn(arg.Value))}
 	case *object.String:
 		i, err := strconv.ParseFloat(arg.Value, 64)
 
 		if err != nil {
-			return newError(tok, "int(...) can only be called on strings which represent numbers, '%s' given", arg.Value)
+			return newError(tok, "%s(...) can only be called on strings which represent numbers, '%s' given", fname, arg.Value)
 		}
 
-		return &object.Number{Token: tok, Value: float64(int64(i))}
+		return &object.Number{Token: tok, Value: float64(fn(i))}
 	default:
-		// we will never reach here
-		return newError(tok, "argument to `int` not supported, got %s", args[0].Type())
+		// we should never reach here since our callers should validate
+		// the type of the arguments
+		return newError(tok, "argument to `%s` not supported, got %s", fname, arg.Type())
 	}
 }
 

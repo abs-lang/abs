@@ -42,10 +42,38 @@ Identity:
 
 ### int()
 
-Rounds down the number to the closest integer:
+Rounds **down** the number to the closest integer:
 
 ``` bash
 10.3.int() # 10
+```
+
+### round(precision?)
+
+Rounds the number with the given precision.
+The precision argument is optional, and set to `0`
+by default:
+
+``` bash
+10.3.round() # 10
+10.6.round() # 11
+10.333.round(1) # 10.3
+```
+
+### ceil()
+
+Rounds the number up to the closest integer:
+
+``` bash
+10.3.ceil() # 11
+```
+
+### floor()
+
+Rounds the number down to the closest integer:
+
+``` bash
+10.9.floor() # 10
 ```
 
 ### str()
