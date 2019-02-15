@@ -135,7 +135,7 @@ is pre-set to `true` or `false` so that the init file can determine
 which mode is running. This is useful if you wish to set the ABS REPL
 command line prompt or history configuration variables in the init file.
 This will preset the prompt and history parameters for the interactive
-REPL. See [REPL Command History](#REPL_Command_History) above.
+REPL (see [REPL Command History](#REPL_Command_History) above).
 
 ### Configuring the ABS REPL Command Line Prompt
 The ABS REPL command line prompt may be configured at start up using
@@ -143,20 +143,22 @@ The ABS REPL command line prompt may be configured at start up using
 the ABS or OS environments. The default values are
 `ABS_PROMPT_LIVE_PREFIX=false` and `ABS_PROMPT_PREFIX="⧐  "`.
 
-REPL `live prompt` mode follows the current working directory 
-set by `cd()` when `ABS_PROMPT_LIVE_PREFIX=true` and the
-`ABS_PROMPT_PREFIX` variable contains a `template string`.
-A `template string` may contain the following named placeholders:
+REPL "static prompt" mode will be configured if `ABS_PROMPT_PREFIX`
+contains no live prompt `template string` or if
+`ABS_PROMPT_LIVE_PREFIX=false`. The `static prompt` will be the
+value of the `ABS_PROMPT_PREFIX` string (if present) or the default
+prompt `"⧐  "`. Static prompt mode is the default for the REPL.
+
+REPL "live prompt" mode follows the current working directory 
+set by `cd()` when both `ABS_PROMPT_LIVE_PREFIX=true` and the
+`ABS_PROMPT_PREFIX` variable contains a live prompt `template string`.
+
+A live prompt `template string` may contain the following
+named placeholders:
 * `{user}`: the current userId
 * `{host}`: the local hostname
 * `{dir}`:  the current working directory following `cd()`
-
-REPL `static prompt` mode will be configured if `ABS_PROMPT_PREFIX`
-contains no `template string` or if `ABS_PROMPT_LIVE_PREFIX = false`.
-The `static prompt` will be the value of the `ABS_PROMPT_PREFIX` string
-(if present) or the default prompt `"⧐  "`. Static prompt mode is
-the default for the REPL.
-
+  
 For example, you can create a `bash`-style live prompt: 
 ```bash
 $ cat ~/.absrc

@@ -212,7 +212,7 @@ Halts the process for as many `ms` you specified:
 sleep(1000) # sleeps for 1 second
 ```
 
-### source(fileName) -- aka src(), include(), import(), or require() 
+### source(fileName) aka require(filename) 
 
 Evaluates the ABS script `fileName` in the context of the ABS global
 environment. The results of any expressions in the file become
@@ -262,9 +262,21 @@ echo(s)
 ⧐ 
 ```
 
-Note well that `source file recursion` is limited for safety to a
-`depth of 5 levels` to prevent infinite recursion. This is usually
-due to a bug in the script.
+Note well that nested source files must not create a circular
+inclusion condition. You can configure the intended source file
+inclusion depth using the `ABS_SOURCE_DEPTH` OS or ABS environment
+variables. The default is `ABS_SOURCE_DEPTH=10`. This will prevent
+a panic in the ABS interpreter if there is an unintended circular
+source inclusion.
+
+For example an ABS Init File may contain:
+```bash
+ABS_SOURCE_DEPTH = 15
+source("~/path/to/abs/lib")
+```
+This will limit the source inclusion depth to 15 levels for this
+`source()` statement and will also apply to future `source()`
+statements until changed.
 
 ## Next
 

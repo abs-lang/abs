@@ -304,23 +304,8 @@ func getFns() map[string]*object.Builtin {
 			Fn:    sleepFn,
 		},
 		// source("fileName")
-		// aka src(), include(), import(), require()
+		// aka require()
 		"source": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    sourceFn,
-		},
-		// src("fileName") -- alias for source()
-		"src": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    sourceFn,
-		},
-		// include("fileName") -- alias for source()
-		"include": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    sourceFn,
-		},
-		// import("fileName") -- alias for source()
-		"import": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
 		},
@@ -524,7 +509,7 @@ func intFn(tok token.Token, args ...object.Object) object.Object {
 		return err
 	}
 
-	return applyMathFunction(args[0], func(n float64) float64 {
+	return applyMathFunction(tok, args[0], func(n float64) float64 {
 		return float64(int64(n))
 	}, "int")
 }
@@ -550,7 +535,7 @@ func roundFn(tok token.Token, args ...object.Object) object.Object {
 		decimal = float64(math.Pow(10, args[1].(*object.Number).Value))
 	}
 
-	return applyMathFunction(args[0], func(n float64) float64 {
+	return applyMathFunction(tok, args[0], func(n float64) float64 {
 		return math.Round(n*decimal) / decimal
 	}, "round")
 }
@@ -563,7 +548,7 @@ func floorFn(tok token.Token, args ...object.Object) object.Object {
 		return err
 	}
 
-	return applyMathFunction(args[0], math.Floor, "floor")
+	return applyMathFunction(tok, args[0], math.Floor, "floor")
 }
 
 // ceil(string:"123.1")
@@ -574,7 +559,7 @@ func ceilFn(tok token.Token, args ...object.Object) object.Object {
 		return err
 	}
 
-	return applyMathFunction(args[0], math.Ceil, "ceil")
+	return applyMathFunction(tok, args[0], math.Ceil, "ceil")
 }
 
 // Base function to do math operations. This is here
@@ -582,7 +567,8 @@ func ceilFn(tok token.Token, args ...object.Object) object.Object {
 // between all math functions, for example:
 // - allowing to be called on strings as well ("1.23".ceil())
 // - handling errors
-func applyMathFunction(arg object.Object, fn func(float64) float64, fname string) object.Object {
+// NB. callers must pass the token that is used for error line reporting
+func applyMathFunction(tok token.Token, arg object.Object, fn func(float64) float64, fname string) object.Object {
 	switch arg := arg.(type) {
 	case *object.Number:
 		return &object.Number{Token: tok, Value: float64(fn(arg.Value))}
@@ -1429,27 +1415,41 @@ func sleepFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // source("fileName")
-// aka src(), include(), import(), require()
-var sourceMaxRecursionDepth = 5
+// aka require()
+const ABS_SOURCE_DEPTH = "10"
+
+var sourceDepth, _ = strconv.Atoi(ABS_SOURCE_DEPTH)
+var sourceLevel = 0
 
 func sourceFn(tok token.Token, args ...object.Object) object.Object {
-	// limit source file recursion depth
-	if sourceMaxRecursionDepth <= 0 {
-		return newError(tok, "maximum source file recursion depth exceeded")
+	// limit source file inclusion depth
+	if sourceLevel == 0 {
+		// get configured source depth if any
+		sourceDepthStr := util.GetEnvVar(globalEnv, "ABS_SOURCE_DEPTH", ABS_SOURCE_DEPTH)
+		sourceDepth, _ = strconv.Atoi(sourceDepthStr)
 	}
-	// mark this source recursion level
-	sourceMaxRecursionDepth--
+	if sourceLevel > sourceDepth {
+		// reset the source level
+		sourceLevel = 0
+		return newError(tok, "maximum source file inclusion depth exceeded at %d levels", sourceDepth)
+	}
+	// mark this source level
+	sourceLevel++
 
 	err := validateArgs(tok, "source", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
+		// reset the source level
+		sourceLevel = 0
 		return err
 	}
 	// load the source file
 	fileName, _ := util.ExpandPath(args[0].Inspect())
 	code, error := ioutil.ReadFile(fileName)
 	if error != nil {
-		// source file path does not exist
-		return newError(tok, "source file not found: %s", fileName)
+		// reset the source level
+		sourceLevel = 0
+		// cannot read source file
+		return newError(tok, "cannot read source file: %s: %s", fileName, error.Error())
 	}
 	// parse it
 	l := lexer.New(string(code))
@@ -1457,6 +1457,8 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 	program := p.ParseProgram()
 	errors := p.Errors()
 	if len(errors) != 0 {
+		// reset the source level
+		sourceLevel = 0
 		errMsg := fmt.Sprintf("%s", " parser errors:\n")
 		for _, msg := range errors {
 			errMsg += fmt.Sprintf("%s", "\t"+msg+"\n")
@@ -1465,19 +1467,25 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 	}
 	// invoke BeginEval() passing in the sourced program, globalEnv, and our lexer
 	// we save the current global lexer and restore it after we return from BeginEval()
+	// NB. saving the lexer allows error line numbers to be relative to any nested source files
 	savedLexer := lex
 	evaluated := BeginEval(program, globalEnv, l)
 	lex = savedLexer
 	if evaluated != nil {
 		isError := evaluated.Type() == object.ERROR_OBJ
 		if isError {
+			// reset the source level
+			sourceLevel = 0
+			// we can't embed the evaluated error message because newError() reformats it
+			// therefore, we need to print the evaluated error message first
+			// before we report the source file error
 			errMsg := evaluated.Inspect()
 			fmt.Printf("%s\n", errMsg)
 			return newError(tok, "found in source file: %s", fileName)
 		}
 	}
-	// restore this source recursion level
-	sourceMaxRecursionDepth++
+	// restore this source level
+	sourceLevel--
 
-	return NULL
+	return evaluated
 }
