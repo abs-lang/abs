@@ -3,6 +3,7 @@ package evaluator
 import (
 	"flag"
 	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -503,12 +504,11 @@ b, c = [1, 2]; b`, 1},
 		{`a = 10 + 1 + 2
 		b, c = [1, 2]; a`, 13},
 		{`
-		tz = $(echo "10/20")
+		tz = "10/20"
 		a, b = tz.split("/")
 		a.int()
 				`, 10},
 	}
-
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		switch expected := tt.expected.(type) {
@@ -1034,13 +1034,12 @@ func TestBuiltinProperties(t *testing.T) {
 	}{
 		{`"a".ok`, false},
 		{`"a".inv`, "invalid property 'inv' on type STRING"},
-		{"a = $(date);\na.ok", true},
+		{"a = $(echo hello);\na.ok", true},
 		{`{}.a`, nil},
 		{`{"a": 1}.a`, 1},
 		{`{1: 1}.1`, "unusable as hash key: NUMBER"},
 		{`[].a`, "invalid property 'a' on type ARRAY"},
 	}
-
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 
@@ -1104,22 +1103,36 @@ func TestBuiltinProperties(t *testing.T) {
 }
 
 func TestCommand(t *testing.T) {
-	tests := []struct {
+	type testLine struct {
 		input    string
 		expected interface{}
-	}{
-		{`a = "A"; b = "B"; eee = "-e"; $(echo $eee -n $a$a$b$b$c$c)`, "AABB"},
-		{`$(echo -n "123")`, "123"},
-		{`$(echo -n hello world)`, "hello world"},
-		{`$(echo hello world | xargs echo -n)`, "hello world"},
-		{`$(echo \$CONTEXT)`, "abs"},
-		{"a = 'A'; b = 'B'; eee = '-e'; `echo $eee -n $a$a$b$b$c$c`", "AABB"},
-		{"`echo -n '123'`", "123"},
-		{"`echo -n hello world`", "hello world"},
-		{"`echo hello world | xargs echo -n`", "hello world"},
-		{"`echo \\$CONTEXT`", "abs"},
 	}
-
+	var tests []testLine
+	if runtime.GOOS == "windows" {
+		// cmd.exe commands
+		tests = []testLine{
+			{`a = "A"; b = "B"; $(echo $a$a$b$b$c$c)`, "AABB"},
+			{`$(echo 123)`, "123"},
+			{`$(echo hello world)`, "hello world"},
+			{"a = 'A'; b = 'B'; `echo $a$a$b$b$c$c`", "AABB"},
+			{"`echo 123`", "123"},
+			{"`echo hello world`", "hello world"},
+		}
+	} else {
+		// bash commands
+		tests = []testLine{
+			{`a = "A"; b = "B"; eee = "-e"; $(echo $eee -n $a$a$b$b$c$c)`, "AABB"},
+			{`$(echo -n "123")`, "123"},
+			{`$(echo -n hello world)`, "hello world"},
+			{`$(echo hello world | xargs echo -n)`, "hello world"},
+			{`$(echo \$CONTEXT)`, "abs"},
+			{"a = 'A'; b = 'B'; eee = '-e'; `echo $eee -n $a$a$b$b$c$c`", "AABB"},
+			{"`echo -n '123'`", "123"},
+			{"`echo -n hello world`", "hello world"},
+			{"`echo hello world | xargs echo -n`", "hello world"},
+			{"`echo \\$CONTEXT`", "abs"},
+		}
+	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 
