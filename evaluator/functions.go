@@ -1422,26 +1422,29 @@ var sourceDepth, _ = strconv.Atoi(ABS_SOURCE_DEPTH)
 var sourceLevel = 0
 
 func sourceFn(tok token.Token, args ...object.Object) object.Object {
-	// limit source file inclusion depth
-	if sourceLevel == 0 {
-		// get configured source depth if any
-		sourceDepthStr := util.GetEnvVar(globalEnv, "ABS_SOURCE_DEPTH", ABS_SOURCE_DEPTH)
-		sourceDepth, _ = strconv.Atoi(sourceDepthStr)
-	}
-	if sourceLevel > sourceDepth {
-		// reset the source level
-		sourceLevel = 0
-		return newError(tok, "maximum source file inclusion depth exceeded at %d levels", sourceDepth)
-	}
-	// mark this source level
-	sourceLevel++
-
 	err := validateArgs(tok, "source", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		// reset the source level
 		sourceLevel = 0
 		return err
 	}
+
+	// get configured source depth if any
+	sourceDepthStr := util.GetEnvVar(globalEnv, "ABS_SOURCE_DEPTH", ABS_SOURCE_DEPTH)
+	sourceDepth, _ = strconv.Atoi(sourceDepthStr)
+
+	// limit source file inclusion depth
+	if sourceLevel >= sourceDepth {
+		// reset the source level
+		sourceLevel = 0
+		// use errObj.Message instead of errObj.Inspect() to avoid nested "ERROR: " prefixes
+		errObj := newError(tok, "maximum source file inclusion depth exceeded at %d levels", sourceDepth)
+		errObj = &object.Error{Message: errObj.Message}
+		return errObj
+	}
+	// mark this source level
+	sourceLevel++
+
 	// load the source file
 	fileName, _ := util.ExpandPath(args[0].Inspect())
 	code, error := ioutil.ReadFile(fileName)
@@ -1449,7 +1452,7 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 		// reset the source level
 		sourceLevel = 0
 		// cannot read source file
-		return newError(tok, "cannot read source file: %s: %s", fileName, error.Error())
+		return newError(tok, "cannot read source file: %s:\n%s", fileName, error.Error())
 	}
 	// parse it
 	l := lexer.New(string(code))
@@ -1463,7 +1466,7 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 		for _, msg := range errors {
 			errMsg += fmt.Sprintf("%s", "\t"+msg+"\n")
 		}
-		return newError(tok, "source file: %s\n%s", fileName, errMsg)
+		return newError(tok, "error found in source file: %s\n%s", fileName, errMsg)
 	}
 	// invoke BeginEval() passing in the sourced program, globalEnv, and our lexer
 	// we save the current global lexer and restore it after we return from BeginEval()
@@ -1476,12 +1479,11 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 		if isError {
 			// reset the source level
 			sourceLevel = 0
-			// we can't embed the evaluated error message because newError() reformats it
-			// therefore, we need to print the evaluated error message first
-			// before we report the source file error
-			errMsg := evaluated.Inspect()
-			fmt.Printf("%s\n", errMsg)
-			return newError(tok, "found in source file: %s", fileName)
+			// use errObj.Message instead of errObj.Inspect() to avoid nested "ERROR: " prefixes
+			evalErrMsg := evaluated.(*object.Error).Message
+			sourceErrMsg := newError(tok, "error found in source file: %s", fileName).Message
+			errObj := &object.Error{Message: fmt.Sprintf("%s\n\t%s", evalErrMsg, sourceErrMsg)}
+			return errObj
 		}
 	}
 	// restore this source level

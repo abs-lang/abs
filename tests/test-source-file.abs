@@ -1,13 +1,14 @@
 # source some files
 
-source("tests/test-hash-funcs.abs")
-echo("sourced hash h = %v", h)
-return [h, true]
+# source("tests/test-hash-funcs.abs")
+# echo("sourced hash h = %v", h)
+# return [h, true]
 
 # src("tests/test-assign-index.abs")
 # echo("sourced hash h = %v", h)
 # echo("sourced array a = %v", a)
 
-# test recursion at default max depth
-source("tests/test-source-file.abs")
+# test recursion at given depth
+ABS_SOURCE_DEPTH = 5
+source("tests/test-source-file-x.abs")
 
