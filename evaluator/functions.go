@@ -311,7 +311,7 @@ Here be the actual Builtin Functions
 
 // Utility function that validates arguments passed to builtin functions.
 func validateArgs(tok token.Token, name string, args []object.Object, size int, types [][]string) object.Object {
-	if len(args) == 0 || len(args) > size {
+	if len(args) == 0 || len(args) > size || len(args) < size {
 		return newError(tok, "wrong number of arguments to %s(...): got=%d, want=%d", name, len(args), size)
 	}
 
