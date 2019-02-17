@@ -4,7 +4,8 @@ Executing system commands is one of the most important features
 of ABS, as it allows the mixing of conveniency of the shell with
 the syntax of a modern programming language.
 
-Commands are executed either with `$(command)` or `` `command` ``, which resemble Bash's syntax to execute commands in a subshell:
+Commands are executed either with `$(command)` or `` `command` ``,
+which resemble Bash's syntax to execute commands in a subshell:
 
 ``` bash
 date = $(date) # "Sun Apr 1 04:30:59 +01 1995"
@@ -74,6 +75,7 @@ we're planning to support background execution in the future
 
 Also note that, currently, the implementation of system commands
 requires the `bash` executable to [be available on the system](https://github.com/abs-lang/abs/blob/5b5b0abf3115a5dd4dfe8485501f8765985ad0db/evaluator/evaluator.go#L696-L722).
+On Windows, commands are executed through [cmd.exe](https://github.com/abs-lang/abs/blob/ee793641be09ad8572c3e913fef8468f69b0c0a2/evaluator/evaluator.go#L1101-L1103).
 Future work will make it possible to select which shell to use,
 as well as bypassing the shell altogether (see [#73](https://github.com/abs-lang/abs/issues/73)).
 
