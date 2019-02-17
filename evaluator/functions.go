@@ -323,7 +323,7 @@ Here be the actual Builtin Functions
 
 // Utility function that validates arguments passed to builtin functions.
 func validateArgs(tok token.Token, name string, args []object.Object, size int, types [][]string) object.Object {
-	if len(args) == 0 || len(args) > size {
+	if len(args) == 0 || len(args) > size || len(args) < size {
 		return newError(tok, "wrong number of arguments to %s(...): got=%d, want=%d", name, len(args), size)
 	}
 
@@ -1294,7 +1294,15 @@ func pushFn(tok token.Token, args ...object.Object) object.Object {
 // pop([1,2,3]) removes and returns last value or null if array is empty
 // pop({"a":1, "b":2, "c":3}, "a") removes and returns {"key": value} or null if key not found
 func popFn(tok token.Token, args ...object.Object) object.Object {
-	err := validateArgs(tok, "pop", args, 2, [][]string{{object.ARRAY_OBJ, object.HASH_OBJ}})
+	// pop has 2 signatures: pop(array), and pop(hash, key)
+	var err object.Object
+	if len(args) > 0 {
+		if args[0].Type() == object.ARRAY_OBJ {
+			err = validateArgs(tok, "pop", args, 1, [][]string{{object.ARRAY_OBJ}})
+		} else if args[0].Type() == object.HASH_OBJ {
+			err = validateArgs(tok, "pop", args, 2, [][]string{{object.HASH_OBJ}})
+		}
+	}
 	if err != nil {
 		return err
 	}
