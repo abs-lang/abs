@@ -3,9 +3,11 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/abs-lang/abs/ast"
 	"github.com/abs-lang/abs/token"
@@ -30,6 +32,13 @@ const (
 
 	ARRAY_OBJ = "ARRAY"
 	HASH_OBJ  = "HASH"
+)
+
+var (
+	NULL  = &Null{}
+	EOF   = &Error{Message: "EOF"}
+	TRUE  = &Boolean{Value: true}
+	FALSE = &Boolean{Value: false}
 )
 
 type HashKey struct {
@@ -134,8 +143,8 @@ func (f *Function) Inspect() string {
 // think it will only have a Value
 // property, the string itself.
 //
-// TA-DA! No, we also have an Ok
-// property that is used when running
+// TA-DA! No, we also have an Ok and Done
+// properties that are used when running
 // shell commands -- since the shell
 // will return strings.
 //
@@ -148,10 +157,21 @@ func (f *Function) Inspect() string {
 // cmd = $(curlzzzzz)
 // type(cmd) // STRING
 // cmd.ok // FALSE
+//
+// cmd = $(sleep 10 &)
+// type(cmd) // STRING
+// cmd.done // FALSE
+// cmd.wait() // ...
+// cmd.done // TRUE
 type String struct {
-	Token token.Token
-	Value string
-	Ok    *Boolean // A special property to check whether a command exited correctly
+	Token  token.Token
+	Value  string
+	Ok     *Boolean  // A special property to check whether a command exited correctly
+	Cmd    *exec.Cmd // A special property to access the underlying command
+	Stdout *bytes.Buffer
+	Stderr *bytes.Buffer
+	Done   *Boolean
+	mux    *sync.Mutex
 }
 
 func (s *String) Type() ObjectType  { return STRING_OBJ }
@@ -159,6 +179,62 @@ func (s *String) Inspect() string   { return s.Value }
 func (s *String) ZeroValue() string { return "" }
 func (s *String) HashKey() HashKey {
 	return HashKey{Type: s.Type(), Value: s.Value}
+}
+
+// Function that ensure a mutex
+// instance is created on the
+// string
+func (s *String) mustHaveMutex() {
+	if s.mux == nil {
+		s.mux = &sync.Mutex{}
+	}
+}
+
+// To be called when the command
+// is done. Releases the internal
+// mutex.
+func (s *String) SetDone() {
+	s.mustHaveMutex()
+	s.mux.Unlock()
+}
+
+// To be called when the command
+// is starting in background, so
+// that anyone accessing it will
+// be blocked.
+func (s *String) SetRunning() {
+	s.mustHaveMutex()
+	s.mux.Lock()
+}
+
+// To be called when we want to
+// wait on the background command
+// to be done.
+func (s *String) Wait() {
+	s.mustHaveMutex()
+	s.mux.Lock()
+	s.mux.Unlock()
+}
+
+// Sets the result of the underlying command
+// on the string.
+// 3 things are set:
+// - the string itself (output of the command)
+// - str.ok
+// - str.done
+func (s *String) SetCmdResult(Ok *Boolean) {
+	s.Ok = Ok
+	var output string
+
+	if Ok.Value {
+		output = s.Stdout.String()
+	} else {
+		output = s.Stderr.String()
+	}
+
+	// trim space at both ends of out.String(); works in both linux and windows
+	s.Value = strings.TrimSpace(output)
+	s.Done = TRUE
 }
 
 type Builtin struct {
