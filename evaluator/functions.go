@@ -232,6 +232,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    upperFn,
 		},
+		// wait(`sleep 1 &`)
+		"wait": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    waitFn,
+		},
 		// trim("abc")
 		"trim": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -1137,6 +1142,23 @@ func upperFn(tok token.Token, args ...object.Object) object.Object {
 	}
 
 	return &object.String{Token: tok, Value: strings.ToUpper(args[0].(*object.String).Value)}
+}
+
+// wait(`sleep 10 &`)
+func waitFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "wait", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	cmd := args[0].(*object.String)
+
+	if cmd.Cmd == nil {
+		return cmd
+	}
+
+	cmd.Wait()
+	return cmd
 }
 
 // trim("abc")

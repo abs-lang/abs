@@ -92,7 +92,6 @@ func Start(in io.Reader, out io.Writer) {
 		prompt.OptionHistory(history),
 	)
 	p.Run()
-
 	// we get here on ^D from the prompt
 	saveHistory(historyFile, maxLines, history)
 }
