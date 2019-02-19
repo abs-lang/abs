@@ -3,12 +3,16 @@ package repl
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"os/user"
+	"strings"
 
 	"github.com/abs-lang/abs/evaluator"
 	"github.com/abs-lang/abs/lexer"
 	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/parser"
+	"github.com/abs-lang/abs/util"
 
 	prompt "github.com/c-bata/go-prompt"
 )
@@ -55,18 +59,34 @@ var LivePrefixState struct {
 }
 
 func changeLivePrefix() (string, bool) {
-	return LivePrefixState.LivePrefix, LivePrefixState.IsEnable
+	livePrefix := formatLivePrefix(LivePrefixState.LivePrefix)
+	return livePrefix, LivePrefixState.IsEnable
 }
 
 func Start(in io.Reader, out io.Writer) {
 	// get history file only when interactive REPL is running
 	historyFile, maxLines = getHistoryConfiguration()
 	history = getHistory(historyFile, maxLines)
+	// get prompt prefix template string
+	promptPrefix := util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_PROMPT_PREFIX)
+	// get live prompt boolean
+	livePrompt := util.GetEnvVar(env, "ABS_PROMPT_LIVE_PREFIX", "false")
+	if livePrompt == "true" {
+		LivePrefixState.LivePrefix = promptPrefix
+		LivePrefixState.IsEnable = true
+	} else {
+		if promptPrefix != formatLivePrefix(promptPrefix) {
+			// we have a template string when livePrompt mode is turned off
+			// use default static prompt instead
+			promptPrefix = ABS_PROMPT_PREFIX
+		}
+	}
 
+	// create and start the command prompt run loop
 	p := prompt.New(
 		executor,
 		completer,
-		prompt.OptionPrefix("⧐  "),
+		prompt.OptionPrefix(promptPrefix),
 		prompt.OptionLivePrefix(changeLivePrefix),
 		prompt.OptionTitle("abs-repl"),
 		prompt.OptionHistory(history),
@@ -155,4 +175,50 @@ func printParserErrors(errors []string) {
 	for _, msg := range errors {
 		fmt.Printf("%s", "\t"+msg+"\n")
 	}
+}
+
+// BeginRepl (args) -- the REPL, both interactive and script modes begin here
+// This allows us to prime the global env with ABS_INTERACTIVE = true/false,
+// load the builtin Fns names for the use of command completion, and
+// load the ABS_INIT_FILE into the global env
+func BeginRepl(args []string, version string) {
+	// if we're called without arguments, this is interactive REPL, otherwise a script
+	var interactive bool
+	if len(args) == 1 || strings.HasPrefix(args[1], "-") {
+		interactive = true
+		env.Set("ABS_INTERACTIVE", evaluator.TRUE)
+	} else {
+		interactive = false
+		env.Set("ABS_INTERACTIVE", evaluator.FALSE)
+	}
+
+	// get abs init file
+	// user may test ABS_INTERACTIVE to decide what code to run
+	getAbsInitFile(interactive)
+
+	if interactive {
+		// preload the ABS global env with the builtin Fns names
+		for k, v := range evaluator.Fns {
+			env.Set(k, v)
+		}
+		// launch the interactive REPL
+		user, err := user.Current()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Hello %s, welcome to the ABS (%s) programming language!\n", user.Username, version)
+		fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")
+		Start(os.Stdin, os.Stdout)
+	} else {
+		// this is a script
+		// let's parse our argument as a file and run it
+		code, err := ioutil.ReadFile(args[1])
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(99)
+		}
+
+		Run(string(code), false)
+	}
+
 }

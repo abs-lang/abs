@@ -20,7 +20,10 @@ Afterwards, you can run ABS scripts with:
 $ abs path/to/scripts.abs
 ```
 You can also run an executable abs script directly from bash
- using a bash shebang line at the top of the script file:
+using a bash shebang line at the top of the script file. 
+
+In this example the abs executable is linked to `/usr/local/bin/abs`
+and the abs script `~/bin/remote.abs` has its execute permissions set.
 ```bash
 $ cat ~/bin/remote.abs
 #! /usr/local/bin/abs
@@ -80,9 +83,12 @@ by using the up and down arrow keys at the prompt.
 lines, but the saved history will only contain a single command
 when the previous command and the current command are the same.
 
-The history file name and the maximum number of lines are
-configurable through the OS environment. The default values are
-`ABS_HISTORY_FILE="~/.abs_history"` and `ABS_MAX_HISTORY_LINES=1000`.
+The history file name and the maximum number of history lines are
+configurable through 
+1) the ABS environment (set by the ABS init file; see below)
+2) the OS environment
+3) The default values are `ABS_HISTORY_FILE="~/.abs_history"` 
+and `ABS_MAX_HISTORY_LINES=1000`.
 
 + If you wish to suppress the command line history completely, just 
 set `ABS_MAX_HISTORY_LINES=0`. In this case the history file
@@ -111,9 +117,73 @@ echo("hello")
 $
 ```
 
+## ABS Init File
+
+When the ABS interpreter starts running, it will load an optional
+ABS script as its init file. The ABS init file path can be 
+configured via the OS environment variable `ABS_INIT_FILE`. The
+default value is `ABS_INIT_FILE=~/.absrc`.
+
+If the `ABS_INIT_FILE` exists, it will be evaluated before the
+interpreter begins in both interactive REPL or script modes.
+The result of all expressions evaluated in the init file become
+part of the ABS global environment which are available to command
+line expressions or script programs.
+
+Also, note that the `ABS_INTERACTIVE` global environment variable
+is pre-set to `true` or `false` so that the init file can determine
+which mode is running. This is useful if you wish to set the ABS REPL
+command line prompt or history configuration variables in the init file.
+This will preset the prompt and history parameters for the interactive
+REPL (see [REPL Command History](#REPL_Command_History) above).
+
+### Configuring the ABS REPL Command Line Prompt
+The ABS REPL command line prompt may be configured at start up using
+`ABS_PROMPT_LIVE_PREFIX` and `ABS_PROMPT_PREFIX` variables from either
+the ABS or OS environments. The default values are
+`ABS_PROMPT_LIVE_PREFIX=false` and `ABS_PROMPT_PREFIX="⧐  "`.
+
+REPL "static prompt" mode will be configured if `ABS_PROMPT_PREFIX`
+contains no live prompt `template string` or if
+`ABS_PROMPT_LIVE_PREFIX=false`. The `static prompt` will be the
+value of the `ABS_PROMPT_PREFIX` string (if present) or the default
+prompt `"⧐  "`. Static prompt mode is the default for the REPL.
+
+REPL "live prompt" mode follows the current working directory 
+set by `cd()` when both `ABS_PROMPT_LIVE_PREFIX=true` and the
+`ABS_PROMPT_PREFIX` variable contains a live prompt `template string`.
+
+A live prompt `template string` may contain the following
+named placeholders:
+* `{user}`: the current userId
+* `{host}`: the local hostname
+* `{dir}`:  the current working directory following `cd()`
+  
+For example, you can create a `bash`-style live prompt: 
+```bash
+$ cat ~/.absrc
+# ABS init script ~/.absrc 
+# For interactive REPL, override default prompt, history filename and size
+if ABS_INTERACTIVE {
+    ABS_PROMPT_LIVE_PREFIX = true
+    ABS_PROMPT_PREFIX = "{user}@{host}:{dir}$ "
+    ABS_HISTORY_FILE = "~/.abs_hist"
+    ABS_MAX_HISTORY_LINES = 500
+}
+$ abs
+Hello user, welcome to the ABS (1.1.0) programming language!
+Type 'quit' when you are done, 'help' if you get lost!
+user@hostname:~/git/abs$ cwd = cd()
+user@hostname:~$ `ls .absrc`
+.absrc
+user@hostname:~$  
+```
+
+Also see a `template ABS Init File` at [examples](https://github.com/abs-lang/abs/tree/master/examples/absrc.abs).
+
 ## Why is abs interpreted?
 
-ABS' goal is to be a portable, pragmatic, coincise, simple language:
+ABS' goal is to be a portable, pragmatic, concise, simple language:
 great performance comes second.
 
 With this in mind, we made a deliberate choice to avoid

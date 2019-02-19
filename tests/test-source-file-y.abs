@@ -1,0 +1,4 @@
+# source an unknown file
+
+source("tests/test-source-file-z.abs")
+

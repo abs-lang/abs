@@ -26,6 +26,9 @@ var (
 	Fns   map[string]*object.Builtin
 )
 
+// This program's global environment can be used by builtin's to modify the env
+var globalEnv *object.Environment
+
 // This program's lexer used for error location in Eval(program)
 var lex *lexer.Lexer
 
@@ -44,6 +47,8 @@ func newError(tok token.Token, format string, a ...interface{}) *object.Error {
 // REPL and testing modules call this function to init the global lexer pointer for error location
 // NB. Eval(node, env) is recursive
 func BeginEval(program ast.Node, env *object.Environment, lexer *lexer.Lexer) object.Object {
+	// global environment
+	globalEnv = env
 	// global lexer
 	lex = lexer
 	// run the evaluator
@@ -1125,7 +1130,6 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 		commands = []string{"-c", cmd}
 		executor = "bash"
 	}
-
 	c := exec.Command(executor, commands...)
 	c.Env = os.Environ()
 	c.Stdin = os.Stdin
