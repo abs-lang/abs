@@ -1,9 +1,12 @@
 package util
 
 import (
+	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
+
+	"github.com/abs-lang/abs/object"
 )
 
 // Checks whether the element e is in the
@@ -34,4 +37,21 @@ func ExpandPath(path string) (string, error) {
 		return "", err
 	}
 	return filepath.Join(usr.HomeDir, path[1:]), nil
+}
+
+// GetEnvVar (varName, defaultVal)
+// Return the varName value from the ABS env, or OS env, or default value in that order
+func GetEnvVar(env *object.Environment, varName, defaultVal string) string {
+	var ok bool
+	var value string
+	valueObj, ok := env.Get(varName)
+	if ok {
+		value = valueObj.Inspect()
+	} else {
+		value = os.Getenv(varName)
+		if len(value) == 0 {
+			value = defaultVal
+		}
+	}
+	return value
 }

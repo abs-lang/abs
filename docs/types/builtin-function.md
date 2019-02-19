@@ -212,6 +212,72 @@ Halts the process for as many `ms` you specified:
 sleep(1000) # sleeps for 1 second
 ```
 
+### source(fileName) aka require(filename) 
+
+Evaluates the ABS script `fileName` in the context of the ABS global
+environment. The results of any expressions in the file become
+available to other commands in the REPL command line or to other
+scripts in the current script execution chain. 
+
+This is most useful for creating `library functions` in a script
+that can be used by many other scripts. Often the library functions
+are loaded via the ABS Init File `~/.absrc`. See [ABS Init File](/introduction/how-to-run-abs-code).
+
+For example:
+```bash
+$ cat ~/abs/lib/library.abs
+# Useful function library ~/abs/lib/library.abs
+adder = f(n, i) { n + i }
+
+$ cat ~/.absrc
+# ABS init file ~/.absrc
+source("~/abs/lib/library.abs")
+
+$ abs
+Hello user, welcome to the ABS (1.1.0) programming language!
+Type 'quit' when you are done, 'help' if you get lost!
+⧐ adder(1, 2)
+3
+⧐
+```
+
+In addition to source file inclusion in scripts, you can also use
+`source()` in the interactive REPL to load a script being
+debugged. When the loaded script completes, the REPL command line
+will have access to all variables and functions evaluated in the
+script.
+
+For example:
+```bash
+⧐  source("~/git/abs/tests/test-strings.abs")
+...
+=====================
+>>> Testing split and join strings with expanded LFs:
+s = split("a\nb\nc", "\n")
+echo(s)
+[a, b, c]
+...
+⧐  s
+[a, b, c]
+⧐ 
+```
+
+Note well that nested source files must not create a circular
+inclusion condition. You can configure the intended source file
+inclusion depth using the `ABS_SOURCE_DEPTH` OS or ABS environment
+variables. The default is `ABS_SOURCE_DEPTH=10`. This will prevent
+a panic in the ABS interpreter if there is an unintended circular
+source inclusion.
+
+For example an ABS Init File may contain:
+```bash
+ABS_SOURCE_DEPTH = 15
+source("~/path/to/abs/lib")
+```
+This will limit the source inclusion depth to 15 levels for this
+`source()` statement and will also apply to future `source()`
+statements until changed.
+
 ## Next
 
 That's about it for this section!
