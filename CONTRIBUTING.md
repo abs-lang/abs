@@ -8,7 +8,7 @@ repository.
 
 Since we follow [semver](https://semver.org/),
 when a new feature is released we don't backport it but simply
-create a new version branch, such as `1.2.x`. Bugs, instead,
+create a new version branch, such as `1.3.x`. Bugs, instead,
 might be backported from `1.1.0` to, for example, `1.0.x` and we
 will have a new [release](https://github.com/abs-lang/abs/releases),
 say `1.0.1` for the `1.0.x` version branch.
