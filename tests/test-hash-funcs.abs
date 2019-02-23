@@ -5,10 +5,10 @@ h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}
 echo(h)
 
 echo('>>> hk = h.keys()')
-hk = h.keys()
+hk = h.keys().sort()
 echo(hk)
 echo('>>> hk = keys(h)')
-hk = keys(h)
+hk = keys(h).sort()
 echo(hk)
 
 echo('>>> hv = h.values()')
