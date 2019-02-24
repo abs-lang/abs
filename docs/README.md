@@ -8,17 +8,17 @@
   <a href="https://travis-ci.com/abs-lang/abs"><img alt="Travis Status" src="https://travis-ci.com/abs-lang/abs.svg?branch=master"></a>
   <a href="https://github.com/abs-lang/abs"><img alt="License" src="https://img.shields.io/github/license/abs-lang/abs.svg"></a>
   <a href="https://github.com/abs-lang/abs"><img alt="Version" src="https://img.shields.io/github/release-pre/abs-lang/abs.svg"></a>
-  <img alt="undefined" src="https://img.shields.io/github/release-date/abs-lang/abs.svg?style=flat">
-  <img alt="undefined" src="https://img.shields.io/github/downloads/abs-lang/abs/total.svg?style=flat">
+  <img href="https://github.com/abs-lang/abs/releases" alt="undefined" src="https://img.shields.io/github/release-date/abs-lang/abs.svg?style=flat">
+  <img href="https://github.com/abs-lang/abs/releases" alt="undefined" src="https://img.shields.io/github/downloads/abs-lang/abs/total.svg?style=flat">
   <br />
-  <img alt="undefined" src="https://img.shields.io/badge/platform-linux | macosx | windows-red.svg">
-  <img alt="undefined"  src="https://img.shields.io/github/last-commit/abs-lang/abs.svg?style=flat">
+  <img href="https://github.com/abs-lang/abs" alt="undefined" src="https://img.shields.io/badge/platform-linux | macosx | windows-red.svg">
+  <img href="https://github.com/abs-lang/abs" alt="undefined"  src="https://img.shields.io/github/last-commit/abs-lang/abs.svg?style=flat">
   <a href='https://coveralls.io/github/abs-lang/abs'><img src='https://coveralls.io/repos/github/abs-lang/abs/badge.svg' alt='Coverage Status' /></a>
   <br />
-  <img alt="undefined" src="https://img.shields.io/github/contributors/abs-lang/abs.svg?style=flat">
-  <img alt="undefined" src="https://img.shields.io/github/issues/abs-lang/abs.svg?style=flat">
-  <img alt="undefined" src="https://img.shields.io/github/issues-pr-closed/abs-lang/abs.svg?style=flat">
-  <img alt="undefined" src="https://img.shields.io/github/stars/abs-lang/abs.svg?style=social">
+  <img href="https://github.com/abs-lang/abs" alt="undefined" src="https://img.shields.io/github/contributors/abs-lang/abs.svg?style=flat">
+  <img href="https://github.com/abs-lang/abs/issues" alt="undefined" src="https://img.shields.io/github/issues/abs-lang/abs.svg?style=flat">
+  <img href="https://github.com/abs-lang/abs/pulls" alt="undefined" src="https://img.shields.io/github/issues-pr-closed/abs-lang/abs.svg?style=flat">
+  <img href="https://github.com/abs-lang/abs" alt="undefined" src="https://img.shields.io/github/stars/abs-lang/abs.svg?style=social">
 </p>
 
 ABS is a scripting language that works best when you're scripting on
