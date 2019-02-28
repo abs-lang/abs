@@ -677,6 +677,21 @@ func (p *Parser) parseForInExpression(initialExpression *ast.ForExpression) ast.
 
 	expression.Block = p.parseBlockStatement()
 
+	// for x in [] {
+	// 	echo("shouldn't be here")
+	// } else {
+	//  echo("ok")
+	// }
+	if p.peekTokenIs(token.ELSE) {
+		p.nextToken()
+
+		if !p.expectPeek(token.LBRACE) {
+			return nil
+		}
+
+		expression.Alternative = p.parseBlockStatement()
+	}
+
 	return expression
 }
 
