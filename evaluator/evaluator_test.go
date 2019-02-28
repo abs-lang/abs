@@ -332,6 +332,39 @@ func TestForInExpressions(t *testing.T) {
 	}
 }
 
+func TestForElseExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{ "a = 0; b = 1; for v in [] { x = a } else { x = b }; x", 1},
+		{ "a = 100; x = 0; for i in  1..-1 { x = i } else { x = a }; x", 100},
+		{ "v = 100; for k, v in [] { v = 0 } else {}; v", 100},
+		{ "for k, v in [] {} else { x = v }; x", "identifier not found: v"},
+		{ "a = 0; for k, v in [] { x = a } else { x = b }; x", "identifier not found: b"},
+		{ "for k, v in [] { x = 0 } else { x = 100 }; z", "identifier not found: z"},
+		{ "for i in 1..3 { x = i } else { x = 0 }; x", 3},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		switch ev := tt.expected.(type) {
+		case int:
+			testNumberObject(t, evaluated, float64(ev))
+		case bool:
+			testBooleanObject(t, evaluated, ev)
+		default:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+			logErrorWithPosition(t, errObj.Message, ev)
+		}
+	}
+}
+
 func TestWhileExpressions(t *testing.T) {
 	tests := []struct {
 		input    string

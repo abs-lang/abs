@@ -912,6 +912,61 @@ func TestForInExpression(t *testing.T) {
 	}
 }
 
+func TestForElseExpression(t *testing.T) {
+	tests := []struct {
+		input string
+	}{
+		{`for x in [] { x } else { y }`},
+		{`for x in {} { x } else { y }`},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 1, len(program.Statements))
+		}
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.ForInExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.ForExpression. got=%T", stmt.Expression)
+		}
+
+		if len(exp.Block.Statements) != 1 {
+			t.Errorf("block is not 1 statements. got=%d\n", len(exp.Block.Statements))
+		}
+
+		block, ok := exp.Block.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Block.Statements[0])
+		}
+
+		if !testIdentifier(t, block.Expression, "x") {
+			return
+		}
+
+		if len(exp.Alternative.Statements) != 1 {
+			t.Errorf("Alternative is not 1 statements. got=%d\n", len(exp.Block.Statements))
+		}
+
+		alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("Alternative statements[0] is not ast.ExpressionStatement. got=%T", exp.Block.Statements[0])
+		}
+
+		if !testIdentifier(t, alternative.Expression, "y") {
+			return
+		}
+	}
+}
+
 func TestFunctionLiteralParsing(t *testing.T) {
 	input := `f(x, y) { x + y; }`
 

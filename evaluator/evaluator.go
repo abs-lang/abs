@@ -790,22 +790,25 @@ func evalForInExpression(
 			i.Reset()
 		}()
 
-		return loopIterable(i.Next, env, fie)
+		return loopIterable(i.Next, env, fie, 0)
 	case *object.Builtin:
 		if i.Next == nil {
 			return newError(fie.Token, "builtin function cannot be used in loop")
 		}
 
-		return loopIterable(i.Next, env, fie)
+		return loopIterable(i.Next, env, fie, 0)
 	default:
 		return newError(fie.Token, "'%s' is a %s, not an iterable, cannot be used in for loop", i.Inspect(), i.Type())
 	}
 }
 
-func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression) object.Object {
+func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression, index int64) object.Object {
 	k, v := next()
 
 	if k == nil || v == EOF {
+		if index == 0 && fie.Alternative != nil {
+			return Eval(fie.Alternative, env)
+		}
 		return NULL
 	}
 
@@ -820,7 +823,7 @@ func loopIterable(next func() (object.Object, object.Object), env *object.Enviro
 	}
 
 	if k != nil {
-		return loopIterable(next, env, fie)
+		return loopIterable(next, env, fie, index + 1)
 	}
 
 	return NULL
