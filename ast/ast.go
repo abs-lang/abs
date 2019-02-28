@@ -317,6 +317,7 @@ type ForInExpression struct {
 	Iterable Expression      // An expression that should return an iterable ([1, 2, 3] or x in 1..10)
 	Key      string
 	Value    string
+	Alternative *BlockStatement
 }
 
 func (fie *ForInExpression) expressionNode()      {}
@@ -333,6 +334,11 @@ func (fie *ForInExpression) String() string {
 	out.WriteString(" in ")
 	out.WriteString(fie.Iterable.String())
 	out.WriteString(fie.Block.String())
+
+	if fie.Alternative != nil {
+		out.WriteString("else")
+		out.WriteString(fie.Alternative.String())
+	}
 
 	return out.String()
 }
