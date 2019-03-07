@@ -216,6 +216,25 @@ func (s *String) Wait() {
 	s.mux.Unlock()
 }
 
+// To be called when we want to
+// kill the background command
+func (s *String) Kill() error {
+	err := s.Cmd.Process.Kill()
+
+	// The command value includes output and possible error
+	// We might want to change this
+	output := s.Stdout.String()
+	outputErr := s.Stderr.String()
+	s.Value = strings.TrimSpace(output) + strings.TrimSpace(outputErr)
+
+	if err != nil {
+		return err
+	}
+
+	s.Done = TRUE
+	return nil
+}
+
 // Sets the result of the underlying command
 // on the string.
 // 3 things are set:
