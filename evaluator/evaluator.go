@@ -1152,7 +1152,14 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 		// let's set it as running. With this, others can
 		// wait for it by calling s.Wait().
 		s.SetRunning()
-		go evalCommandInBackground(c, s)
+
+		err := c.Start()
+		if err != nil {
+			s.SetCmdResult(FALSE)
+			return FALSE
+		}
+
+		go evalCommandInBackground(s)
 	} else {
 		err = c.Run()
 	}
@@ -1172,16 +1179,10 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 // We will start it, set its result
 // and then mark it as done, so that
 // callers stuck on s.Wait() can resume.
-func evalCommandInBackground(c *exec.Cmd, s *object.String) {
+func evalCommandInBackground(s *object.String) {
 	defer s.SetDone()
-	err := c.Start()
 
-	if err != nil {
-		s.SetCmdResult(FALSE)
-		return
-	}
-
-	err = c.Wait()
+	err := s.Cmd.Wait()
 
 	if err != nil {
 		s.SetCmdResult(FALSE)

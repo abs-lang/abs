@@ -73,6 +73,16 @@ cmd.wait()
 echo("This will be printed after 10s")
 ```
 
+If you ever want to terminate a running command, you can
+use the `kill` method.
+
+``` bash
+cmd = `sleep 10 &`
+cmd.done # false
+cmd.kill()
+cmd.done # true
+```
+
 ## Interpolation
 
 You can also replace parts of the command with variables

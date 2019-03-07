@@ -237,6 +237,10 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    waitFn,
 		},
+		"kill": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    killFn,
+		},
 		// trim("abc")
 		"trim": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -1158,6 +1162,27 @@ func waitFn(tok token.Token, args ...object.Object) object.Object {
 	}
 
 	cmd.Wait()
+	return cmd
+}
+
+// kill(`sleep 10 &`)
+func killFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "kill", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	cmd := args[0].(*object.String)
+
+	if cmd.Cmd == nil {
+		return cmd
+	}
+
+	errCmdKill := cmd.Kill()
+
+	if errCmdKill != nil {
+		return newError(tok, "Error killing command %s with error %s", cmd.Inspect(), errCmdKill.Error())
+	}
 	return cmd
 }
 
