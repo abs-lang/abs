@@ -8,7 +8,10 @@ import (
 	"math"
 	"math/big"
 	"os"
+	"os/exec"
 	"os/user"
+	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -322,6 +325,10 @@ func getFns() map[string]*object.Builtin {
 		"require": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
+		},
+		"run": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    runFn,
 		},
 	}
 }
@@ -1545,4 +1552,67 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 	sourceLevel--
 
 	return evaluated
+}
+
+func runFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "run", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+	cmd := args[0].Inspect()
+	cmd = strings.Trim(cmd, " ")
+
+	// Match all strings preceded by
+	// a $ or a \$
+	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
+	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
+		// If the string starts with a backslash,
+		// that's an escape, so we should replace
+		// it with the remaining portion of the match.
+		// \$VAR becomes $VAR
+		if string(m[0]) == "\\" {
+			return m[1:]
+		}
+
+		// If the string starts with $, then
+		// it's an interpolation. Let's
+		// replace $VAR with the variable
+		// named VAR in the ABS' environment.
+		// If the variable is not found, we
+		// just dump an empty string
+		v, ok := globalEnv.Get(m[1:])
+
+		if !ok {
+			return ""
+		}
+
+		return v.Inspect()
+	})
+
+	var commands []string
+	var executor string
+	if runtime.GOOS == "windows" {
+		commands = []string{"/C", cmd}
+		executor = "cmd.exe"
+	} else { //assume it's linux, darwin, freebsd, openbsd, solaris, etc
+		// invoke bash commands with login and interactive options (-li) --
+		// this allows the use of aliases and commands in $PATH
+		commands = []string{"-lic", cmd}
+		executor = "bash"
+	}
+	c := exec.Command(executor, commands...)
+	c.Env = os.Environ()
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+
+	// N.B. that a bash command may end with '&' --
+	// in this case bash will launch it as a daemon process and then exit c.Run() immediately
+	// this may require pkill to terminate the daemon process using the pid
+	runErr := c.Run()
+
+	if runErr != nil {
+		return err
+	}
+	return NULL
 }
