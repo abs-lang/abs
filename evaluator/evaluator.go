@@ -6,7 +6,6 @@ import (
 	"math"
 	"os"
 	"os/exec"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -823,7 +822,7 @@ func loopIterable(next func() (object.Object, object.Object), env *object.Enviro
 	}
 
 	if k != nil {
-		return loopIterable(next, env, fie, index + 1)
+		return loopIterable(next, env, fie, index+1)
 	}
 
 	return NULL
@@ -1084,32 +1083,9 @@ func evalHashIndexExpression(tok token.Token, hash, index object.Object) object.
 
 func evalCommandExpression(tok token.Token, cmd string, env *object.Environment) object.Object {
 	cmd = strings.Trim(cmd, " ")
-	// Match all strings preceded by
-	// a $ or a \$
-	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
-	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
-		// If the string starts with a backslash,
-		// that's an escape, so we should replace
-		// it with the remaining portion of the match.
-		// \$VAR becomes $VAR
-		if string(m[0]) == "\\" {
-			return m[1:]
-		}
 
-		// If the string starts with $, then
-		// it's an interpolation. Let's
-		// replace $VAR with the variable
-		// named VAR in the ABS' environment.
-		// If the variable is not found, we
-		// just dump an empty string
-		v, ok := env.Get(m[1:])
-
-		if !ok {
-			return ""
-		}
-
-		return v.Inspect()
-	})
+	// interpolate any $vars in the cmd string
+	cmd = util.InterpolateCmdVars(cmd, env)
 
 	// A background command ends with a '&'
 	background := len(cmd) > 1 && cmd[len(cmd)-1] == '&'

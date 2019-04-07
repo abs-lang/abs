@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"strconv"
 
 	"github.com/abs-lang/abs/object"
@@ -54,4 +55,35 @@ func GetEnvVar(env *object.Environment, varName, defaultVal string) string {
 		}
 	}
 	return value
+}
+
+// InterpolateCmdVars (cmd, env)
+// return command string with $vars interpolated from environment
+func InterpolateCmdVars(cmd string, env *object.Environment) string {
+	// Match all strings preceded by
+	// a $ or a \$
+	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
+	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
+		// If the string starts with a backslash,
+		// that's an escape, so we should replace
+		// it with the remaining portion of the match.
+		// \$VAR becomes $VAR
+		if string(m[0]) == "\\" {
+			return m[1:]
+		}
+		// If the string starts with $, then
+		// it's an interpolation. Let's
+		// replace $VAR with the variable
+		// named VAR in the ABS' environment.
+		// If the variable is not found, we
+		// just dump an empty string
+		v, ok := env.Get(m[1:])
+
+		if !ok {
+			return ""
+		}
+
+		return v.Inspect()
+	})
+	return cmd
 }

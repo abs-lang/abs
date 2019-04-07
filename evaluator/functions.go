@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
-	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -1562,32 +1561,8 @@ func runFn(tok token.Token, args ...object.Object) object.Object {
 	cmd := args[0].Inspect()
 	cmd = strings.Trim(cmd, " ")
 
-	// Match all strings preceded by
-	// a $ or a \$
-	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
-	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
-		// If the string starts with a backslash,
-		// that's an escape, so we should replace
-		// it with the remaining portion of the match.
-		// \$VAR becomes $VAR
-		if string(m[0]) == "\\" {
-			return m[1:]
-		}
-
-		// If the string starts with $, then
-		// it's an interpolation. Let's
-		// replace $VAR with the variable
-		// named VAR in the ABS' environment.
-		// If the variable is not found, we
-		// just dump an empty string
-		v, ok := globalEnv.Get(m[1:])
-
-		if !ok {
-			return ""
-		}
-
-		return v.Inspect()
-	})
+	// interpolate any $vars in the cmd string
+	cmd = util.InterpolateCmdVars(cmd, globalEnv)
 
 	var commands []string
 	var executor string
@@ -1600,6 +1575,7 @@ func runFn(tok token.Token, args ...object.Object) object.Object {
 		commands = []string{"-lic", cmd}
 		executor = "bash"
 	}
+	// set up command to execute using our stdIO
 	c := exec.Command(executor, commands...)
 	c.Env = os.Environ()
 	c.Stdin = os.Stdin
