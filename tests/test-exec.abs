@@ -1,0 +1,21 @@
+# marshall the args for the nano editor
+# if the filename is not given in the args, prompt for it
+# if the file is located outside the user's home dir, invoke sudo nano filename
+
+cmd = 'nano'
+filename = arg(2)
+homedir = env("HOME")
+
+while filename == '' {
+    echo("Please enter file name for %s: ", cmd)
+    filename = stdin()
+}
+
+if filename.prefix('~/') || filename.prefix(homedir) {
+    sudo = ''
+} else {
+    sudo = 'sudo'
+}
+
+# execute the command with live stdIO
+exec("$sudo $cmd $filename")
