@@ -329,6 +329,10 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    runFn,
 		},
+		"exec": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    runFn,
+		},
 	}
 }
 
@@ -1570,9 +1574,9 @@ func runFn(tok token.Token, args ...object.Object) object.Object {
 		commands = []string{"/C", cmd}
 		executor = "cmd.exe"
 	} else { //assume it's linux, darwin, freebsd, openbsd, solaris, etc
-		// invoke bash commands with login and interactive options (-li) --
-		// this allows the use of aliases and commands in $PATH
-		commands = []string{"-lic", cmd}
+		// invoke bash commands with login option (-l) --
+		// this allows the use of commands in $PATH
+		commands = []string{"-lc", cmd}
 		executor = "bash"
 	}
 	// set up command to execute using our stdIO
@@ -1588,7 +1592,7 @@ func runFn(tok token.Token, args ...object.Object) object.Object {
 	runErr := c.Run()
 
 	if runErr != nil {
-		return err
+		return &object.String{Value: runErr.Error()}
 	}
 	return NULL
 }
