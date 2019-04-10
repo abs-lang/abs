@@ -325,9 +325,10 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
 		},
+		// exec(command) -- execute command with interactive stdIO
 		"exec": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
-			Fn:    runFn,
+			Fn:    execFn,
 		},
 	}
 }
@@ -1553,8 +1554,8 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 	return evaluated
 }
 
-func runFn(tok token.Token, args ...object.Object) object.Object {
-	err := validateArgs(tok, "run", args, 1, [][]string{{object.STRING_OBJ}})
+func execFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "exec", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
 	}
