@@ -325,10 +325,6 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
 		},
-		"run": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    runFn,
-		},
 		"exec": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    runFn,
