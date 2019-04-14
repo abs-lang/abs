@@ -278,45 +278,6 @@ This will limit the source inclusion depth to 15 levels for this
 `source()` statement and will also apply to future `source()`
 statements until changed.
 
-### exec(command)
-
-Execute the command string using live Standard IO (stdin, stdout, stderr).
-The `exec()` function call does not return a result string unless it fails.
-
-Note well that in Linux the command string may contain a trailing `&`. 
-In this case the `exec()` function will terminate immediately allowing the
-command to be executed in the background outside of ABS. This means that the
-command must either terminate on its own or be killed using `pkill` or similar.
-This way an ABS script can launch a true daemon process that may never terminate.
-
-For example, an ABS script might also be used to marshall the command line args
-for an interactive program such as the nano editor:
-
-``` bash
-$ cat abs/tests/test-exec.abs
-# marshall the args for the nano editor
-# if the filename is not given in the args, prompt for it
-# if the file is located outside the user's home dir, invoke sudo nano filename
-
-cmd = 'nano'
-filename = arg(2)
-homedir = env("HOME")
-
-while filename == '' {
-    echo("Please enter file name for %s: ", cmd)
-    filename = stdin()
-}
-
-if filename.prefix('~/') || filename.prefix(homedir) {
-    sudo = ''
-} else {
-    sudo = 'sudo'
-}
-
-# execute the command with live stdIO
-exec("$sudo $cmd $filename")
-```
-
 ## Next
 
 That's about it for this section!

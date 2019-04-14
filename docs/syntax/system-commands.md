@@ -39,7 +39,48 @@ if `ls -la`.ok {
     echo("hello world")
 }
 ```
+It is also possible to execute a shell command without capturing its
+input or output using the `exec(command)` function. This allows long running
+or interactive programs to be run using the terminal's Standard IO
+(stdin, stdout, stderr). For example:
+```bash
+exec("sudo visudo")
+```
+would open the default text editor in super user mode on the /etc/sudoers file.
 
+Unlike the normal backtick command execution syntax above,
+the `exec(command)` function call does not return a result string unless it fails. 
+Therefore, the `exec(command)` may be the last command executed in a script
+file leaving the executed command in charge of the terminal IO until it
+terminates.  
+
+For example, an ABS script might be used to marshall the command line args
+for an interactive program such as the nano editor:
+
+``` bash
+$ cat abs/tests/test-exec.abs
+# marshall the args for the nano editor
+# if the filename is not given in the args, prompt for it
+# if the file is located outside the user's home dir, invoke sudo nano filename
+
+cmd = 'nano'
+filename = arg(2)
+homedir = env("HOME")
+
+while filename == '' {
+    echo("Please enter file name for %s: ", cmd)
+    filename = stdin()
+}
+
+if filename.prefix('~/') || filename.prefix(homedir) {
+    sudo = ''
+} else {
+    sudo = 'sudo'
+}
+
+# execute the command with live stdIO
+exec("$sudo $cmd $filename")
+```
 ## Executing commands in background
 
 Sometimes you might want to execute a command in
@@ -82,6 +123,16 @@ cmd.done # false
 cmd.kill()
 cmd.done # true
 ```
+Also note that when an `exec()` command string terminates with an `&`, 
+the `exec(command)` function will terminate immediately after launching
+the command which will run independently in the background.
+This means that the command must either terminate on its own or be killed
+using `pkill` or similar. This way an ABS script can launch a true daemon
+process that may operate on its own outside of ABS. For example you can
+reboot a remote computer via ssh without interacting with it:
+```bash
+exec("ssh user@host.local 'sudo reboot' &")
+```
 
 ## Interpolation
 
@@ -92,6 +143,12 @@ declared within your program using the `$` symbol:
 file = "cpuinfo"
 x = $(cat /proc/$file)
 echo(x) # processor: 0\nvendor_id: GenuineIntel...
+```
+or interpolation within an `exec(command`)
+```bash
+cmd = args(2)
+filename = args(3)
+exec("sudo $cmd $filename")
 ```
 
 and if you need `$` literals in your command, you
