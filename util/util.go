@@ -57,13 +57,13 @@ func GetEnvVar(env *object.Environment, varName, defaultVal string) string {
 	return value
 }
 
-// InterpolateCmdVars (cmd, env)
-// return command string with $vars interpolated from environment
-func InterpolateCmdVars(cmd string, env *object.Environment) string {
+// InterpolateStringVars (str, env)
+// return input string with $vars interpolated from environment
+func InterpolateStringVars(str string, env *object.Environment) string {
 	// Match all strings preceded by
 	// a $ or a \$
 	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
-	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
+	str = re.ReplaceAllStringFunc(str, func(m string) string {
 		// If the string starts with a backslash,
 		// that's an escape, so we should replace
 		// it with the remaining portion of the match.
@@ -82,8 +82,7 @@ func InterpolateCmdVars(cmd string, env *object.Environment) string {
 		if !ok {
 			return ""
 		}
-
 		return v.Inspect()
 	})
-	return cmd
+	return str
 }

@@ -1085,7 +1085,7 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 	cmd = strings.Trim(cmd, " ")
 
 	// interpolate any $vars in the cmd string
-	cmd = util.InterpolateCmdVars(cmd, env)
+	cmd = util.InterpolateStringVars(cmd, env)
 
 	// A background command ends with a '&'
 	background := len(cmd) > 1 && cmd[len(cmd)-1] == '&'
