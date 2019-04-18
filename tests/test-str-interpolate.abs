@@ -1,0 +1,44 @@
+#! /usr/local/bin/abs
+
+from_dir = '/var/log'
+to_dir = '/tmp/log'
+pat = '*.log'
+
+# currently: only command strings get $var interpolation
+# this means that bash $vars are not escaped and str.fmt() is the only way to interpolate raw strings (using %formats) 
+cmd = "mkdir -p %s && cd %s && for f in $(ls %s); do echo $f; cp $f %s/$f; done".fmt(to_dir, from_dir, pat, to_dir)
+echo("%q", cmd) # "mkdir -p /tmp/log && cd /var/log && for f in $(ls *.log); do echo $f; cp $f /tmp/log/$f; done"
+$($cmd)
+
+# proposal 1: all string literals get $var interpolation by default
+# this means that all bash $vars must be retrofitted as \$var in existing code which may break due to unknown $vars 
+# note that default $var string interpolation fails in this example because there is no string var f in the abs env
+# also str.fmt() will receive a pre-interpolated string as its format spec -- this may be hard to work around
+cmd = "mkdir -p $to_dir && cd $from_dir && for f in $(ls $pat); do echo \$f; cp \$f $to_dir/\$f; done"
+echo("%q", cmd) # "mkdir -p /tmp/log && cd /var/log && for f in $(ls *.log); do echo $f; cp $f /tmp/log/$f; done"
+$($cmd)
+
+# proposal 2: upgrade str.fmt() to include $var and ${var[:format]} interpolation in addition to %format
+# this means that string literals do not get interpolated by default because str.fmt() needs a raw format spec
+# furthermore, if a $var string object is not found in the abs env, then we would just leave the $var literal in place for bash
+# this would be a primitive, but useful, form of $var namespace separation between abs and bash
+# thus, only if there is a $var namespace collision would \$var be needed to force the $var into the bash namespace
+
+# a) no default interpolation of string literals means no changes needed to legacy abs string parsing code or scripts
+cmd = "mkdir -p $to_dir && cd $from_dir && for f in $(ls $pat); do echo \$f; cp $f $to_dir/$f; done"
+echo("%q", cmd) # "mkdir -p $to_dir && cd $from_dir && for f in $(ls $pat); do echo \$f; cp $f $to_dir/$f; done"
+
+# b) support for $var and ${var[:format]} interpolation via str.fmt() with no args; 
+# unknown $vars in the abs env such as $f are left untouched and are assumed to be in the bash $var namespace
+# escaped \$vars such as \$f are forced into the bash namespace and the escape backslashes are removed
+cmd = cmd.fmt()
+echo("%q", cmd) # "mkdir -p /tmp/log && cd /var/log && for f in $(ls *.log); do echo $f; cp $f /tmp/log/$f; done"
+$($cmd)
+
+# c) support for mixed $var, ${var[:format]} and %format interpolation via str.fmt(args...)
+# this also implies that legacy str.fmt(args...) %format-only strings still work
+cmd = "mkdir -p $to_dir && cd $from_dir && for f in $(ls %s); do echo $f; cp $f $to_dir/$f; done"
+echo("%q", cmd) # "mkdir -p $to_dir && cd $from_dir && for f in $(ls %s); do echo $f; cp $f $to_dir/$f; done"
+cmd = cmd.fmt(pat)
+echo("%q", cmd) # "mkdir -p /tmp/log && cd /var/log && for f in $(ls *.log); do echo $f; cp $f /tmp/log/$f; done"
+$($cmd)
