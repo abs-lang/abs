@@ -1563,7 +1563,7 @@ func execFn(tok token.Token, args ...object.Object) object.Object {
 	cmd = strings.Trim(cmd, " ")
 
 	// interpolate any $vars in the cmd string
-	cmd = util.InterpolateCmdVars(cmd, globalEnv)
+	cmd = util.InterpolateStringVars(cmd, globalEnv)
 
 	var commands []string
 	var executor string
