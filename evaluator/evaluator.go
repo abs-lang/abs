@@ -6,7 +6,6 @@ import (
 	"math"
 	"os"
 	"os/exec"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -790,22 +789,25 @@ func evalForInExpression(
 			i.Reset()
 		}()
 
-		return loopIterable(i.Next, env, fie)
+		return loopIterable(i.Next, env, fie, 0)
 	case *object.Builtin:
 		if i.Next == nil {
 			return newError(fie.Token, "builtin function cannot be used in loop")
 		}
 
-		return loopIterable(i.Next, env, fie)
+		return loopIterable(i.Next, env, fie, 0)
 	default:
 		return newError(fie.Token, "'%s' is a %s, not an iterable, cannot be used in for loop", i.Inspect(), i.Type())
 	}
 }
 
-func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression) object.Object {
+func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression, index int64) object.Object {
 	k, v := next()
 
 	if k == nil || v == EOF {
+		if index == 0 && fie.Alternative != nil {
+			return Eval(fie.Alternative, env)
+		}
 		return NULL
 	}
 
@@ -820,7 +822,7 @@ func loopIterable(next func() (object.Object, object.Object), env *object.Enviro
 	}
 
 	if k != nil {
-		return loopIterable(next, env, fie)
+		return loopIterable(next, env, fie, index+1)
 	}
 
 	return NULL
@@ -1081,32 +1083,9 @@ func evalHashIndexExpression(tok token.Token, hash, index object.Object) object.
 
 func evalCommandExpression(tok token.Token, cmd string, env *object.Environment) object.Object {
 	cmd = strings.Trim(cmd, " ")
-	// Match all strings preceded by
-	// a $ or a \$
-	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
-	cmd = re.ReplaceAllStringFunc(cmd, func(m string) string {
-		// If the string starts with a backslash,
-		// that's an escape, so we should replace
-		// it with the remaining portion of the match.
-		// \$VAR becomes $VAR
-		if string(m[0]) == "\\" {
-			return m[1:]
-		}
 
-		// If the string starts with $, then
-		// it's an interpolation. Let's
-		// replace $VAR with the variable
-		// named VAR in the ABS' environment.
-		// If the variable is not found, we
-		// just dump an empty string
-		v, ok := env.Get(m[1:])
-
-		if !ok {
-			return ""
-		}
-
-		return v.Inspect()
-	})
+	// interpolate any $vars in the cmd string
+	cmd = util.InterpolateStringVars(cmd, env)
 
 	// A background command ends with a '&'
 	background := len(cmd) > 1 && cmd[len(cmd)-1] == '&'
@@ -1149,7 +1128,14 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 		// let's set it as running. With this, others can
 		// wait for it by calling s.Wait().
 		s.SetRunning()
-		go evalCommandInBackground(c, s)
+
+		err := c.Start()
+		if err != nil {
+			s.SetCmdResult(FALSE)
+			return FALSE
+		}
+
+		go evalCommandInBackground(s)
 	} else {
 		err = c.Run()
 	}
@@ -1169,16 +1155,10 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 // We will start it, set its result
 // and then mark it as done, so that
 // callers stuck on s.Wait() can resume.
-func evalCommandInBackground(c *exec.Cmd, s *object.String) {
+func evalCommandInBackground(s *object.String) {
 	defer s.SetDone()
-	err := c.Start()
 
-	if err != nil {
-		s.SetCmdResult(FALSE)
-		return
-	}
-
-	err = c.Wait()
+	err := s.Cmd.Wait()
 
 	if err != nil {
 		s.SetCmdResult(FALSE)

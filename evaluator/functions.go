@@ -8,7 +8,9 @@ import (
 	"math"
 	"math/big"
 	"os"
+	"os/exec"
 	"os/user"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -237,6 +239,10 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    waitFn,
 		},
+		"kill": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    killFn,
+		},
 		// trim("abc")
 		"trim": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -318,6 +324,11 @@ func getFns() map[string]*object.Builtin {
 		"require": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
+		},
+		// exec(command) -- execute command with interactive stdIO
+		"exec": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    execFn,
 		},
 	}
 }
@@ -1161,6 +1172,27 @@ func waitFn(tok token.Token, args ...object.Object) object.Object {
 	return cmd
 }
 
+// kill(`sleep 10 &`)
+func killFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "kill", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	cmd := args[0].(*object.String)
+
+	if cmd.Cmd == nil {
+		return cmd
+	}
+
+	errCmdKill := cmd.Kill()
+
+	if errCmdKill != nil {
+		return newError(tok, "Error killing command %s with error %s", cmd.Inspect(), errCmdKill.Error())
+	}
+	return cmd
+}
+
 // trim("abc")
 func trimFn(tok token.Token, args ...object.Object) object.Object {
 	err := validateArgs(tok, "trim", args, 1, [][]string{{object.STRING_OBJ}})
@@ -1520,4 +1552,44 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 	sourceLevel--
 
 	return evaluated
+}
+
+func execFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "exec", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+	cmd := args[0].Inspect()
+	cmd = strings.Trim(cmd, " ")
+
+	// interpolate any $vars in the cmd string
+	cmd = util.InterpolateStringVars(cmd, globalEnv)
+
+	var commands []string
+	var executor string
+	if runtime.GOOS == "windows" {
+		commands = []string{"/C", cmd}
+		executor = "cmd.exe"
+	} else { //assume it's linux, darwin, freebsd, openbsd, solaris, etc
+		// invoke bash commands with login option (-l) --
+		// this allows the use of commands in $PATH
+		commands = []string{"-lc", cmd}
+		executor = "bash"
+	}
+	// set up command to execute using our stdIO
+	c := exec.Command(executor, commands...)
+	c.Env = os.Environ()
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+
+	// N.B. that a bash command may end with '&' --
+	// in this case bash will launch it as a daemon process and then exit c.Run() immediately
+	// this may require pkill to terminate the daemon process using the pid
+	runErr := c.Run()
+
+	if runErr != nil {
+		return &object.String{Value: runErr.Error()}
+	}
+	return NULL
 }

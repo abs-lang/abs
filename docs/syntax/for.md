@@ -97,6 +97,25 @@ echo(k) # "hello world"
 echo(v) # v is not defined
 ```
 
+## For ... else ...
+
+`For` loops can also have `else` clause which executes if 
+the list in the `for` condition is empty.
+
+For example, when we run a database query like the following,
+if the "users" list is empty, we will only execute the statements
+inside the `else` clause.
+
+``` bash
+users = db.query("SELECT students WHERE age > 20")
+
+for user in users {
+  print(user)
+} else {
+  print("We don't have students above the age of 20")
+}
+```
+
 ## Next
 
 That's about it for this section!
