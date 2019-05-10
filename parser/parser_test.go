@@ -126,6 +126,7 @@ func TestNumberLiteralExpression(t *testing.T) {
 		{"5;", 5},
 		{"5.5", 5.5},
 		{"5.5555555", 5.5555555},
+		{"5_000", 5000},
 	}
 
 	for _, tt := range prefixTests {
