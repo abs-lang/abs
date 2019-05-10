@@ -747,7 +747,7 @@ b
 c")`, []string{"a", "b", "c"}},
 		{`[1, 2].sort()`, []int{1, 2}},
 		{`["b", "a"].sort()`, []string{"a", "b"}},
-		{`["b", 1].sort()`, "argument to `sort` must be an homogeneous array (elements of the same type), got [b, 1]"},
+		{`["b", 1].sort()`, `argument to 'sort' must be an homogeneous array (elements of the same type), got ["b", 1]`},
 		{`[{}].sort()`, "cannot sort an array with given elements elements ([{}])"},
 		{`[[]].sort()`, "cannot sort an array with given elements elements ([[]])"},
 		{`[1, 2].some(f(x) {x == 2})`, true},
@@ -808,7 +808,7 @@ c")`, []string{"a", "b", "c"}},
 		{`"a".str()`, "a"},
 		{`1.str()`, "1"},
 		{`[1].str()`, "[1]"},
-		{`{"a": 10}.str()`, `{a: 10}`},
+		{`{"a": 10}.str()`, `{"a": 10}`},
 		{`"a great movie".title()`, "A Great Movie"},
 		{`"A great movie".lower()`, "a great movie"},
 		{`"A great movie".upper()`, "A GREAT MOVIE"},
@@ -1480,7 +1480,7 @@ z
 		{`
 		a = split("a\nb\nc", "\n")
 		str(a)
-		`, `[a, b, c]`,
+		`, `["a", "b", "c"]`,
 		},
 		{`
 		a = split("a\nb\nc", "\n")
@@ -1513,7 +1513,7 @@ func TestEvalAssignIndex(t *testing.T) {
 		a[5] = 55
 		str(a)
 		`,
-			"[99, 12, string, 4, 88, 55, 66]",
+			`[99, 12, "string", 4, 88, 55, 66]`,
 		},
 		{`
 		h = {"a": 1, "b": 2, "c": 3}
@@ -1525,9 +1525,9 @@ func TestEvalAssignIndex(t *testing.T) {
 		h.d = 99
 		h.d += 1
 		h.z.x = 66
-		h.f = 88
+		h.f = 1.23
 		str(h)
-		`, "{1.23: string, a: 100, b: 2, c: 33, d: 100, e: 55, f: 88, z: {x: 66, y: 20}}",
+		`, `{"1.23": "string", "a": 100, "b": 2, "c": 33, "d": 100, "e": 55, "f": 1.23, "z": {"x": 66, "y": 20}}`,
 		},
 	}
 
@@ -1554,7 +1554,7 @@ func TestHashFunctions(t *testing.T) {
 		hp = pop(h, "c")
 		hp = h.pop("d")
 		str(h)
-		`, "{b: 2}",
+		`, `{"b": 2}`,
 		},
 	}
 
