@@ -869,7 +869,7 @@ func sortFn(tok token.Token, args ...object.Object) object.Object {
 	}
 
 	if !arr.Homogeneous() {
-		return newError(tok, "argument to `sort` must be an homogeneous array (elements of the same type), got %s", arr.Inspect())
+		return newError(tok, "argument to 'sort' must be an homogeneous array (elements of the same type), got %s", arr.Inspect())
 	}
 
 	switch elements[0].(type) {
