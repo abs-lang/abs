@@ -30,6 +30,30 @@ mind that they will be implicitely converted to integers:
 1 ^ 0.9 # 1, as 0.9 is converted to 0
 ```
 
+You can write numbers in the exponential notation:
+
+```
+1e1 # 10
+1e+1 # 10
+1e-1 # 0.1
+```
+
+In addition, numbers can include underscores (`_`) as visual
+separators, in order to improve readability: when
+ABS encounters `1_000_000` it will internally convert it
+to a million. Underscore separators can be placed anywhere
+on a number (`10_`, `10_00`, `10.00_00_00`) except at its start:
+
+```
+1000000 # 1M
+1_000_000 # 1M, just a lot more readable
+1_00_00_00 # 1M, formatted with another separator pattern
+_100000000 # ERROR: identifier not found: _
+```
+
+Note there is no limit to the amount of consecutive
+underscores that can be used (eg. `10__________0`).
+
 ## Supported functions
 
 ### number()
