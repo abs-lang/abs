@@ -353,12 +353,12 @@ func (l *Lexer) readIdentifier() string {
 // 12e1
 func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 	position := l.position
-	kind = token.NUMBER
 	hasDot := false
+	kind = token.NUMBER
 	hasExponent := false
 
 	// List of character that can appear in a "number"
-	for isDigit(l.ch) || l.ch == '.' || l.ch == '+' || l.ch == '-' || l.ch == 'e' {
+	for isDigit(l.ch) || l.ch == '.' || l.ch == '+' || l.ch == '-' || l.ch == 'e' || l.ch == '_' {
 		// If we have a plus / minus but there was no exponent
 		// in this number, it means we're at the end of the
 		// number and we're at an addition / subtraction.
@@ -375,7 +375,7 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 		// If we have a dot, let's check whether this is a range
 		// or maybe a method call (122.string())
 		if l.ch == '.' && (l.peekChar() == '.' || !isDigit(l.peekChar())) {
-			return l.input[position:l.position], token.NUMBER
+			return l.input[position:l.position], kind
 		}
 
 		if l.ch == '.' {
@@ -385,7 +385,6 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 			}
 
 			hasDot = true
-			kind = token.NUMBER
 		}
 		l.readChar()
 	}
@@ -396,7 +395,7 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 		return l.input[position:l.position], token.ILLEGAL
 	}
 
-	return l.input[position:l.position], kind
+	return strings.ReplaceAll(l.input[position:l.position], "_", ""), kind
 }
 
 // A logical operator is 2 chars, so
