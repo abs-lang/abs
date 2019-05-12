@@ -54,6 +54,7 @@ type Hashable interface {
 type Object interface {
 	Type() ObjectType
 	Inspect() string
+	Json() string
 }
 
 type Iterable interface {
@@ -78,6 +79,7 @@ func (n *Number) Inspect() string {
 	}
 	return strconv.FormatFloat(n.Value, 'f', -1, 64)
 }
+func (n *Number) Json() string       { return n.Inspect() }
 func (n *Number) ZeroValue() float64 { return float64(0) }
 func (n *Number) Int() int           { return int(n.Value) }
 
@@ -88,6 +90,7 @@ type Boolean struct {
 
 func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
 func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
+func (b *Boolean) Json() string     { return b.Inspect() }
 
 type Null struct {
 	Token token.Token
@@ -95,6 +98,7 @@ type Null struct {
 
 func (n *Null) Type() ObjectType { return NULL_OBJ }
 func (n *Null) Inspect() string  { return "null" }
+func (n *Null) Json() string     { return n.Inspect() }
 
 type ReturnValue struct {
 	Token token.Token
@@ -103,6 +107,7 @@ type ReturnValue struct {
 
 func (rv *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
 func (rv *ReturnValue) Inspect() string  { return rv.Value.Inspect() }
+func (rv *ReturnValue) Json() string     { return rv.Inspect() }
 
 type Error struct {
 	Message string
@@ -110,6 +115,7 @@ type Error struct {
 
 func (e *Error) Type() ObjectType { return ERROR_OBJ }
 func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
+func (e *Error) Json() string     { return e.Inspect() }
 
 type Function struct {
 	Token      token.Token
@@ -136,6 +142,8 @@ func (f *Function) Inspect() string {
 
 	return out.String()
 }
+
+func (f *Function) Json() string { return f.Inspect() }
 
 // The String is a special fella.
 //
@@ -176,6 +184,7 @@ type String struct {
 
 func (s *String) Type() ObjectType  { return STRING_OBJ }
 func (s *String) Inspect() string   { return s.Value }
+func (s *String) Json() string      { return `"` + s.Inspect() + `"` }
 func (s *String) ZeroValue() string { return "" }
 func (s *String) HashKey() HashKey {
 	return HashKey{Type: s.Type(), Value: s.Value}
@@ -266,6 +275,7 @@ type Builtin struct {
 
 func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
 func (b *Builtin) Inspect() string  { return "builtin function" }
+func (b *Builtin) Json() string     { return b.Inspect() }
 
 type Array struct {
 	Token    token.Token
@@ -305,12 +315,13 @@ func (ao *Array) Homogeneous() bool {
 func (ao *Array) Empty() bool {
 	return len(ao.Elements) == 0
 }
+
 func (ao *Array) Inspect() string {
 	var out bytes.Buffer
 
 	elements := []string{}
 	for _, e := range ao.Elements {
-		elements = append(elements, e.Inspect())
+		elements = append(elements, e.Json())
 	}
 
 	out.WriteString("[")
@@ -319,6 +330,8 @@ func (ao *Array) Inspect() string {
 
 	return out.String()
 }
+
+func (ao *Array) Json() string { return ao.Inspect() }
 
 type HashPair struct {
 	Key   Object
@@ -343,7 +356,7 @@ func (h *Hash) Inspect() string {
 
 	pairs := []string{}
 	for _, pair := range h.Pairs {
-		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(), pair.Value.Inspect()))
+		pairs = append(pairs, fmt.Sprintf(`%s: %s`, pair.Key.Json(), pair.Value.Json()))
 	}
 	// create stable key ordered output
 	sort.Strings(pairs)
@@ -354,6 +367,7 @@ func (h *Hash) Inspect() string {
 
 	return out.String()
 }
+func (h *Hash) Json() string { return h.Inspect() }
 
 // Pretty convoluted logic here we could
 // refactor.
