@@ -184,7 +184,7 @@ type String struct {
 
 func (s *String) Type() ObjectType  { return STRING_OBJ }
 func (s *String) Inspect() string   { return s.Value }
-func (s *String) Json() string      { return `"` + s.Inspect() + `"` }
+func (s *String) Json() string      { return `"` + strings.ReplaceAll(s.Inspect(), `"`, `\"`) + `"` }
 func (s *String) ZeroValue() string { return "" }
 func (s *String) HashKey() HashKey {
 	return HashKey{Type: s.Type(), Value: s.Value}

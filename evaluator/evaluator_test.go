@@ -1546,7 +1546,7 @@ func TestHashFunctions(t *testing.T) {
 		expected string
 	}{
 		{`
-		h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}
+		h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}, "e": "\"test"}
 		hk = h.keys()
 		hk = keys(h)
 		hv = h.values()
@@ -1557,7 +1557,7 @@ func TestHashFunctions(t *testing.T) {
 		hp = pop(h, "c")
 		hp = h.pop("d")
 		str(h)
-		`, `{"b": 2}`,
+		`, `{"b": 2, "e": "\"test"}`,
 		},
 	}
 
