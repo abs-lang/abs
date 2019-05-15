@@ -737,6 +737,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`"{\"a\": null}".json().a`, nil},
 		{`type(null)`, "NULL"},
 		{`"{\"k\": \"v\"}".json()["k"]`, "v"},
+		{`''.json()`, ""},
+		{`'         '.json()`, ""},
 		{`"2".json()`, 2},
 		{`'"2"'.json()`, "2"},
 		{`'true'.json()`, true},
