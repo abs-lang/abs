@@ -782,14 +782,18 @@ func jsonFn(tok token.Token, args ...object.Object) object.Object {
 	// - string
 	// - null
 	// - bool
-	switch str[0] {
-	case '{':
-		node, ok = p.ParseHashLiteral().(*ast.HashLiteral)
-	case '[':
-		node, ok = p.ParseArrayLiteral().(*ast.ArrayLiteral)
+	if len(str) != 0 {
+		switch str[0] {
+		case '{':
+			node, ok = p.ParseHashLiteral().(*ast.HashLiteral)
+		case '[':
+			node, ok = p.ParseArrayLiteral().(*ast.ArrayLiteral)
+		}
 	}
 
-	if str[0] == '"' && str[len(str)-1] == '"' {
+	// if str is empty, the length will be 0
+	// we can parse it the same way as string literal
+	if len(str) == 0 || (str[0] == '"' && str[len(str)-1] == '"') {
 		node, ok = p.ParseStringLiteral().(*ast.StringLiteral)
 	}
 
