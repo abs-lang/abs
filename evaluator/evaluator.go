@@ -102,17 +102,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalPrefixExpression(node.Token, node.Operator, right)
 
 	case *ast.InfixExpression:
-		left := Eval(node.Left, env)
-		if isError(left) {
-			return left
-		}
-
-		right := Eval(node.Right, env)
-		if isError(right) {
-			return right
-		}
-
-		return evalInfixExpression(node.Token, node.Operator, left, right)
+		return evalInfixExpression(node.Token, node.Operator, node.Left, node.Right, env)
 
 	case *ast.CompoundAssignment:
 		left := Eval(node.Left, env)
@@ -129,7 +119,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			op = op[:len(op)-1]
 		}
 		// get the result of the infix operation
-		expr := evalInfixExpression(node.Token, op, left, right)
+		expr := evalInfixExpression(node.Token, op, node.Left, node.Right, env)
 		if isError(expr) {
 			return expr
 		}
@@ -385,32 +375,45 @@ func evalPrefixExpression(tok token.Token, operator string, right object.Object)
 
 func evalInfixExpression(
 	tok token.Token, operator string,
-	left, right object.Object,
+	leftExpression, rightExpression ast.Expression,
+	env *object.Environment,
 ) object.Object {
-	switch {
+	left := Eval(leftExpression, env)
+	if isError(left) {
+		return left
+	}
+
 	// 1 && 2
 	// We will first verify left is truthy and,
 	// if so, proceed to check whether right is
 	// also truthy.
 	// At the end of the process we will return
 	// right, without any implicit bool conversion.
-	case operator == "&&":
+	if operator == "&&" {
 		if !isTruthy(left) {
 			return left
 		}
+		return Eval(rightExpression, env)
+	}
 
-		return right
 	// 1 || 2
 	// We will first verify left is truthy, and
 	// return it if so. If not, we will return
 	// right, without any implicit bool conversion
 	// (which allows short-circuiting).
-	case operator == "||":
+	if operator == "||" {
 		if isTruthy(left) {
 			return left
 		}
+		return Eval(rightExpression, env)
+	}
 
+	right := Eval(rightExpression, env)
+	if isError(right) {
 		return right
+	}
+
+	switch {
 	case left.Type() == object.NUMBER_OBJ && right.Type() == object.NUMBER_OBJ:
 		return evalNumberInfixExpression(tok, operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
