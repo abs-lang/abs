@@ -164,6 +164,24 @@ func TestEvalBooleanExpression(t *testing.T) {
 	}
 }
 
+func TestLazyEvaluation(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`x = false; x && x.lines`, false},
+		{`y = true; y || y.lines`, true},
+		{`x = true; y = false; x || (y && y.ok)`, true},
+		{`true || 1..1000000000`, true},
+		{`false && 1..1000000000`, false},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testBooleanObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestBangOperator(t *testing.T) {
 	tests := []struct {
 		input    string
