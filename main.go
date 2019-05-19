@@ -7,7 +7,7 @@ import (
 	"github.com/abs-lang/abs/repl"
 )
 
-var VERSION = "1.3.0"
+var VERSION = "1.3.1"
 
 // The ABS interpreter
 func main() {
