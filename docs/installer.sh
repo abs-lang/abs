@@ -1,5 +1,7 @@
-command -v uname >/dev/null || {
-  echo >&2 'requires uname'
+set -e
+
+command -v uname wget >/dev/null || {
+  echo >&2 "The abs installer requires uname and wget"
   exit 1
 }
 
@@ -43,7 +45,7 @@ do
   if [ "${INPUT}" = "Y" ]; then
     break
   fi
-  echo Installation interrupted
+  echo "Installation interrupted"
   exit 1
 done < "/dev/stdin"
 
