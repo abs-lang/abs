@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -182,6 +183,12 @@ func TestLazyEvaluation(t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		testBooleanObject(t, evaluated, tt.expected)
+	}
+}
+
+func BenchmarkLazyEvaluation(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		testEval(`false && 1..` + strconv.Itoa(i))
 	}
 }
 
