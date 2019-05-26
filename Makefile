@@ -5,7 +5,9 @@ fmt:
 	go fmt ./...
 build:
 	docker build -t abs .
-test:
+bench:
+	go test ./... -bench=.
+test: bench
 	# The -vet=off is as YOLO as it gets
 	go test ./... -vet=off
 test_verbose:
