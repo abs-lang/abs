@@ -51,7 +51,7 @@ if !rm.ok {
     return echo("error: " + rm)
 }
 
-version = $(cat ./main.go | grep "var VERSION")
+version = $(cat ./main.go | grep "var Version")
 version = version.slice(15, len(version) - 1)
 echo("Running builds for version %s, confirm by typing \"y\"".fmt(version))
 selection = stdin()
