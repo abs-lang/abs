@@ -1,6 +1,6 @@
 .PHONY: repl
 run:
-	docker run -ti -v $$(pwd):/abs -v /home/`whoami`/.abs_history:/root/.abs_history --name abs --rm abs
+	docker run -ti -v $$(pwd):/abs -v ~/.abs_history:/root/.abs_history --name abs --rm abs
 fmt:
 	go fmt ./...
 build:
