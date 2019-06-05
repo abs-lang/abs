@@ -865,6 +865,7 @@ c")`, []string{"a", "b", "c"}},
 		{`"1.66".ceil()`, 2},
 		{`sleep(0.01)`, nil},
 		{`$()`, ""},
+		{`a = 1; eval("a")`, 1},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
