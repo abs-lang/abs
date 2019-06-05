@@ -15,6 +15,7 @@ import (
 	"github.com/abs-lang/abs/util"
 
 	prompt "github.com/c-bata/go-prompt"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var env *object.Environment
@@ -64,6 +65,11 @@ func changeLivePrefix() (string, bool) {
 }
 
 func Start(in io.Reader, out io.Writer) {
+	if !terminal.IsTerminal(int(os.Stdout.Fd())) {
+		fmt.Println("unable to start the ABS repl (no terminal detected)")
+		os.Exit(1)
+	}
+
 	// get history file only when interactive REPL is running
 	historyFile, maxLines = getHistoryConfiguration()
 	history = getHistory(historyFile, maxLines)
