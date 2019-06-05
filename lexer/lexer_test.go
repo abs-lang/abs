@@ -85,6 +85,8 @@ $111
 10_000
 10_00.00
 1_2e1
+小明
+❤
 `
 
 	tests := []struct {
@@ -304,6 +306,8 @@ $111
 		{token.NUMBER, "10000"},
 		{token.NUMBER, "1000.00"},
 		{token.NUMBER, "12e1"},
+		{token.IDENT, "小明"},
+		{token.ILLEGAL, "❤"},
 		{token.EOF, ""},
 	}
 
@@ -438,5 +442,32 @@ func TestCurrentPosition(t *testing.T) {
 
 	if l.CurrentPosition() != 0 {
 		t.Fatalf("wrong position. expected=%d, got=%d", 6, l.CurrentPosition())
+	}
+}
+
+func TestUnicode(t *testing.T) {
+	input := `世界 = "⺐ ❤ 😄"`
+	l := New(input)
+
+	tests := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.IDENT, "世界"},
+		{token.ASSIGN, "="},
+		{token.STRING, "⺐ ❤ 😄"},
+		{token.EOF, ""},
+	}
+
+	for i, tt := range tests {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
+		}
 	}
 }
