@@ -99,6 +99,15 @@ Returns the `str` environment variable:
 env("PATH") # "/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ```
 
+### eval(str)
+
+Evaluates the `str` as ABS code:
+
+``` bash
+eval("1 + 1") # 2
+eval('object = {"x": 10}; object.x') # 10
+```
+
 ### arg(n)
 
 Returns the `n`th argument to the current script:
@@ -212,16 +221,16 @@ Halts the process for as many `ms` you specified:
 sleep(1000) # sleeps for 1 second
 ```
 
-### source(fileName) aka require(filename) 
+### source(path_to_file) aka require(path_to_file) 
 
-Evaluates the ABS script `fileName` in the context of the ABS global
+Evaluates the script at `path_to_file` in the context of the ABS global
 environment. The results of any expressions in the file become
 available to other commands in the REPL command line or to other
 scripts in the current script execution chain. 
 
 This is most useful for creating `library functions` in a script
 that can be used by many other scripts. Often the library functions
-are loaded via the ABS Init File `~/.absrc`. See [ABS Init File](/introduction/how-to-run-abs-code).
+are loaded via the ABS Init File `~/.absrc` (see [ABS Init File](/introduction/how-to-run-abs-code)).
 
 For example:
 ```bash
