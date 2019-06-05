@@ -330,6 +330,10 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    execFn,
 		},
+		"eval": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    evalFn,
+		},
 	}
 }
 
@@ -1540,20 +1544,51 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 	savedLexer := lex
 	evaluated := BeginEval(program, globalEnv, l)
 	lex = savedLexer
-	if evaluated != nil {
-		isError := evaluated.Type() == object.ERROR_OBJ
-		if isError {
-			// reset the source level
-			sourceLevel = 0
-			// use errObj.Message instead of errObj.Inspect() to avoid nested "ERROR: " prefixes
-			evalErrMsg := evaluated.(*object.Error).Message
-			sourceErrMsg := newError(tok, "error found in source file: %s", fileName).Message
-			errObj := &object.Error{Message: fmt.Sprintf("%s\n\t%s", evalErrMsg, sourceErrMsg)}
-			return errObj
-		}
+	if evaluated != nil && evaluated.Type() == object.ERROR_OBJ {
+		// use errObj.Message instead of errObj.Inspect() to avoid nested "ERROR: " prefixes
+		evalErrMsg := evaluated.(*object.Error).Message
+		sourceErrMsg := newError(tok, "error found in eval block: %s", fileName).Message
+		errObj := &object.Error{Message: fmt.Sprintf("%s\n\t%s", sourceErrMsg, evalErrMsg)}
+		return errObj
 	}
 	// restore this source level
 	sourceLevel--
+
+	return evaluated
+}
+
+func evalFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "eval", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	// parse it
+	l := lexer.New(string(args[0].Inspect()))
+	p := parser.New(l)
+	program := p.ParseProgram()
+	errors := p.Errors()
+	if len(errors) != 0 {
+		errMsg := fmt.Sprintf("%s", " parser errors:\n")
+		for _, msg := range errors {
+			errMsg += fmt.Sprintf("%s", "\t"+msg+"\n")
+		}
+		return newError(tok, "error found in eval block: %s\n%s", args[0].Inspect(), errMsg)
+	}
+	// invoke BeginEval() passing in the sourced program, globalEnv, and our lexer
+	// we save the current global lexer and restore it after we return from BeginEval()
+	// NB. saving the lexer allows error line numbers to be relative to any nested source files
+	savedLexer := lex
+	evaluated := BeginEval(program, globalEnv, l)
+	lex = savedLexer
+
+	if evaluated != nil && evaluated.Type() == object.ERROR_OBJ {
+		// use errObj.Message instead of errObj.Inspect() to avoid nested "ERROR: " prefixes
+		evalErrMsg := evaluated.(*object.Error).Message
+		sourceErrMsg := newError(tok, "error found in eval block: %s", args[0].Inspect()).Message
+		errObj := &object.Error{Message: fmt.Sprintf("%s\n\t%s", sourceErrMsg, evalErrMsg)}
+		return errObj
+	}
 
 	return evaluated
 }
