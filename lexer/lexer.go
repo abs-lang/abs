@@ -2,21 +2,22 @@ package lexer
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/abs-lang/abs/token"
 )
 
 type Lexer struct {
-	input        string
 	position     int  // current position in input (points to current char)
 	readPosition int  // current reading position in input (after current char)
-	ch           byte // current char under examination
+	ch           rune // current rune under examination
+	input        []rune
 	// map of input line boundaries used by linePosition() for error location
 	lineMap [][2]int // array of [begin, end] pairs: [[0,12], [13,22], [23,33] ... ]
 }
 
-func New(input string) *Lexer {
-	l := &Lexer{input: input}
+func New(in string) *Lexer {
+	l := &Lexer{input: []rune(in)}
 	// map the input line boundaries for CurrentLine()
 	l.buildLineMap()
 	// read the first char
@@ -65,7 +66,7 @@ func (l *Lexer) ErrorLine(pos int) (int, int, string) {
 	lineNum, begin, end := l.linePosition(pos)
 	errorLine := l.input[begin:end]
 	column := pos - begin + 1
-	return lineNum, column, errorLine
+	return lineNum, column, string(errorLine)
 }
 
 func (l *Lexer) newToken(tokenType token.TokenType) token.Token {
@@ -302,6 +303,7 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
+// This function will read a rune
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -322,15 +324,14 @@ func (l *Lexer) Rewind(pos int) {
 	}
 }
 
-func (l *Lexer) peekChar() byte {
+func (l *Lexer) peekChar() rune {
 	if l.readPosition >= len(l.input) {
 		return 0
-	} else {
-		return l.input[l.readPosition]
 	}
+	return l.input[l.readPosition]
 }
 
-func (l *Lexer) prevChar(steps int) byte {
+func (l *Lexer) prevChar(steps int) rune {
 	prevPosition := l.readPosition - steps
 	if prevPosition < 1 {
 		return 0
@@ -343,7 +344,7 @@ func (l *Lexer) readIdentifier() string {
 	for isLetter(l.ch) {
 		l.readChar()
 	}
-	return l.input[position:l.position]
+	return string(l.input[position:l.position])
 }
 
 // 12
@@ -363,7 +364,7 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 		// in this number, it means we're at the end of the
 		// number and we're at an addition / subtraction.
 		if (l.ch == '+' || l.ch == '-') && !hasExponent {
-			return l.input[position:l.position], kind
+			return string(l.input[position:l.position]), kind
 		}
 
 		// If the number contains as 'e',
@@ -375,13 +376,13 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 		// If we have a dot, let's check whether this is a range
 		// or maybe a method call (122.string())
 		if l.ch == '.' && (l.peekChar() == '.' || !isDigit(l.peekChar())) {
-			return l.input[position:l.position], kind
+			return string(l.input[position:l.position]), kind
 		}
 
 		if l.ch == '.' {
 			// If we have 2 dots in a number, there's a problem
 			if hasDot {
-				return l.input[position : l.position+1], token.ILLEGAL
+				return string(l.input[position : l.position+1]), token.ILLEGAL
 			}
 
 			hasDot = true
@@ -392,10 +393,10 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 	// If the number ends with the exponent,
 	// there's a problem.
 	if l.input[l.position-1] == 'e' {
-		return l.input[position:l.position], token.ILLEGAL
+		return string(l.input[position:l.position]), token.ILLEGAL
 	}
 
-	return strings.ReplaceAll(l.input[position:l.position], "_", ""), kind
+	return strings.ReplaceAll(string(l.input[position:l.position]), "_", ""), kind
 }
 
 // A logical operator is 2 chars, so
@@ -403,7 +404,7 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 // it a day.
 func (l *Lexer) readLogicalOperator() string {
 	l.readChar()
-	return l.input[l.position-1 : l.position+1]
+	return string(l.input[l.position-1 : l.position+1])
 }
 
 // Reads a strings from the text.
@@ -413,7 +414,7 @@ func (l *Lexer) readLogicalOperator() string {
 // character itself ("\\").
 func (l *Lexer) readString(quote byte) string {
 	var chars []string
-	esc := byte('\\')
+	esc := rune('\\')
 	doubleEscape := false
 	for {
 		l.readChar()
@@ -422,7 +423,7 @@ func (l *Lexer) readString(quote byte) string {
 			chars = append(chars, string(esc))
 			l.readChar()
 			// be careful here, there may be double escaped LFs in the string
-			if l.peekChar() == quote {
+			if l.peekChar() == rune(quote) {
 				doubleEscape = true
 			} else {
 				// this is not a double escaped quote
@@ -433,7 +434,7 @@ func (l *Lexer) readString(quote byte) string {
 		// If we encounter an escape, let's check whether
 		// we're trying to escape a quote. If so, let's skip
 		// the escape and add the quote to the string.
-		if l.ch == esc && l.peekChar() == quote {
+		if l.ch == esc && l.peekChar() == rune(quote) {
 			chars = append(chars, string(quote))
 			l.readChar()
 			continue
@@ -459,7 +460,7 @@ func (l *Lexer) readString(quote byte) string {
 		// The string ends when we encounter a quote
 		// and the character before that was not an escape,
 		// or the escape was escaped as well ("string\\").
-		if (l.ch == quote && (l.prevChar(2) != esc || doubleEscape)) || l.ch == 0 {
+		if (l.ch == rune(quote) && (l.prevChar(2) != esc || doubleEscape)) || l.ch == 0 {
 			break
 		}
 		chars = append(chars, string(l.ch))
@@ -479,7 +480,7 @@ func (l *Lexer) readLine() string {
 			break
 		}
 	}
-	return l.input[position:l.position]
+	return string(l.input[position:l.position])
 }
 
 // We want to extract the actual command
@@ -514,13 +515,13 @@ func (l *Lexer) readCommand() string {
 		l.readPosition = l.position
 	}
 
-	return ret
+	return string(ret)
 }
 
-func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+func isLetter(ch rune) bool {
+	return unicode.IsLetter(ch) || ch == '_'
 }
 
-func isDigit(ch byte) bool {
+func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
 }
