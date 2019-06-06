@@ -7,7 +7,8 @@ build:
 	docker build -t abs .
 bench:
 	go test ./... -bench=.
-test: bench
+test_all: bench test
+test:
 	# The -vet=off is as YOLO as it gets
 	go test ./... -vet=off
 test_verbose:
