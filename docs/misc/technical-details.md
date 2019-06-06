@@ -205,7 +205,7 @@ ERROR: type mismatch: NULL + NUMBER
 
 ## Roadmap
 
-We're currently working on [1.4](https://github.com/abs-lang/abs/milestone/11).
+We're currently working on [1.5](https://github.com/abs-lang/abs/milestone/12).
 
 ## Next
 
