@@ -55,9 +55,14 @@ To test for the existence of substrings within strings use the `in` operator:
 ```
 
 ## Special characters embedded in strings
-Double and single quoted strings behave differently if the string contains escaped special ASCII line control characters such as `LF "\n"`, `CR "\r"`, and `TAB "\t"`. 
 
-If the string is double quoted these characters will be expanded to their ASCII codes. On the other hand, if the string is single quoted, these characters will be considered as escaped literals. 
+Double and single quoted strings behave differently if the string contains
+escaped special ASCII line control characters such as `LF "\n"`, `CR "\r"`,
+and `TAB "\t"`. 
+
+If the string is double quoted these characters will be expanded to their ASCII codes.
+On the other hand, if the string is single quoted, these characters will be considered
+as escaped literals. 
 
 This means, for example, that double quoted LFs will cause line feeds to appear in the output:
 
@@ -68,6 +73,7 @@ b
 c
 ⧐  
 ```
+
 Conversely, single quoted LFs will appear as escaped literal strings:
 
 ```bash
@@ -77,11 +83,23 @@ a\nb\nc
 ```
 
 And if you need to mix escaped and unescaped special characters, then you can do this with double escapes within double quoted strings:
+
 ```bash
 ⧐  echo("a\\nb\nc")
 a\\nb
 c
 ⧐  
+```
+
+## Unicode support
+
+Unicode characters are supported in strings:
+
+```bash
+⧐  echo("⺐")
+⺐
+⧐  echo("I ❤ ABS")
+I ❤ ABS
 ```
 
 ### Working with special characters in string functions

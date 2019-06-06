@@ -23,6 +23,7 @@ y # null
 ```
 
 An individual array element may be assigned to via its `array[index]`. This includes compound operators such as `+=`. Also an array can be extended by assigning to an index beyond its current length.
+
 ```bash
 a = [1, 2, 3, 4]
 a # [1, 2, 3, 4]
@@ -43,6 +44,7 @@ a # [100, 2, 3, 4, 44, 55]
 ```
 
 An individual hash element may be assigned to via its `hash["key"]` index or its property `hash.key`. This includes compound operators such as `+=`. Note that a new key may be created as well using `hash["newkey"]` or `hash.newkey`.
+
 ```bash
 h = {"a": 1, "b": 2, "c": 3}
 h # {a: 1, b: 2, c: 3}
@@ -101,6 +103,19 @@ for x in 1..10 {
 }
 
 echo(x) # "hello world"
+```
+
+## Variable names
+
+Variables can start with any letter (even unicode ones) and can
+contain letters, digits or underscores:
+
+```
+variable = 1
+v_a_r_i_a_b_l_e = 1
+v4r14ble = 1
+世界 = 1
+世界_that_was_unicode = 1
 ```
 
 ## Next
