@@ -87,6 +87,9 @@ $111
 1_2e1
 小明
 ❤
+hello_w0rld
+hello1
+hello_
 `
 
 	tests := []struct {
@@ -308,6 +311,9 @@ $111
 		{token.NUMBER, "12e1"},
 		{token.IDENT, "小明"},
 		{token.ILLEGAL, "❤"},
+		{token.IDENT, "hello_w0rld"},
+		{token.IDENT, "hello1"},
+		{token.IDENT, "hello_"},
 		{token.EOF, ""},
 	}
 

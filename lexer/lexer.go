@@ -341,7 +341,7 @@ func (l *Lexer) prevChar(steps int) rune {
 
 func (l *Lexer) readIdentifier() string {
 	position := l.position
-	for isLetter(l.ch) {
+	for isLetter(l.ch) || unicode.IsDigit(l.ch) {
 		l.readChar()
 	}
 	return string(l.input[position:l.position])
