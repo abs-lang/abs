@@ -1061,6 +1061,8 @@ func TestInExpressions(t *testing.T) {
 		expected interface{}
 	}{
 		{`1 in [1]`, true},
+		{`1 in []`, false},
+		{`!(1 in [])`, true},
 		{`1 in ["1"]`, false},
 		{`"1" in [1]`, false},
 		{`1 in [1, 2]`, true},

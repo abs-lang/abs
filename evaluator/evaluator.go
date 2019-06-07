@@ -423,7 +423,7 @@ func evalInfixExpression(
 	case left.Type() == object.HASH_OBJ && right.Type() == object.HASH_OBJ:
 		return evalHashInfixExpression(tok, operator, left, right)
 	case operator == "in":
-		return evalInExpression(left, right)
+		return evalInExpression(tok, left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
@@ -436,31 +436,11 @@ func evalInfixExpression(
 }
 
 func evalBangOperatorExpression(right object.Object) object.Object {
-	switch right {
-	case TRUE:
+	if isTruthy(right) {
 		return FALSE
-	case FALSE:
-		return TRUE
-	case NULL:
-		return TRUE
-	default:
-		switch o := right.(type) {
-		case *object.String:
-			if o.Value == o.ZeroValue() {
-				return TRUE
-			}
-
-			return FALSE
-		case *object.Number:
-			if o.Value == o.ZeroValue() {
-				return TRUE
-			}
-
-			return FALSE
-		default:
-			return FALSE
-		}
 	}
+
+	return TRUE
 }
 
 func evalTildePrefixOperatorExpression(tok token.Token, right object.Object) object.Object {
@@ -575,7 +555,7 @@ func evalStringInfixExpression(
 	}
 
 	if operator == "in" {
-		return evalInExpression(left, right)
+		return evalInExpression(tok, left, right)
 	}
 
 	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
@@ -616,9 +596,7 @@ func evalHashInfixExpression(
 	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
 }
 
-func evalInExpression(
-	left, right object.Object,
-) object.Object {
+func evalInExpression(tok token.Token, left, right object.Object) object.Object {
 	var found bool
 
 	switch rightObj := right.(type) {
