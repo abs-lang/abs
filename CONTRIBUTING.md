@@ -41,10 +41,6 @@ will probably work perfectly).
 With `make run` you can get inside a container built for ABS'
 development, and `make test` will run all tests.
 
-We're planning to switch over to `go mod` in the near future to make
-it easier to contribute to ABS and will keep updating this page
-with additional directions on how to develop on ABS locally.
-
 ## Pull Requests status checks
 
 When you send a PR, it will be automatically tested through
