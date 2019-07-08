@@ -184,6 +184,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    filterFn,
 		},
+		// unique(array:[1, 2, 3])
+		"unique": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    uniqueFn,
+		},
 		// contains("str", "tr")
 		"contains": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
@@ -1019,6 +1024,29 @@ func filterFn(tok token.Token, args ...object.Object) object.Object {
 		}
 
 		if isTruthy(evaluated) {
+			result = append(result, v)
+		}
+	}
+
+	return &object.Array{Elements: result}
+}
+
+// unique(array:[1, 2, 3])
+func uniqueFn(tok token.Token, args ...object.Object) object.Object {
+	err := validateArgs(tok, "filter", args, 1, [][]string{{object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	result := []object.Object{}
+	arr := args[0].(*object.Array)
+	existingElements := map[string]bool{}
+
+	for _, v := range arr.Elements {
+		key := fmt.Sprintf("%s_%s", v.Type(), v.Inspect())
+
+		if _, ok := existingElements[key]; !ok {
+			existingElements[key] = true
 			result = append(result, v)
 		}
 	}

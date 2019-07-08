@@ -100,77 +100,6 @@ called on homogeneous arrays of numbers.
 
 ## Supported functions
 
-### len()
-
-Returns the length of the array:
-
-``` bash
-[1, 2].len() # 2
-```
-
-### sum()
-
-Sums the elements of the array. Only supported on arrays of numbers:
-
-``` bash
-[1, 1, 1].sum() # 3
-```
-
-### sort()
-
-Sorts the array. Only supported on arrays of only numbers
-or only strings:
-
-``` bash
-[3, 1, 2].sort() # [1, 2, 3]
-["b", "a", "c"].sort() # ["a", "b", "c"]
-```
-
-### map(f)
-
-Modifies the array by applying the function `f` to all its elements:
-
-``` bash
-[0, 1, 2].map(f(x){x+1}) # [1, 2, 3]
-```
-
-### some(f)
-
-Returns true when at least one of the elements in the array
-returns `true` when applied to the function `f`:
-
-``` bash
-[0, 1, 2].map(f(x){x == 1}) # true
-[0, 1, 2].map(f(x){x == 4}) # false
-```
-
-### every(f)
-
-Returns true when all elements in the array
-return `true` when applied to the function `f`:
-
-``` bash
-[0, 1, 2].every(f(x){type(x) == "NUMBER"}) # true
-[0, 1, 2].every(f(x){x == 0}) # false
-```
-
-### find(f)
-
-Returns the first element that returns `true` when applied to the function `f`:
-
-``` bash
-["hello", 0, 1, 2].find(f(x){type(x) == "NUMBER"}) # 0
-```
-
-### filter(f)
-
-Returns a new array with only the elements that returned
-`true` when applied to the function `f`:
-
-``` bash
-["hello", 0, 1, 2].filter(f(x){type(x) == "NUMBER"}) # [0, 1, 2]
-```
-
 ### contains(e)
 
 > This function is deprecated and might be removed in future versions.
@@ -186,12 +115,105 @@ of strings or numbers:
 [1, 2, 3].contains(4) # false
 ```
 
-### str()
+### every(f)
 
-Returns the string representation of the array:
+Returns true when all elements in the array
+return `true` when applied to the function `f`:
 
 ``` bash
-[1, 2].str() # "[1, 2]"
+[0, 1, 2].every(f(x){type(x) == "NUMBER"}) # true
+[0, 1, 2].every(f(x){x == 0}) # false
+```
+
+### filter(f)
+
+Returns a new array with only the elements that returned
+`true` when applied to the function `f`:
+
+``` bash
+["hello", 0, 1, 2].filter(f(x){type(x) == "NUMBER"}) # [0, 1, 2]
+```
+
+### find(f)
+
+Returns the first element that returns `true` when applied to the function `f`:
+
+``` bash
+["hello", 0, 1, 2].find(f(x){type(x) == "NUMBER"}) # 0
+```
+
+### len()
+
+Returns the length of the array:
+
+``` bash
+[1, 2].len() # 2
+```
+
+### join(separator)
+
+Joins the elements of the array by `separator`:
+
+``` bash
+[1, 2, 3].join("_") # "1_2_3"
+```
+
+### keys()
+
+Returns an array of the keys in the original array:
+
+``` bash
+(1..2).keys() # [0, 1]
+```
+
+### map(f)
+
+Modifies the array by applying the function `f` to all its elements:
+
+``` bash
+[0, 1, 2].map(f(x){x+1}) # [1, 2, 3]
+```
+
+### pop()
+
+Pops the last element from the array, returning it:
+
+``` bash
+a = [1, 2, 3]
+a.shift() # 3
+a # [1, 2]
+```
+
+### push()
+
+Pushes an element at the end of the array:
+
+``` bash
+[1, 2].push(3) # [1, 2, 3]
+```
+
+This is equivalent to summing 2 arrays:
+
+``` bash
+[1, 2] + [3] # [1, 2, 3]
+```
+
+### reverse()
+
+Reverses the order of the elements in the array:
+
+``` bash
+[1, 2].reverse() # [2, 1]
+```
+
+### shift(start, end)
+
+Removes the first elements from the array, and returns it:
+
+``` bash
+a = [1, 2, 3]
+a.shift() # 1
+a # [2, 3]
 ```
 
 ### slice(start, end)
@@ -209,56 +231,48 @@ back as many characters as the value of `start`:
 (1..10).slice(-3, 0) # [8, 9, 10]"
 ```
 
-### shift(start, end)
+### some(f)
 
-Removes the first elements from the array, and returns it:
+Returns true when at least one of the elements in the array
+returns `true` when applied to the function `f`:
 
 ``` bash
-a = [1, 2, 3]
-a.shift() # 1
-a # [2, 3]
+[0, 1, 2].map(f(x){x == 1}) # true
+[0, 1, 2].map(f(x){x == 4}) # false
 ```
 
-### reverse()
+### sort()
 
-Reverses the order of the elements in the array:
+Sorts the array. Only supported on arrays of only numbers
+or only strings:
 
 ``` bash
-[1, 2].reverse() # [2, 1]
+[3, 1, 2].sort() # [1, 2, 3]
+["b", "a", "c"].sort() # ["a", "b", "c"]
 ```
 
-### push()
+### str()
 
-Pushes an element at the end of the array:
+Returns the string representation of the array:
 
 ``` bash
-[1, 2].push(3) # [1, 2, 3]
+[1, 2].str() # "[1, 2]"
 ```
 
-### pop()
+### sum()
 
-Pops the last element from the array, returning it:
+Sums the elements of the array. Only supported on arrays of numbers:
 
 ``` bash
-a = [1, 2, 3]
-a.shift() # 3
-a # [1, 2]
+[1, 1, 1].sum() # 3
 ```
 
-### keys()
+### unique()
 
-Returns an array of the keys in the original array:
-
-``` bash
-(1..2).keys() # [0, 1]
-```
-
-### join(separator)
-
-Joins the elements of the array by `separator`:
+Returns an array with unique values:
 
 ``` bash
-[1, 2, 3].join("_") # "1_2_3"
+[1, 1, 1, 2].unique() # [1, 2]
 ```
 
 ## Next
