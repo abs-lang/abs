@@ -117,6 +117,14 @@ func (e *Error) Type() ObjectType { return ERROR_OBJ }
 func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
 func (e *Error) Json() string     { return e.Inspect() }
 
+type BreakError struct {
+	Error
+}
+
+type ContinueError struct {
+	Error
+}
+
 type Function struct {
 	Token      token.Token
 	Parameters []*ast.Identifier

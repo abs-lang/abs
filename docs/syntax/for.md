@@ -97,6 +97,39 @@ echo(k) # "hello world"
 echo(v) # v is not defined
 ```
 
+## break and continue
+
+`break` and `continue` work just as you'd expect:
+the former breaks out of a loop:
+
+``` bash
+test = 0
+for x = 0; x <= 10; x = x + 1 {
+  if x < 10 {
+    break
+  }
+
+  test += x
+}
+
+test # 0
+```
+
+while the later skips to the next execution of the loop:
+
+``` bash
+test = 0
+for x = 0; x <= 10; x = x + 1 {
+  if x < 10 {
+    continue
+  }
+
+  test += x
+}
+
+test # 10
+```
+
 ## For ... else ...
 
 `For` loops can also have `else` clause which executes if 

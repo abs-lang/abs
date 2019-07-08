@@ -107,6 +107,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LBRACE, p.ParseHashLiteral)
 	p.registerPrefix(token.COMMAND, p.parseCommand)
 	p.registerPrefix(token.COMMENT, p.parseComment)
+	p.registerPrefix(token.BREAK, p.parseBreak)
+	p.registerPrefix(token.CONTINUE, p.parseContinue)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.DOT, p.parseDottedExpression)
@@ -857,6 +859,14 @@ func (p *Parser) parseCommand() ast.Expression {
 // come in, we can simply ignore them
 func (p *Parser) parseComment() ast.Expression {
 	return nil
+}
+
+func (p *Parser) parseBreak() ast.Expression {
+	return &ast.BreakStatement{Token: p.curToken}
+}
+
+func (p *Parser) parseContinue() ast.Expression {
+	return &ast.ContinueStatement{Token: p.curToken}
 }
 
 func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {

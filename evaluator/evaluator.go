@@ -42,6 +42,14 @@ func newError(tok token.Token, format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...) + errorPosition}
 }
 
+func newBreakError(tok token.Token, format string, a ...interface{}) *object.BreakError {
+	return &object.BreakError{Error: *newError(tok, format, a...)}
+}
+
+func newContinueError(tok token.Token, format string, a ...interface{}) *object.ContinueError {
+	return &object.ContinueError{Error: *newError(tok, format, a...)}
+}
+
 // BeginEval (program, env, lexer) object.Object
 // REPL and testing modules call this function to init the global lexer pointer for error location
 // NB. Eval(node, env) is recursive
@@ -210,6 +218,17 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.CommandExpression:
 		return evalCommandExpression(node.Token, node.Value, env)
+
+	// break and continue are treated just like errors: they will stop
+	// the execution of the current code. Within FOR blocks, though, they
+	// are caught and handled accordingly (see evalForExpression).
+	case *ast.BreakStatement:
+		return newBreakError(node.Token, "break called outside of a loop")
+	// break and continue are treated just like errors: they will stop
+	// the execution of the current code. Within FOR blocks, though, they
+	// are caught and handled accordingly (see evalForExpression).
+	case *ast.ContinueStatement:
+		return newContinueError(node.Token, "continue called outside of a loop")
 
 	}
 
@@ -719,7 +738,18 @@ func evalForExpression(
 		if isTruthy(evaluated) {
 			err = Eval(fe.Block, env)
 			if isError(err) {
-				return err
+				// If we have an error it could be:
+				// * a break, so we get out of the loop
+				// * a continue, so we go ahead with the next execution
+				// * an actual error, so we wreak havoc
+				switch err.(type) {
+				case *object.BreakError:
+					return NULL
+				case *object.ContinueError:
+
+				case *object.Error:
+					return err
+				}
 			}
 
 			err = Eval(fe.Closer, env)
@@ -799,7 +829,19 @@ func loopIterable(next func() (object.Object, object.Object), env *object.Enviro
 	err := Eval(fie.Block, env)
 
 	if isError(err) {
-		return err
+		// If we have an error it could be:
+		// * a break, so we get out of the loop
+		// * a continue, so we go ahead with the next execution
+		// * an actual error, so we wreak havoc
+		switch err.(type) {
+		case *object.BreakError:
+			return NULL
+		case *object.ContinueError:
+
+		case *object.Error:
+			return err
+		}
+
 	}
 
 	if k != nil {
