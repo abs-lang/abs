@@ -3,6 +3,7 @@ package evaluator
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
 	"os/exec"
@@ -554,30 +555,68 @@ func evalStringInfixExpression(
 	operator string,
 	left, right object.Object,
 ) object.Object {
+	leftVal := left.(*object.String).Value
+	rightVal := right.(*object.String).Value
 
 	if operator == "+" {
-		leftVal := left.(*object.String).Value
-		rightVal := right.(*object.String).Value
 		return &object.String{Token: tok, Value: leftVal + rightVal}
 	}
 
 	if operator == "==" {
-		return &object.Boolean{Token: tok, Value: left.(*object.String).Value == right.(*object.String).Value}
+		return &object.Boolean{Token: tok, Value: leftVal == rightVal}
 	}
 
 	if operator == "!=" {
-		return &object.Boolean{Token: tok, Value: left.(*object.String).Value != right.(*object.String).Value}
+		return &object.Boolean{Token: tok, Value: leftVal != rightVal}
 	}
 
 	if operator == "~" {
-		return &object.Boolean{Token: tok, Value: strings.ToLower(left.(*object.String).Value) == strings.ToLower(right.(*object.String).Value)}
+		return &object.Boolean{Token: tok, Value: strings.ToLower(leftVal) == strings.ToLower(rightVal)}
 	}
 
 	if operator == "in" {
 		return evalInExpression(tok, left, right)
 	}
 
+	if operator == ">" {
+		err := writeFile(rightVal, leftVal)
+
+		if err != nil {
+			return newError(tok, "unable to write to %s: %s", rightVal, err.Error())
+		}
+
+		return &object.Boolean{Token: tok, Value: true}
+	}
+
+	if operator == ">>" {
+		err := appendFile(rightVal, leftVal)
+
+		if err != nil {
+			return newError(tok, "unable to write to %s: %s", rightVal, err.Error())
+		}
+
+		return &object.Boolean{Token: tok, Value: true}
+	}
+
 	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
+}
+
+func writeFile(file string, content string) error {
+	return ioutil.WriteFile(file, []byte(content), 0644)
+}
+
+func appendFile(file string, content string) error {
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := f.WriteString(content); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func evalArrayInfixExpression(

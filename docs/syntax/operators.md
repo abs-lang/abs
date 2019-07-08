@@ -156,6 +156,15 @@ Greater than:
 0 > 10 # false
 ```
 
+When used with strings, `>` redirects
+the input (left argument) to a file
+(right argument):
+
+``` bash
+"Hi, there" > "file.txt"
+`cat /etc/hosts` > "copy-of-etc-hosts.bkp"
+```
+
 ## >=
 
 Greater or equal than:
@@ -311,6 +320,18 @@ Bitwise right shift:
 ``` bash
 1 >> 1 # 0
 1 >> "hello" # ERROR: type mismatch: NUMBER >> STRING
+```
+
+When used with strings, `>>` appends
+the input (left argument) to a file
+(right argument):
+
+``` bash
+"Hi" >> "file.txt"
+" " >> "file.txt"
+"there!" >> "file.txt"
+
+`cat file.txt` # Hi there!
 ```
 
 ## <<
