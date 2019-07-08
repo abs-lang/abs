@@ -851,40 +851,51 @@ func evalForInExpression(
 	}
 }
 
+// This function iterates over an iterable
+// represented by the next() function: everytime
+// we call it, a new kv pair is popped from the
+// iterable
 func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression, index int64) object.Object {
+	// Let's get the first kv pair out
 	k, v := next()
 
+	// Let's keep going until there are no
+	// more kv pairs
+	for k != nil && v != EOF {
+		// set the special k v variables in the
+		// environment
+		env.Set(fie.Key, k)
+		env.Set(fie.Value, v)
+		err := Eval(fie.Block, env)
+
+		if isError(err) {
+			// If we have an error it could be:
+			// * a break, so we get out of the loop
+			// * a continue, so we go ahead with the next execution
+			// * an actual error, so we wreak havoc
+			switch err.(type) {
+			case *object.BreakError:
+				return NULL
+			case *object.ContinueError:
+
+			case *object.Error:
+				return err
+			}
+		}
+
+		// Let's increment our index, and
+		// pull the next kv pair
+		index++
+		k, v = next()
+	}
+
 	if k == nil || v == EOF {
+		// If the index we're at is 0, it means the iterable
+		// was empty. If so, let's try to eval its else condition
+		// (eg. for x in [] {...} else {...})
 		if index == 0 && fie.Alternative != nil {
 			return Eval(fie.Alternative, env)
 		}
-		return NULL
-	}
-
-	// set the special k v variables in the
-	// environment
-	env.Set(fie.Key, k)
-	env.Set(fie.Value, v)
-	err := Eval(fie.Block, env)
-
-	if isError(err) {
-		// If we have an error it could be:
-		// * a break, so we get out of the loop
-		// * a continue, so we go ahead with the next execution
-		// * an actual error, so we wreak havoc
-		switch err.(type) {
-		case *object.BreakError:
-			return NULL
-		case *object.ContinueError:
-
-		case *object.Error:
-			return err
-		}
-
-	}
-
-	if k != nil {
-		return loopIterable(next, env, fie, index+1)
 	}
 
 	return NULL
