@@ -3,6 +3,7 @@ package evaluator
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"runtime"
 	"strconv"
 	"strings"
@@ -318,6 +319,32 @@ func TestBitwiseExpressions(t *testing.T) {
 				continue
 			}
 			logErrorWithPosition(t, errObj.Message, tt.expected)
+		}
+	}
+}
+
+func TestStringWriters(t *testing.T) {
+	tests := []struct {
+		input   string
+		content string
+		file    string
+	}{
+		{`"abc" > "/tmp/write.txt"`, "abc", "/tmp/write.txt"},
+		{`"" > "/tmp/append.txt"; "abc" >> "/tmp/append.txt"; "abc" >> "/tmp/append.txt"`, "abcabc", "/tmp/append.txt"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testBooleanObject(t, evaluated, true)
+
+		content, err := ioutil.ReadFile(tt.file)
+
+		if err != nil {
+			t.Errorf("unable to read file %s", tt.file)
+		}
+
+		if string(content) != tt.content {
+			t.Errorf("file content is wrong: wanted %s, got %s", tt.content, string(content))
 		}
 	}
 }
