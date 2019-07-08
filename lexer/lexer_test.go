@@ -90,6 +90,12 @@ $111
 hello_w0rld
 hello1
 hello_
+for true {
+	break
+}
+for true {
+	continue
+}
 `
 
 	tests := []struct {
@@ -314,6 +320,16 @@ hello_
 		{token.IDENT, "hello_w0rld"},
 		{token.IDENT, "hello1"},
 		{token.IDENT, "hello_"},
+		{token.FOR, "for"},
+		{token.TRUE, "true"},
+		{token.LBRACE, "{"},
+		{token.BREAK, "break"},
+		{token.RBRACE, "}"},
+		{token.FOR, "for"},
+		{token.TRUE, "true"},
+		{token.LBRACE, "{"},
+		{token.CONTINUE, "continue"},
+		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}
 
