@@ -329,8 +329,8 @@ func TestStringWriters(t *testing.T) {
 		content string
 		file    string
 	}{
-		{`"abc" > "/tmp/write.txt"`, "abc", "/tmp/write.txt"},
-		{`"" > "/tmp/append.txt"; "abc" >> "/tmp/append.txt"; "abc" >> "/tmp/append.txt"`, "abcabc", "/tmp/append.txt"},
+		{`"abc" > "write.txt.ignore"`, "abc", "write.txt.ignore"},
+		{`"" > "append.txt.ignore"; "abc" >> "append.txt.ignore"; "abc" >> "append.txt.ignore"`, "abcabc", "append.txt.ignore"},
 	}
 
 	for _, tt := range tests {
