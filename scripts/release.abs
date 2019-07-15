@@ -69,7 +69,7 @@ for platform in platforms {
     }
 
     echo("Building %s %s", goos, goarch)
-    build = $(GOOS=$goos GOARCH=$goarch go build -o builds/$output_name main.go)
+    build = $(GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w" -o builds/$output_name main.go)
 
     if !build.ok {
         echo("error: " + build)
