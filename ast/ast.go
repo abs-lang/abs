@@ -89,6 +89,26 @@ func (as *AssignStatement) String() string {
 	return out.String()
 }
 
+type BreakStatement struct {
+	Token token.Token // the 'break' token
+}
+
+func (bs *BreakStatement) expressionNode()      {}
+func (bs *BreakStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BreakStatement) String() string {
+	return "break;"
+}
+
+type ContinueStatement struct {
+	Token token.Token // the 'continue' token
+}
+
+func (cs *ContinueStatement) expressionNode()      {}
+func (cs *ContinueStatement) TokenLiteral() string { return cs.Token.Literal }
+func (cs *ContinueStatement) String() string {
+	return "continue;"
+}
+
 type ReturnStatement struct {
 	Token       token.Token // the 'return' token
 	ReturnValue Expression
@@ -312,11 +332,11 @@ func (ie *WhileExpression) String() string {
 }
 
 type ForInExpression struct {
-	Token    token.Token     // The 'for' token
-	Block    *BlockStatement // The block executed inside the for loop
-	Iterable Expression      // An expression that should return an iterable ([1, 2, 3] or x in 1..10)
-	Key      string
-	Value    string
+	Token       token.Token     // The 'for' token
+	Block       *BlockStatement // The block executed inside the for loop
+	Iterable    Expression      // An expression that should return an iterable ([1, 2, 3] or x in 1..10)
+	Key         string
+	Value       string
 	Alternative *BlockStatement
 }
 

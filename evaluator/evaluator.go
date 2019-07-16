@@ -3,6 +3,7 @@ package evaluator
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
 	"os/exec"
@@ -40,6 +41,14 @@ func newError(tok token.Token, format string, a ...interface{}) *object.Error {
 	lineNum, column, errorLine := lex.ErrorLine(tok.Position)
 	errorPosition := fmt.Sprintf("\n\t[%d:%d]\t%s", lineNum, column, errorLine)
 	return &object.Error{Message: fmt.Sprintf(format, a...) + errorPosition}
+}
+
+func newBreakError(tok token.Token, format string, a ...interface{}) *object.BreakError {
+	return &object.BreakError{Error: *newError(tok, format, a...)}
+}
+
+func newContinueError(tok token.Token, format string, a ...interface{}) *object.ContinueError {
+	return &object.ContinueError{Error: *newError(tok, format, a...)}
 }
 
 // BeginEval (program, env, lexer) object.Object
@@ -210,6 +219,17 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.CommandExpression:
 		return evalCommandExpression(node.Token, node.Value, env)
+
+	// break and continue are treated just like errors: they will stop
+	// the execution of the current code. Within FOR blocks, though, they
+	// are caught and handled accordingly (see evalForExpression).
+	case *ast.BreakStatement:
+		return newBreakError(node.Token, "break called outside of a loop")
+	// break and continue are treated just like errors: they will stop
+	// the execution of the current code. Within FOR blocks, though, they
+	// are caught and handled accordingly (see evalForExpression).
+	case *ast.ContinueStatement:
+		return newContinueError(node.Token, "continue called outside of a loop")
 
 	}
 
@@ -535,30 +555,68 @@ func evalStringInfixExpression(
 	operator string,
 	left, right object.Object,
 ) object.Object {
+	leftVal := left.(*object.String).Value
+	rightVal := right.(*object.String).Value
 
 	if operator == "+" {
-		leftVal := left.(*object.String).Value
-		rightVal := right.(*object.String).Value
 		return &object.String{Token: tok, Value: leftVal + rightVal}
 	}
 
 	if operator == "==" {
-		return &object.Boolean{Token: tok, Value: left.(*object.String).Value == right.(*object.String).Value}
+		return &object.Boolean{Token: tok, Value: leftVal == rightVal}
 	}
 
 	if operator == "!=" {
-		return &object.Boolean{Token: tok, Value: left.(*object.String).Value != right.(*object.String).Value}
+		return &object.Boolean{Token: tok, Value: leftVal != rightVal}
 	}
 
 	if operator == "~" {
-		return &object.Boolean{Token: tok, Value: strings.ToLower(left.(*object.String).Value) == strings.ToLower(right.(*object.String).Value)}
+		return &object.Boolean{Token: tok, Value: strings.ToLower(leftVal) == strings.ToLower(rightVal)}
 	}
 
 	if operator == "in" {
 		return evalInExpression(tok, left, right)
 	}
 
+	if operator == ">" {
+		err := writeFile(rightVal, leftVal)
+
+		if err != nil {
+			return newError(tok, "unable to write to %s: %s", rightVal, err.Error())
+		}
+
+		return &object.Boolean{Token: tok, Value: true}
+	}
+
+	if operator == ">>" {
+		err := appendFile(rightVal, leftVal)
+
+		if err != nil {
+			return newError(tok, "unable to write to %s: %s", rightVal, err.Error())
+		}
+
+		return &object.Boolean{Token: tok, Value: true}
+	}
+
 	return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
+}
+
+func writeFile(file string, content string) error {
+	return ioutil.WriteFile(file, []byte(content), 0644)
+}
+
+func appendFile(file string, content string) error {
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := f.WriteString(content); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func evalArrayInfixExpression(
@@ -719,7 +777,18 @@ func evalForExpression(
 		if isTruthy(evaluated) {
 			err = Eval(fe.Block, env)
 			if isError(err) {
-				return err
+				// If we have an error it could be:
+				// * a break, so we get out of the loop
+				// * a continue, so we go ahead with the next execution
+				// * an actual error, so we wreak havoc
+				switch err.(type) {
+				case *object.BreakError:
+					return NULL
+				case *object.ContinueError:
+
+				case *object.Error:
+					return err
+				}
 			}
 
 			err = Eval(fe.Closer, env)
@@ -782,28 +851,51 @@ func evalForInExpression(
 	}
 }
 
+// This function iterates over an iterable
+// represented by the next() function: everytime
+// we call it, a new kv pair is popped from the
+// iterable
 func loopIterable(next func() (object.Object, object.Object), env *object.Environment, fie *ast.ForInExpression, index int64) object.Object {
+	// Let's get the first kv pair out
 	k, v := next()
 
+	// Let's keep going until there are no
+	// more kv pairs
+	for k != nil && v != EOF {
+		// set the special k v variables in the
+		// environment
+		env.Set(fie.Key, k)
+		env.Set(fie.Value, v)
+		err := Eval(fie.Block, env)
+
+		if isError(err) {
+			// If we have an error it could be:
+			// * a break, so we get out of the loop
+			// * a continue, so we go ahead with the next execution
+			// * an actual error, so we wreak havoc
+			switch err.(type) {
+			case *object.BreakError:
+				return NULL
+			case *object.ContinueError:
+
+			case *object.Error:
+				return err
+			}
+		}
+
+		// Let's increment our index, and
+		// pull the next kv pair
+		index++
+		k, v = next()
+	}
+
 	if k == nil || v == EOF {
+		// If the index we're at is 0, it means the iterable
+		// was empty. If so, let's try to eval its else condition
+		// (eg. for x in [] {...} else {...})
 		if index == 0 && fie.Alternative != nil {
 			return Eval(fie.Alternative, env)
 		}
-		return NULL
-	}
-
-	// set the special k v variables in the
-	// environment
-	env.Set(fie.Key, k)
-	env.Set(fie.Value, v)
-	err := Eval(fie.Block, env)
-
-	if isError(err) {
-		return err
-	}
-
-	if k != nil {
-		return loopIterable(next, env, fie, index+1)
 	}
 
 	return NULL

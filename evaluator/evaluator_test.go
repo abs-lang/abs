@@ -3,6 +3,7 @@ package evaluator
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"runtime"
 	"strconv"
 	"strings"
@@ -248,6 +249,8 @@ func TestForExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`x = 0; for k = 0; k < 11; k = k + 1 { if k < 10 { break; }; x += k }; x`, 0},
+		{`x = 0; for k = 0; k < 11; k = k + 1 { if k < 10 { continue; }; x += k }; x`, 10},
 		{"a = 0; for x = 0; x < 10; x = x + 1 { a = a + 1}; a", 10},
 		{"a = 0; for x = 0; x < y; x = x + 1 { a = a + 1}; a", "identifier not found: y"},
 		{"a = 0; increment = f(x) {x+1}; for x = 0; x < 10; x = increment(x) { a = a + 1}; a", 10},
@@ -320,11 +323,39 @@ func TestBitwiseExpressions(t *testing.T) {
 	}
 }
 
+func TestStringWriters(t *testing.T) {
+	tests := []struct {
+		input   string
+		content string
+		file    string
+	}{
+		{`"abc" > "write.txt.ignore"`, "abc", "write.txt.ignore"},
+		{`"" > "append.txt.ignore"; "abc" >> "append.txt.ignore"; "abc" >> "append.txt.ignore"`, "abcabc", "append.txt.ignore"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testBooleanObject(t, evaluated, true)
+
+		content, err := ioutil.ReadFile(tt.file)
+
+		if err != nil {
+			t.Errorf("unable to read file %s", tt.file)
+		}
+
+		if string(content) != tt.content {
+			t.Errorf("file content is wrong: wanted %s, got %s", tt.content, string(content))
+		}
+	}
+}
+
 func TestForInExpressions(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected interface{}
 	}{
+		{`x = 0; for v in 1..10 { if v < 10 { break; }; x += v }; x`, 0},
+		{`x = 0; for v in 1..10 { if v < 10 { continue; }; x += v }; x`, 10},
 		{"a = 1..3; b = 0; c = 0; for x in a { b = x }; for x in a { c = x }; c", 3}, // See: https://github.com/abs-lang/abs/issues/112
 		{"a = 0; for k, x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
 		{"a = 0; for k, x in 1..10 { a = a + 1}; a", 10},
@@ -716,6 +747,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`[1,2,3,3,2,1].unique()`, []int{1, 2, 3}},
 		{`[1,2,"a"].map(int)`, "int(...) can only be called on strings which represent numbers, 'a' given"},
 		{`[1,2,"a"].filter(int)`, "int(...) can only be called on strings which represent numbers, 'a' given"},
 		{`[1, null].sum()`, "sum(...) can only be called on an homogeneous array, got [1, null]"},

@@ -78,6 +78,8 @@ const (
 	WHILE    = "WHILE"
 	FOR      = "FOR"
 	IN       = "IN"
+	BREAK    = "BREAK"
+	CONTINUE = "CONTINUE"
 )
 
 type Token struct {
@@ -87,16 +89,18 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"f":      FUNCTION,
-	"true":   TRUE,
-	"false":  FALSE,
-	"if":     IF,
-	"else":   ELSE,
-	"return": RETURN,
-	"while":  WHILE,
-	"for":    FOR,
-	"in":     IN,
-	"null":   NULL,
+	"f":        FUNCTION,
+	"true":     TRUE,
+	"false":    FALSE,
+	"if":       IF,
+	"else":     ELSE,
+	"return":   RETURN,
+	"while":    WHILE,
+	"for":      FOR,
+	"in":       IN,
+	"null":     NULL,
+	"break":    BREAK,
+	"continue": CONTINUE,
 }
 
 func LookupIdent(ident string) TokenType {
