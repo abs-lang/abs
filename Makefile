@@ -6,7 +6,7 @@ fmt:
 build:
 	docker build -t abs .
 bench:
-	go test ./... -bench=.
+	CONTEXT='abs' go test ./... -bench=.
 test_all: bench test
 test:
 	# The -vet=off is as YOLO as it gets
