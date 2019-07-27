@@ -62,7 +62,7 @@ func GetEnvVar(env *object.Environment, varName, defaultVal string) string {
 func InterpolateStringVars(str string, env *object.Environment) string {
 	// Match all strings preceded by
 	// a $ or a \$
-	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_]{1,})")
+	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_0-9]{1,})")
 	str = re.ReplaceAllStringFunc(str, func(m string) string {
 		// If the string starts with a backslash,
 		// that's an escape, so we should replace

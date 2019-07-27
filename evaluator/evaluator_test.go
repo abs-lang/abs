@@ -1219,12 +1219,18 @@ func TestCommand(t *testing.T) {
 			{"`echo hello world`", "hello world"},
 		}
 	} else {
+		executor := "bash"
+		if runtime.GOOS == "windows" {
+			executor = "cmd.exe"
+		}
+
 		// bash commands
 		tests = []testLine{
 			{`a = "A"; b = "B"; eee = "-e"; $(echo $eee -n $a$a$b$b$c$c)`, "AABB"},
 			{`$(echo -n "123")`, "123"},
 			{`$(echo -n hello world)`, "hello world"},
 			{`$(echo hello world | xargs echo -n)`, "hello world"},
+			{`$(echo \$0)`, executor},
 			{`$(echo \$CONTEXT)`, "abs"},
 			{"a = 'A'; b = 'B'; eee = '-e'; `echo $eee -n $a$a$b$b$c$c`", "AABB"},
 			{"`echo -n '123'`", "123"},
