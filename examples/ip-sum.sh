@@ -1,12 +1,12 @@
 # Simple program that fetches your IP and sums it up
-RES=$(curl -s 'https://api.ipify.org?format=json' || "ERR")
+RES=`curl -s 'https://api.ipify.org?format=json' || "ERR"`
 
 if [ "$RES" = "ERR" ]; then
     echo "An error occurred"
     exit 1
 fi
 
-IP=$(echo $RES | jq -r ".ip")
+IP=`echo $RES | jq -r ".ip"`
 IFS=. read first second third fourth <<EOF
 ${IP##*-}
 EOF

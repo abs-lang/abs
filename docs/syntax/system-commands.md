@@ -4,11 +4,10 @@ Executing system commands is one of the most important features
 of ABS, as it allows the mixing of conveniency of the shell with
 the syntax of a modern programming language.
 
-Commands are executed either with `$(command)` or `` `command` ``,
+Commands are executed with the `` `command` `` syntax,
 which resemble Bash's syntax to execute commands in a subshell:
 
 ``` bash
-date = $(date) # "Sun Apr 1 04:30:59 +01 1995"
 date = `date` # "Sun Apr 1 04:30:59 +01 1995"
 ```
 
@@ -18,7 +17,7 @@ encounter an error, the same string would hold the error
 message:
 
 ``` bash
-date = $(dat) # "bash: dat: command not found"
+date = `dat` # "bash: dat: command not found"
 ```
 
 It would be fairly painful to have to parse strings
@@ -27,60 +26,11 @@ in ABS, the returned string has a special property `ok` that
 checks whether the command was successful:
 
 ``` bash
-ls = $(ls -la)
-
-if ls.ok {
-    echo("hello world")
-}
-
-# or
-
 if `ls -la`.ok {
     echo("hello world")
 }
 ```
-It is also possible to execute a shell command without capturing its
-input or output using the `exec(command)` function. This allows long running
-or interactive programs to be run using the terminal's Standard IO
-(stdin, stdout, stderr). For example:
-```bash
-exec("sudo visudo")
-```
-would open the default text editor in super user mode on the /etc/sudoers file.
 
-Unlike the normal backtick command execution syntax above,
-the `exec(command)` function call does not return a result string unless it fails. 
-Therefore, the `exec(command)` may be the last command executed in a script
-file leaving the executed command in charge of the terminal IO until it
-terminates.  
-
-For example, an ABS script might be used to marshall the command line args
-for an interactive program such as the nano editor:
-
-``` bash
-$ cat abs/tests/test-exec.abs
-# marshall the args for the nano editor
-# if the filename is not given in the args, prompt for it
-# if the file is located outside the user's home dir, invoke sudo nano filename
-
-cmd = 'nano'
-filename = arg(2)
-homedir = env("HOME")
-
-while filename == '' {
-    echo("Please enter file name for %s: ", cmd)
-    filename = stdin()
-}
-
-if filename.prefix('~/') || filename.prefix(homedir) {
-    sudo = ''
-} else {
-    sudo = 'sudo'
-}
-
-# execute the command with live stdIO
-exec("$sudo $cmd $filename")
-```
 ## Executing commands in background
 
 Sometimes you might want to execute a command in
@@ -155,13 +105,21 @@ and if you need `$` literals in your command, you
 simply need to escape them with a `\`:
 
 ``` bash
-$(echo $PWD) # "" since the ABS variable PWD doesn't exist
-$(echo \$PWD) # "/go/src/github.com/abs-lang/abs"
+`echo $PWD` # "" since the ABS variable PWD doesn't exist
+`echo \$PWD` # "/go/src/github.com/abs-lang/abs"
 ```
 
-## Limitations
+## Alternative $() syntax
 
-Currently, commands that use the `$()` syntax need to be
+Even though the use of backticks is the standard recommended
+way to run system commands, for the ease of embedding ABS also
+allows you to use the `$(command)` syntax:
+
+```
+$(basename $(dirname "/tmp/make/life/easy")) // "easy"
+```
+
+Commands that use the `$()` syntax need to be
 on their own line, meaning that you will not
 be able to have additional code on the same line.
 This will throw an error:
@@ -170,10 +128,56 @@ This will throw an error:
 $(sleep 10); echo("hello world")
 ```
 
-Note that this is currently a limitation that will likely
-be removed in the future (see [#41](https://github.com/abs-lang/abs/issues/41)).
+## Executing commands without capturing I/O
 
-Also note that, currently, the implementation of system commands
+It is also possible to execute a shell command without capturing its
+input or output using the `exec(command)` function. This allows long running
+or interactive programs to be run using the terminal's Standard IO
+(stdin, stdout, stderr). For example:
+
+```bash
+exec("sudo visudo")
+```
+
+would open the default text editor in super user mode on the /etc/sudoers file.
+
+Unlike the normal backtick command execution syntax above,
+the `exec(command)` function call does not return a result string unless it fails. 
+Therefore, the `exec(command)` may be the last command executed in a script
+file leaving the executed command in charge of the terminal IO until it
+terminates.  
+
+For example, an ABS script might be used to marshall the command line args
+for an interactive program such as the nano editor:
+
+``` bash
+$ cat abs/tests/test-exec.abs
+# marshall the args for the nano editor
+# if the filename is not given in the args, prompt for it
+# if the file is located outside the user's home dir, invoke sudo nano filename
+
+cmd = 'nano'
+filename = arg(2)
+homedir = env("HOME")
+
+while filename == '' {
+    echo("Please enter file name for %s: ", cmd)
+    filename = stdin()
+}
+
+if filename.prefix('~/') || filename.prefix(homedir) {
+    sudo = ''
+} else {
+    sudo = 'sudo'
+}
+
+# execute the command with live stdIO
+exec("$sudo $cmd $filename")
+```
+
+## Limitations
+
+Note that the implementation of system commands
 requires the `bash` executable to [be available on the system](https://github.com/abs-lang/abs/blob/5b5b0abf3115a5dd4dfe8485501f8765985ad0db/evaluator/evaluator.go#L696-L722).
 On Windows, commands are executed through [cmd.exe](https://github.com/abs-lang/abs/blob/ee793641be09ad8572c3e913fef8468f69b0c0a2/evaluator/evaluator.go#L1101-L1103).
 Future work will make it possible to select which shell to use,

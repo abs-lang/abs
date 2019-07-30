@@ -1,4 +1,4 @@
-tz = $(cat /etc/timezone)
+tz = `cat /etc/timezone`
 cont, city = tz.split("/")
 
 echo("Best city in the world?")

@@ -45,13 +45,13 @@ platforms = [
 ]
 
 echo("Deleting previous builds...")
-rm = $(rm -rf builds/abs-*)
+rm = `rm -rf builds/abs-*`
 
 if !rm.ok {
     return echo("error: " + rm)
 }
 
-version = $(cat ./main.go | grep "var Version")
+version = `cat ./main.go | grep "var Version"`
 version = version.slice(15, len(version) - 1)
 echo("Running builds for version %s, confirm by typing \"y\"".fmt(version))
 selection = stdin()
@@ -69,7 +69,7 @@ for platform in platforms {
     }
 
     echo("Building %s %s", goos, goarch)
-    build = $(GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w" -o builds/$output_name main.go)
+    build = `GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w" -o builds/$output_name main.go`
 
     if !build.ok {
         echo("error: " + build)

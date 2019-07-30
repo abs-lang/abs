@@ -2,7 +2,7 @@
 # Check if a domain is in your hostfile
 echo("What domain are we looking for today?")
 domain = stdin()
-matches = $(cat /etc/hosts | grep $domain | wc -l)
+matches = `cat /etc/hosts | grep $domain | wc -l`
 
 if !matches.ok {
     echo("How do you even...")

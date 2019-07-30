@@ -21,10 +21,10 @@ $ cat examples/error-parse.abs
 m.a = 'abc'
 
 # this is a command terminated with a semi
-d/d = $(command);
+d/d = `command`;
 
 # this is a command terminated with a LF
-c/c = $(command)
+c/c = `command`
 
 # this is a bad infix operator
 b %% c
@@ -34,9 +34,9 @@ $ abs examples/error-parse.abs
 	no prefix parse function for '=' found
 	[4:5]	m.a = 'abc'
 	no prefix parse function for '=' found
-	[7:5]	d/d = $(command);
+	[7:5]	d/d = `command`;
 	no prefix parse function for '=' found
-	[10:5]	c/c = $(command)
+	[10:5]	c/c = `command`
 	no prefix parse function for '%' found
 	[13:4]	b %% c
 
