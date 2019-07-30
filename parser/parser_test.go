@@ -1043,7 +1043,7 @@ func TestCommandParsing(t *testing.T) {
 	testCommand(t, command, "curl icanhazip.com -X POST")
 }
 
-func TestBacktickParsing(t *testing.T) {
+func TestBacktickCommandParsing(t *testing.T) {
 	input := "`curl icanhazip.com -X POST`"
 
 	l := lexer.New(input)

@@ -61,7 +61,7 @@ the fly:
 $ abs
 Hello there, welcome to the ABS programming language!
 Type 'quit' when you're done, 'help' if you get lost!
-⧐  ip = $(curl icanhazip.com)
+⧐  ip = `curl icanhazip.com`
 ⧐  ip.ok
 true
 ⧐  ip()

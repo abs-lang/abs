@@ -37,9 +37,9 @@ tests/test-parser.abs
 	no prefix parse function for '=' found
 	[4:5]	m.a = 'abc'
 	no prefix parse function for '=' found
-	[7:5]	d/d = $(command);
+	[7:5]	d/d = `command`;
 	no prefix parse function for '=' found
-	[10:5]	c/c = $(command)
+	[10:5]	c/c = `command`
 	no prefix parse function for '%' found
 	[13:4]	b %% c
 	no prefix parse function for '&&' found

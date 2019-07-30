@@ -21,12 +21,12 @@
   <img href="https://github.com/abs-lang/abs" alt="undefined" src="https://img.shields.io/github/stars/abs-lang/abs.svg?style=social">
 </p>
 
-ABS is a scripting language that works best when you're scripting on
+ABS is a programming language that works best when you're scripting on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
 
 ``` bash
-tz = $(cat /etc/timezone);
+tz = `cat /etc/timezone`;
 continent, city = tz.split("/")
 
 echo("Best city in the world?")
@@ -48,14 +48,14 @@ in Bash:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
-RES=$(curl -s 'https://api.ipify.org?format=json' || "ERR")
+RES=`curl -s 'https://api.ipify.org?format=json' || "ERR"`
 
 if [ "$RES" = "ERR" ]; then
     echo "An error occurred"
     exit 1
 fi
 
-IP=$(echo $RES | jq -r ".ip")
+IP=`echo $RES | jq -r ".ip"`
 IFS=. read first second third fourth <<EOF
 ${IP##*-}
 EOF
@@ -70,7 +70,7 @@ And here's how you could write the same code in ABS:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
-res = $(curl -s 'https://api.ipify.org?format=json');
+res = `curl -s 'https://api.ipify.org?format=json'`
 
 if !res.ok {
   echo("An error occurred: %s", res)

@@ -44,7 +44,7 @@ call the API of nba.com in order to retrieve the stats for
 one of last year's NBA games:
 
 ``` bash
-r = $(curl "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json" -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, sdch' -H 'Accept-Language: en' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36' -H 'Accept: */*' -H 'Referer: http://stats.nba.com/' -H 'Connection: keep-alive' --compressed);
+r = `curl "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json" -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, sdch' -H 'Accept-Language: en' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36' -H 'Accept: */*' -H 'Referer: http://stats.nba.com/' -H 'Connection: keep-alive' --compressed`;
 
 if !r.ok {
     echo("Could not fetch game data. Bummer!")
@@ -79,7 +79,7 @@ A sneak-peek at some of the things ABS can elegantly do:
 
 ``` bash
 # Unix pipes work
-ip = $(curl icanhazip.com | tr -d '\n')
+ip = `curl icanhazip.com | tr -d '\n'`
 
 # We now have a string -> "10.10.10.12"
 echo(ip)
