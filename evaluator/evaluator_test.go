@@ -1345,6 +1345,38 @@ func TestArrayIndexExpressions(t *testing.T) {
 			"[1, 2, 3][-1]",
 			nil,
 		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][1:-300]; a[0]",
+			nil,
+		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][1:4]; a[0] + a[1] + a[2]",
+			9,
+		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][1:4]; a.len()",
+			3,
+		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][200:3]; a[0]",
+			nil,
+		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][7:-1]; a[0]",
+			8,
+		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][100:]; a[0]",
+			nil,
+		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][0:100]; a[0]",
+			1,
+		},
+		{
+			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][-10:]; a[0]",
+			1,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1447,15 +1479,57 @@ func TestStringIndexExpressions(t *testing.T) {
 			`"123"[1]`,
 			"2",
 		},
+		{
+			`"123"[1:]`,
+			"23",
+		},
+		{
+			`"123"[1:1]`,
+			"",
+		},
+		{
+			`"123"[:2]`,
+			"12",
+		},
+		{
+			`"123"[:-1]`,
+			"12",
+		},
+		{
+			`"123"[2:-10]`,
+			"",
+		},
+		{
+			`"123"[2:1]`,
+			"",
+		},
+		{
+			`"123"[200:]`,
+			"",
+		},
+		{
+			`"123"[0:10]`,
+			"123",
+		},
+		{
+			`"123"[-10:]`,
+			"123",
+		},
+		{
+			`"123"[-10:{}]`,
+			`index ranges can only be numerical: got "{}" (type HASH)`,
+		},
 	}
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		s, ok := tt.expected.(string)
-		if ok {
-			testStringObject(t, evaluated, s)
-		} else {
+		switch result := evaluated.(type) {
+		case *object.Null:
 			testNullObject(t, evaluated)
+		case *object.String:
+			testStringObject(t, evaluated, tt.expected.(string))
+		case *object.Error:
+			logErrorWithPosition(t, result.Message, tt.expected)
 		}
 	}
 }

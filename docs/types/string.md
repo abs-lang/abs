@@ -34,6 +34,27 @@ with the index notation:
 
 Accessing an index that does not exist returns null.
 
+You can also access a range of the string with the `[start:end]` notation:
+
+``` bash
+"string"[0:3] // "str"
+```
+
+where `start` is the starting position in the array, and `end` is
+the ending one. If `start` is not specified, it is assumed to be 0,
+and if `end` is omitted it is assumed to be the character in the string:
+
+``` bash
+"string"[0:3] // "str"
+"string"[1:] // "tring"
+```
+
+If `end` is negative, it will be converted to `length of string - end`:
+
+``` bash
+"string"[0:-1] // "strin"
+```
+
 To concatenate strings, "sum" them:
 
 ``` bash
@@ -382,6 +403,10 @@ Returns the last index at which `str` is found:
 ```
 
 ### slice(start, end)
+
+> This function is deprecated and might be removed in future versions.
+>
+> Use the index notation instead: `"string"[0, 3]`
 
 Returns a portion of the string, from `start` to `end`:
 

@@ -204,15 +204,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Array{Token: node.Token, Elements: elements}
 
 	case *ast.IndexExpression:
-		left := Eval(node.Left, env)
-		if isError(left) {
-			return left
-		}
-		index := Eval(node.Index, env)
-		if isError(index) {
-			return index
-		}
-		return evalIndexExpression(node.Token, left, index)
+		return evalIndexExpression(node, env)
 
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env)
@@ -1072,23 +1064,68 @@ func unwrapReturnValue(obj object.Object) object.Object {
 	return obj
 }
 
-func evalIndexExpression(tok token.Token, left, index object.Object) object.Object {
+func evalIndexExpression(node *ast.IndexExpression, env *object.Environment) object.Object {
+	tok := node.Token
+	left := Eval(node.Left, env)
+	if isError(left) {
+		return left
+	}
+	index := Eval(node.Index, env)
+	if isError(index) {
+		return index
+	}
+	end := Eval(node.End, env)
+	if isError(end) {
+		return end
+	}
+
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.NUMBER_OBJ:
-		return evalArrayIndexExpression(left, index)
+		return evalArrayIndexExpression(tok, left, index, end, node.IsRange)
 	case left.Type() == object.HASH_OBJ && index.Type() == object.STRING_OBJ:
 		return evalHashIndexExpression(tok, left, index)
 	case left.Type() == object.STRING_OBJ && index.Type() == object.NUMBER_OBJ:
-		return evalStringIndexExpression(tok, left, index)
+		return evalStringIndexExpression(tok, left, index, end, node.IsRange)
 	default:
 		return newError(tok, "index operator not supported: %s on %s", index.Inspect(), left.Type())
 	}
 }
 
-func evalStringIndexExpression(tok token.Token, array, index object.Object) object.Object {
+func evalStringIndexExpression(tok token.Token, array, index object.Object, end object.Object, isRange bool) object.Object {
 	stringObject := array.(*object.String)
 	idx := index.(*object.Number).Int()
-	max := len(stringObject.Value) - 1
+	max := len(stringObject.Value)
+
+	if isRange {
+		// A range's minimum value is 0
+		if idx < 0 {
+			idx = 0
+		}
+		endIdx, ok := end.(*object.Number)
+
+		// check if the range end is a number
+		if ok {
+			// if it's lower than zero, then the end is len(x) - end,
+			// else it's the end value itself
+			if endIdx.Int() < 0 {
+				max = int(math.Max(float64(max+endIdx.Int()), 0))
+			} else if endIdx.Int() < max {
+				max = endIdx.Int()
+			}
+		} else if end != NULL {
+			// if the end index is not a number nor null, then we have an error
+			// (null would mean no end, so it's valid)
+			return newError(tok, `index ranges can only be numerical: got "%s" (type %s)`, end.Inspect(), end.Type())
+		}
+
+		// if the start is higher than the end, let's return
+		// a skeleton
+		if idx > max {
+			return &object.String{Token: tok, Value: ""}
+		}
+
+		return &object.String{Token: tok, Value: string(stringObject.Value[idx:max])}
+	}
 
 	if idx < 0 || idx > max {
 		return NULL
@@ -1097,10 +1134,41 @@ func evalStringIndexExpression(tok token.Token, array, index object.Object) obje
 	return &object.String{Token: tok, Value: string(stringObject.Value[idx])}
 }
 
-func evalArrayIndexExpression(array, index object.Object) object.Object {
+func evalArrayIndexExpression(tok token.Token, array, index object.Object, end object.Object, isRange bool) object.Object {
 	arrayObject := array.(*object.Array)
 	idx := index.(*object.Number).Int()
 	max := len(arrayObject.Elements) - 1
+
+	if isRange {
+		// A range's minimum value is 0
+		if idx < 0 {
+			idx = 0
+		}
+		endIdx, ok := end.(*object.Number)
+
+		// check if the range end is a number
+		if ok {
+			// if it's lower than zero, then the end is len(x) - end,
+			// else it's the end value itself
+			if endIdx.Int() < 0 {
+				max = int(math.Max(float64(max+endIdx.Int()), 0))
+			} else if endIdx.Int() < max {
+				max = endIdx.Int() - 1
+			}
+		} else if end != NULL {
+			// if the end index is not a number nor null, then we have an error
+			// (null would mean no end, so it's valid)
+			return newError(tok, `index ranges can only be numerical: got "%s" (type %s)`, end.Inspect(), end.Type())
+		}
+
+		// if the start is higher than the end, let's return
+		// a skeleton
+		if idx > max {
+			return &object.Array{Token: tok, Elements: []object.Object{}}
+		}
+
+		return &object.Array{Token: tok, Elements: arrayObject.Elements[idx : max+1]}
+	}
 
 	if idx < 0 || idx > max {
 		return NULL
