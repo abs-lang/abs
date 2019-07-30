@@ -24,6 +24,30 @@ array[3]
 
 Accessing an index that does not exist returns null.
 
+You can also access a range of indexes with the `[start:end]` notation:
+
+``` bash
+array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+array[0:2] // [0, 1, 2]
+```
+
+where `start` is the starting position in the array, and `end` is
+the ending one. If `start` is not specified, it is assumed to be 0,
+and if `end` is omitted it is assumed to be the last index in the
+array:
+
+``` bash
+array[:2] // [0, 1, 2]
+array[7:] // [7, 8, 9]
+```
+
+If `end` is negative, it will be converted to `length of array - end`:
+
+``` bash
+array[:-3] // [0, 1, 2, 3, 4, 5, 6]
+```
+
 To concatenate arrays, "sum" them:
 
 ``` bash

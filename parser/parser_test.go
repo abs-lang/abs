@@ -1352,6 +1352,87 @@ func TestParsingIndexExpressions(t *testing.T) {
 	}
 }
 
+func TestParsingIndexRangeExpressions(t *testing.T) {
+	input := "myArray[99 : 101]"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	indexExp, ok := stmt.Expression.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("exp not *ast.IndexExpression. got=%T", stmt.Expression)
+	}
+
+	if !indexExp.IsRange {
+		t.Fatalf("exp is not range")
+	}
+
+	if !testIdentifier(t, indexExp.Left, "myArray") {
+		return
+	}
+
+	testNumberLiteral(t, indexExp.Index, 99)
+	testNumberLiteral(t, indexExp.End, 101)
+}
+
+func TestParsingIndexRangeWithoutStartExpressions(t *testing.T) {
+	input := "myArray[: 101]"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	indexExp, ok := stmt.Expression.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("exp not *ast.IndexExpression. got=%T", stmt.Expression)
+	}
+
+	if !indexExp.IsRange {
+		t.Fatalf("exp is not range")
+	}
+
+	if !testIdentifier(t, indexExp.Left, "myArray") {
+		return
+	}
+
+	testNumberLiteral(t, indexExp.Index, 0)
+	testNumberLiteral(t, indexExp.End, 101)
+}
+
+func TestParsingIndexRangeWithoutEndExpressions(t *testing.T) {
+	input := "myArray[99 : ]"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	indexExp, ok := stmt.Expression.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("exp not *ast.IndexExpression. got=%T", stmt.Expression)
+	}
+
+	if !testIdentifier(t, indexExp.Left, "myArray") {
+		return
+	}
+
+	if !indexExp.IsRange {
+		t.Fatalf("exp is not range")
+	}
+
+	testNumberLiteral(t, indexExp.Index, 99)
+
+	if indexExp.End != nil {
+		t.Fatalf("range end is not nil. got=%T", indexExp.End)
+	}
+}
+
 func TestParsingProperty(t *testing.T) {
 	input := "var.prop"
 
