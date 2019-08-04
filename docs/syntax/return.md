@@ -20,6 +20,14 @@ func = f(x) {
 func(9) # 10
 ```
 
+The default value of a `return` is `null`:
+
+```
+if x {
+    return # null
+}
+```
+
 ## Next
 
 That's about it for this section!

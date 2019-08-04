@@ -56,6 +56,8 @@ func TestReturnStatements(t *testing.T) {
 		input         string
 		expectedValue interface{}
 	}{
+		{"return", nil},
+		{"return;", nil},
 		{"return 5;", 5},
 		{"return true;", true},
 		{"return foobar;", "foobar"},
@@ -1696,6 +1698,8 @@ func testLiteralExpression(
 		return testIdentifier(t, exp, v)
 	case bool:
 		return testBooleanLiteral(t, exp, v)
+	case nil:
+		return testNullLiteral(t, exp, v)
 	}
 	t.Errorf("type of exp not handled. got=%T", exp)
 	return false
@@ -1799,6 +1803,21 @@ func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
 	if bo.TokenLiteral() != fmt.Sprintf("%t", value) {
 		t.Errorf("bo.TokenLiteral not %t. got=%s",
 			value, bo.TokenLiteral())
+		return false
+	}
+
+	return true
+}
+
+func testNullLiteral(t *testing.T, exp ast.Expression, value interface{}) bool {
+	nl, ok := exp.(*ast.NullLiteral)
+	if !ok {
+		t.Errorf("exp not *ast.NullLiteral. got=%T", exp)
+		return false
+	}
+
+	if nl.TokenLiteral() != "null" {
+		t.Errorf("nl.TokenLiteral not %t. got=%s", value, nl.TokenLiteral())
 		return false
 	}
 
