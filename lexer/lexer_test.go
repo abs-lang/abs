@@ -96,6 +96,7 @@ for true {
 for true {
 	continue
 }
+a[1:3]
 `
 
 	tests := []struct {
@@ -330,6 +331,12 @@ for true {
 		{token.LBRACE, "{"},
 		{token.CONTINUE, "continue"},
 		{token.RBRACE, "}"},
+		{token.IDENT, "a"},
+		{token.LBRACKET, "["},
+		{token.NUMBER, "1"},
+		{token.COLON, ":"},
+		{token.NUMBER, "3"},
+		{token.RBRACKET, "]"},
 		{token.EOF, ""},
 	}
 

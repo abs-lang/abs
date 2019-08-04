@@ -24,12 +24,12 @@
 
 # The ABS programming language
 
-ABS is a scripting language that works best when you're scripting on
+ABS is a programming language that works best when you're scripting on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
 
 ``` bash
-tz = $(cat /etc/timezone);
+tz = `cat /etc/timezone`
 continent, city = tz.split("/")
 
 echo("Best city in the world?")
@@ -73,7 +73,7 @@ And here's how you could write the same code in ABS:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
-res = $(curl -s 'https://api.ipify.org?format=json');
+res = `curl -s 'https://api.ipify.org?format=json'`
 
 if !res.ok {
   echo("An error occurred: %s", res)

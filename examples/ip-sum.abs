@@ -1,4 +1,4 @@
-res = $(curl -s 'https://api.ipify.org?format=json');
+res = `curl -s 'https://api.ipify.org?format=json'`
 
 if !res.ok {
   echo("An error occurred: %s", res)

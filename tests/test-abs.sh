@@ -2,7 +2,7 @@
 # test the abs parser and eval error location
 
 DIR=~/go/src/github.com/abs-lang/abs
-ABS=$(command -v abs)
+ABS=`command -v abs`
 
 DEBUG=$1
 

@@ -1,0 +1,10 @@
+fn = f() {
+    if !flag("value") {
+        return;
+    }
+
+    return flag("value")
+}
+
+echo("Call this script with the flag --value to output it. If the flag is not passed, an implicit return will trigger and 'null' will be printed.")
+echo(fn())

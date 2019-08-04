@@ -166,15 +166,15 @@ func (f *Function) Json() string { return f.Inspect() }
 //
 // So, look at this:
 //
-// cmd = $(ls -la)
+// cmd = `ls -la`
 // type(cmd) // STRING
 // cmd.ok // TRUE
 //
-// cmd = $(curlzzzzz)
+// cmd = `curlzzzzz`
 // type(cmd) // STRING
 // cmd.ok // FALSE
 //
-// cmd = $(sleep 10 &)
+// cmd = `sleep 10 &`
 // type(cmd) // STRING
 // cmd.done // FALSE
 // cmd.wait() // ...

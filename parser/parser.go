@@ -210,6 +210,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 		}
 		p.nextToken()
 	}
+
 	return program
 }
 
@@ -327,10 +328,20 @@ func (p *Parser) parseAssignStatement() ast.Statement {
 // return x
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
+	returnToken := p.curToken
 
 	p.nextToken()
 
-	stmt.ReturnValue = p.parseExpression(LOWEST)
+	// return;
+	if p.curTokenIs(token.SEMICOLON) {
+		stmt.ReturnValue = &ast.NullLiteral{Token: p.curToken}
+	} else if p.peekTokenIs(token.RBRACE) || p.peekTokenIs(token.EOF) {
+		// return
+		stmt.ReturnValue = &ast.NullLiteral{Token: returnToken}
+	} else {
+		// return xyz
+		stmt.ReturnValue = p.parseExpression(LOWEST)
+	}
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
@@ -804,12 +815,29 @@ func (p *Parser) ParseArrayLiteral() ast.Expression {
 	return array
 }
 
-// some["thing"]
+// some["thing"] or some[1:10]
 func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
 
-	p.nextToken()
-	exp.Index = p.parseExpression(LOWEST)
+	if p.peekTokenIs(token.COLON) {
+		exp.Index = &ast.NumberLiteral{Value: 0, Token: token.Token{Type: token.NUMBER, Position: 0, Literal: "0"}}
+		exp.IsRange = true
+	} else {
+		p.nextToken()
+		exp.Index = p.parseExpression(LOWEST)
+	}
+
+	if p.peekTokenIs(token.COLON) {
+		exp.IsRange = true
+		p.nextToken()
+
+		if p.peekTokenIs(token.RBRACKET) {
+			exp.End = nil
+		} else {
+			p.nextToken()
+			exp.End = p.parseExpression(LOWEST)
+		}
+	}
 
 	if !p.expectPeek(token.RBRACKET) {
 		return nil

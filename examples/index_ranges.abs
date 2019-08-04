@@ -1,0 +1,4 @@
+str = "Hello world!"
+
+echo(str[:5]) // Hello
+echo(str.split("")[:5]) // ["H", "e", "l", "l", "o"]
