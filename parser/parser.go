@@ -210,6 +210,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 		}
 		p.nextToken()
 	}
+
 	return program
 }
 
@@ -327,10 +328,20 @@ func (p *Parser) parseAssignStatement() ast.Statement {
 // return x
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
+	returnToken := p.curToken
 
 	p.nextToken()
 
-	stmt.ReturnValue = p.parseExpression(LOWEST)
+	// return;
+	if p.curTokenIs(token.SEMICOLON) {
+		stmt.ReturnValue = &ast.NullLiteral{Token: p.curToken}
+	} else if p.peekTokenIs(token.RBRACE) || p.peekTokenIs(token.EOF) {
+		// return
+		stmt.ReturnValue = &ast.NullLiteral{Token: returnToken}
+	} else {
+		// return xyz
+		stmt.ReturnValue = p.parseExpression(LOWEST)
+	}
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()

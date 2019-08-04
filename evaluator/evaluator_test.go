@@ -455,8 +455,11 @@ func TestWhileExpressions(t *testing.T) {
 func TestReturnStatements(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected float64
+		expected interface{}
 	}{
+		{"return;", nil},
+		{"return", nil},
+		{"fn = f() { return }; fn()", nil},
 		{"return 10;", 10},
 		{"return 10; 9;", 10},
 		{"return 2 * 5; 9;", 10},
@@ -497,7 +500,14 @@ fn(10);`,
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		testNumberObject(t, evaluated, tt.expected)
+		switch tt.expected.(type) {
+		case int:
+			testNumberObject(t, evaluated, float64(tt.expected.(int)))
+		case nil:
+			testNullObject(t, evaluated)
+		default:
+			panic("should not reach here")
+		}
 	}
 }
 
