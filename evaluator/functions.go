@@ -510,7 +510,7 @@ func cdFn(tok token.Token, args ...object.Object) object.Object {
 func echoFn(tok token.Token, args ...object.Object) object.Object {
 	if len(args) == 0 {
 		// allow echo() without crashing
-		fmt.Println("")
+		fmt.Fprintln(globalEnv.Writer, "")
 		return NULL
 	}
 	var arguments []interface{} = make([]interface{}, len(args)-1)
@@ -520,8 +520,8 @@ func echoFn(tok token.Token, args ...object.Object) object.Object {
 		}
 	}
 
-	fmt.Printf(args[0].Inspect(), arguments...)
-	fmt.Println("")
+	fmt.Fprintf(globalEnv.Writer, args[0].Inspect(), arguments...)
+	fmt.Fprintln(globalEnv.Writer, "")
 
 	return NULL
 }
@@ -778,7 +778,7 @@ func jsonFn(tok token.Token, args ...object.Object) object.Object {
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env := object.NewEnvironment()
+	env := object.NewEnvironment(globalEnv.Writer)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node

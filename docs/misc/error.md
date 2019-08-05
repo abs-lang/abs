@@ -62,4 +62,4 @@ $ echo $?
 
 That's about it for this section!
 
-You can now head over to read [a few more technical details about ABS ](/misc/technical-details).
+You can now head over to read [how to configure the REPL](/misc/configuring-the-repl).

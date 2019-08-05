@@ -41,7 +41,8 @@ platforms = [
     "windows/amd64",
     "windows/386",
     "darwin/amd64",
-    "darwin/386"
+    "darwin/386",
+    "js/wasm"
 ]
 
 echo("Deleting previous builds...")
@@ -62,17 +63,25 @@ if selection != "y" {
 
 for platform in platforms {
     goos, goarch = platform.split("/")
-    output_name = "abs-%s-%s-%s".fmt(version, goos, goarch)
+    output_name = "builds/abs-%s-%s-%s".fmt(version, goos, goarch)
+    entry_point = "main.go"
 
-    if (goos == "windows") {
+    if goos == "windows" {
         output_name = output_name + ".exe"
     }
 
+    if goos == "js" {
+        output_name = "docs/abs.wasm"
+        entry_point = "js/js.go"
+    }
+
     echo("Building %s %s", goos, goarch)
-    build = `GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w" -o builds/$output_name main.go`
+    build = `GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w" -o $output_name $entry_point`
 
     if !build.ok {
         echo("error: " + build)
         exit(1)
     }
 }
+
+echo("done")

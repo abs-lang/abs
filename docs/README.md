@@ -97,14 +97,13 @@ You can also install ABS with the 1-command installer:
 bash <(curl https://www.abs-lang.org/installer.sh)
 ```
 
-*(you might need to sudo right before that)*
-
 ## Table of contents
 
 ## Introduction
 
 * [Why another scripting language?](/introduction/why-another-scripting-language)
 * [How to run ABS code](/introduction/how-to-run-abs-code)
+* [The playground: try ABS directly in your browser](/playground)
 
 ## Syntax
 
@@ -129,5 +128,7 @@ bash <(curl https://www.abs-lang.org/installer.sh)
 ## Miscellaneous
 
 * [Errors](/misc/error)
+* [Configuring the REPL](/misc/configuring-the-repl)
+* [Runtime](/misc/runtime)
 * [A few technical details...](/misc/technical-details)
 * [Credits](/misc/credits)

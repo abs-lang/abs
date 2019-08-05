@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -1547,10 +1548,10 @@ func TestStringIndexExpressions(t *testing.T) {
 }
 
 func testEval(input string) object.Object {
+	env := object.NewEnvironment(os.Stdout)
 	lex := lexer.New(input)
 	p := parser.New(lex)
 	program := p.ParseProgram()
-	env := object.NewEnvironment()
 
 	return BeginEval(program, env, lex)
 }

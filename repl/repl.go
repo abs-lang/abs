@@ -18,8 +18,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var env *object.Environment
-
 // Global environment for the REPL.
 //
 // We want the environment to be persistent
@@ -28,6 +26,7 @@ var env *object.Environment
 // be available here so that other features,
 // such as suggestions, work by inspecting
 // the environment.
+var env *object.Environment
 
 // Support for persistent history in interactive REPL
 var (
@@ -37,7 +36,7 @@ var (
 )
 
 func init() {
-	env = object.NewEnvironment()
+	env = object.NewEnvironment(os.Stdout)
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
