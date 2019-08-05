@@ -58,6 +58,7 @@ func TestReturnStatements(t *testing.T) {
 	}{
 		{"return", nil},
 		{"return;", nil},
+		{"return 5", 5},
 		{"return 5;", 5},
 		{"return true;", true},
 		{"return foobar;", "foobar"},
