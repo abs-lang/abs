@@ -335,7 +335,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	// return;
 	if p.curTokenIs(token.SEMICOLON) {
 		stmt.ReturnValue = &ast.NullLiteral{Token: p.curToken}
-	} else if p.peekTokenIs(token.RBRACE) || p.peekTokenIs(token.EOF) {
+	} else if p.curTokenIs(token.RBRACE) || p.curTokenIs(token.EOF) {
 		// return
 		stmt.ReturnValue = &ast.NullLiteral{Token: returnToken}
 	} else {
