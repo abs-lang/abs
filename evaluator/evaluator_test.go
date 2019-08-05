@@ -459,7 +459,9 @@ func TestReturnStatements(t *testing.T) {
 	}{
 		{"return;", nil},
 		{"return", nil},
+		{"return 1", 1},
 		{"fn = f() { return }; fn()", nil},
+		{"fn = f() { return 1 }; fn()", 1},
 		{"return 10;", 10},
 		{"return 10; 9;", 10},
 		{"return 2 * 5; 9;", 10},
