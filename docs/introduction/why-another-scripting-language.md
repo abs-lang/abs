@@ -41,7 +41,7 @@ simplicity of Bash.
 
 Let's take a look a look at some practical ABS code. We will now
 call the API of nba.com in order to retrieve the stats for
-one of last year's NBA games:
+one of the NBA games played in 2017:
 
 ``` bash
 r = `curl "http://data.nba.net/prod/v1/20170201/0021600732_boxscore.json" -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, sdch' -H 'Accept-Language: en' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36' -H 'Accept: */*' -H 'Referer: http://stats.nba.com/' -H 'Connection: keep-alive' --compressed`;
@@ -53,12 +53,12 @@ if !r.ok {
 
 doc = r.json()
 
-arena = doc.basicGameData.arena.name
-city = doc.basicGameData.arena.city
+name, city = doc.basicGameData.arena # arena is a JSON object: {"name": "TD Garden", "city": "Boston"}
 
-echo("The game was played at the %s in %s", arena, city)
+echo("The game was played at the %s arena in %s", name, city)
 
 highlight = doc.basicGameData.nugget.text
+
 if highlight.len() {
     echo("The press said: \"%s\"", highlight)
 }

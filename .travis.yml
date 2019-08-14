@@ -13,11 +13,11 @@ before_script:
 - go get -v github.com/mattn/go-colorable
 - go get -v github.com/mattn/go-tty
 - go get github.com/mattn/goveralls
-- go get -d -v ./...
+- go get -d -v `go list ./... | grep -v "/js"`
 
 env:
   - CONTEXT=abs
 
 script: 
- - go test ./... -vet=off -v -covermode=count -coverprofile=coverage.out
+ - go test `go list ./... | grep -v "/js"` -vet=off -v -covermode=count -coverprofile=coverage.out
  - $GOPATH/bin/goveralls -service=travis-ci -coverprofile=coverage.out

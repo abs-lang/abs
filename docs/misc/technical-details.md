@@ -4,6 +4,17 @@ The ABS interpreter is built with Golang version `1.11`, and is mostly based on 
 
 ABS is extremely different from Monkey, the "fictional" language the reader builds throughout the book, but the base structure (lexer, parser, evaluator) are still very much based on Thorsten's work.
 
+## Why is ABS interpreted?
+
+ABS' goal is to be a portable, pragmatic, concise, simple language:
+great performance comes second.
+
+With this in mind, we made a deliberate choice to avoid
+compiling ABS code, as it would require additional complexity
+in the codebase, with very little benefits. Tell us, when
+was the last time you were interested in how many milliseconds
+it took to run a Bash script?
+
 ## Why Go?
 
 There are multiple reasons Go is the ideal choice for ABS, in no
