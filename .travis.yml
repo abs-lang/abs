@@ -9,14 +9,13 @@ go:
   - "1.12.x"
 
 before_script:
-- go get github.com/c-bata/go-prompt
-- go get -v github.com/mattn/go-colorable
-- go get -v github.com/mattn/go-tty
+- go get -u 
 - go get github.com/mattn/goveralls
-- go get -d -v `go list ./... | grep -v "/js"`
 
 env:
-  - CONTEXT=abs
+    global: 
+        - GO111MODULE=on
+        - CONTEXT=abs
 
 script: 
  - go test `go list ./... | grep -v "/js"` -vet=off -v -covermode=count -coverprofile=coverage.out
