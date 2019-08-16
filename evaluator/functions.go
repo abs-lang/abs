@@ -1165,14 +1165,27 @@ func repeatFn(tok token.Token, args ...object.Object) object.Object {
 	return &object.String{Token: tok, Value: strings.Repeat(args[0].(*object.String).Value, int(args[1].(*object.Number).Value))}
 }
 
-// replace("abc", "b", "f", -1)
+// replace("abd", "d", "c", -1)
+// replace("abc", ["a", "b"], "c", -1)
 func replaceFn(tok token.Token, args ...object.Object) object.Object {
-	err := validateArgs(tok, "replace", args, 4, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ}, {object.NUMBER_OBJ}})
+	err := validateArgs(tok, "replace", args, 4, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ}, {object.NUMBER_OBJ}})
 	if err != nil {
 		return err
 	}
 
-	return &object.String{Token: tok, Value: strings.Replace(args[0].(*object.String).Value, args[1].(*object.String).Value, args[2].(*object.String).Value, int(args[3].(*object.Number).Value))}
+	original := args[0].(*object.String).Value
+	replacement := args[2].(*object.String).Value
+	n := int(args[3].(*object.Number).Value)
+
+	if characters, ok := args[1].(*object.Array); ok {
+		for _, c := range characters.Elements {
+			original = strings.Replace(original, c.Inspect(), replacement, n)
+		}
+
+		return &object.String{Token: tok, Value: original}
+	}
+
+	return &object.String{Token: tok, Value: strings.Replace(original, args[1].(*object.String).Value, replacement, n)}
 }
 
 // title("some thing")
