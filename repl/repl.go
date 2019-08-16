@@ -13,8 +13,8 @@ import (
 	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/parser"
 	"github.com/abs-lang/abs/util"
+	"github.com/c-bata/go-prompt"
 
-	prompt "github.com/c-bata/go-prompt"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -50,7 +50,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 		return nil
 	}
 
-	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+	return prompt.FilterContains(s, d.GetWordBeforeCursor(), true)
 }
 
 var LivePrefixState struct {
@@ -72,6 +72,9 @@ func Start(in io.Reader, out io.Writer) {
 	// get history file only when interactive REPL is running
 	historyFile, maxLines = getHistoryConfiguration()
 	history = getHistory(historyFile, maxLines)
+	// once we load the history we can setup reverse search
+	// which will need to go through the history itself
+	initReverseSearch()
 	// get prompt prefix template string
 	promptPrefix := util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_PROMPT_PREFIX)
 	// get live prompt boolean
@@ -95,7 +98,10 @@ func Start(in io.Reader, out io.Writer) {
 		prompt.OptionLivePrefix(changeLivePrefix),
 		prompt.OptionTitle("abs-repl"),
 		prompt.OptionHistory(history),
+		prompt.OptionAddKeyBind(reverseSearch()),           // ControlR: reverse search
+		prompt.OptionBreakLineCallback(clearReverseSearch), // at every line break clear the reverse search
 	)
+
 	p.Run()
 	// we get here on ^D from the prompt
 	saveHistory(historyFile, maxLines, history)
@@ -130,7 +136,6 @@ func executor(line string) {
 
 	// record this line for posterity
 	history = addToHistory(history, maxLines, line)
-
 	Run(line, true)
 }
 
