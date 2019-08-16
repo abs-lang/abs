@@ -2,6 +2,7 @@ package object
 
 import (
 	"io"
+	"sort"
 )
 
 // NewEnclosedEnvironment creates an environment
@@ -48,6 +49,8 @@ func (e *Environment) GetKeys() []string {
 	for k := range e.store {
 		keys = append(keys, k)
 	}
+
+	sort.Strings(keys)
 
 	return keys
 }
