@@ -346,6 +346,12 @@ If `n` is negative it will replace all occurrencies:
 "string".replace("i", "o", -1) # "strong"
 ```
 
+You can also replace an array of characters:
+
+``` bash
+"string".replace(["i", "g"], "o", -1) # "strono"
+```
+
 ### title()
 
 Titlecases the string:
