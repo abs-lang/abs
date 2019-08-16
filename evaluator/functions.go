@@ -396,10 +396,24 @@ func randFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // exit(code:0)
+// exit(code:0, message:"Adios!")
 func exitFn(tok token.Token, args ...object.Object) object.Object {
-	err := validateArgs(tok, "exit", args, 1, [][]string{{object.NUMBER_OBJ}})
+	var err object.Object
+	var message string
+
+	if len(args) == 2 {
+		err = validateArgs(tok, "exit", args, 2, [][]string{{object.NUMBER_OBJ}, {object.STRING_OBJ}})
+		message = args[1].(*object.String).Value
+	} else {
+		err = validateArgs(tok, "exit", args, 1, [][]string{{object.NUMBER_OBJ}})
+	}
+
 	if err != nil {
 		return err
+	}
+
+	if message != "" {
+		fmt.Fprintf(globalEnv.Writer, message)
 	}
 
 	arg := args[0].(*object.Number)
@@ -715,7 +729,7 @@ func typeFn(tok token.Token, args ...object.Object) object.Object {
 	return &object.String{Token: tok, Value: string(args[0].Type())}
 }
 
-// split(string:"hello")
+// split(string:"hello world!", sep:" ")
 func splitFn(tok token.Token, args ...object.Object) object.Object {
 	err := validateArgs(tok, "split", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {

@@ -75,12 +75,20 @@ for input in stdin {
 ...
 ```
 
-### exit(code)
+### exit(code [, message])
 
-Exists the script with status `code`:
+Exits the script with status `code`:
 
 ``` bash
 exit(99)
+```
+
+You can specify a message that's going to be outputted right
+before exiting:
+
+``` bash
+⧐  exit(99, "Got problems...")
+Got problems...%
 ```
 
 ### rand(max)
