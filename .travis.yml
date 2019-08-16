@@ -15,8 +15,8 @@ before_script:
 env:
     global: 
         - GO111MODULE=on
-  - CONTEXT=abs
+        - CONTEXT=abs
 
 script: 
- - GO111MODULE=on go test `go list ./... | grep -v "/js"` -vet=off -v -covermode=count -coverprofile=coverage.out
+ - go test `go list ./... | grep -v "/js"` -vet=off -v -covermode=count -coverprofile=coverage.out
  - $GOPATH/bin/goveralls -service=travis-ci -coverprofile=coverage.out
