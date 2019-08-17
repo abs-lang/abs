@@ -47,6 +47,21 @@ func TestEvalFloatExpression(t *testing.T) {
 	}
 }
 
+func TestEvalNumberAbbreviations(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"5k", 5000},
+		{"1m / 1M", 1},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testNumberObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestEvalNumberExpression(t *testing.T) {
 	tests := []struct {
 		input    string

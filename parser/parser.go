@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/abs-lang/abs/ast"
 	"github.com/abs-lang/abs/lexer"
@@ -406,15 +407,27 @@ func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
-// 1 or 1.1
+// 1 or 1.1 or 1k
 func (p *Parser) ParseNumberLiteral() ast.Expression {
 	lit := &ast.NumberLiteral{Token: p.curToken}
+	var abbr float64
+	var ok bool
+	number := p.curToken.Literal
 
-	value, err := strconv.ParseFloat(p.curToken.Literal, 64)
+	// Check if the last character of this number is an abbreviation
+	if abbr, ok = token.NumberAbbreviations[strings.ToLower(string(number[len(number)-1]))]; ok {
+		number = p.curToken.Literal[:len(p.curToken.Literal)-1]
+	}
+
+	value, err := strconv.ParseFloat(number, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as number", p.curToken.Literal)
+		msg := fmt.Sprintf("could not parse %q as number", number)
 		p.reportError(msg, p.curToken)
 		return nil
+	}
+
+	if abbr != 0 {
+		value *= abbr
 	}
 
 	lit.Value = value
