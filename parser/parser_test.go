@@ -123,13 +123,16 @@ func TestIdentifierExpression(t *testing.T) {
 
 func TestNumberLiteralExpression(t *testing.T) {
 	prefixTests := []struct {
-		input string
-		value float64
+		input   string
+		value   float64
+		literal string
 	}{
-		{"5;", 5},
-		{"5.5", 5.5},
-		{"5.5555555", 5.5555555},
-		{"5_000", 5000},
+		{"5;", 5, "5"},
+		{"5.5", 5.5, "5.5"},
+		{"5.5555555", 5.5555555, "5.5555555"},
+		{"5_000", 5000, "5000"},
+		{"1k", 1000, "1k"},
+		{"1M", 1000000, "1M"},
 	}
 
 	for _, tt := range prefixTests {
@@ -154,8 +157,8 @@ func TestNumberLiteralExpression(t *testing.T) {
 			t.Errorf("literal.Value not %v. got=%v", tt.value, literal.Value)
 		}
 
-		if literal.TokenLiteral() != fmt.Sprintf("%v", tt.value) {
-			t.Errorf("number.TokenLiteral not %v. got=%s", tt.value, literal.TokenLiteral())
+		if literal.TokenLiteral() != fmt.Sprintf("%v", tt.literal) {
+			t.Errorf("number.TokenLiteral not %v. got=%s", tt.literal, literal.TokenLiteral())
 		}
 	}
 }

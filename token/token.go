@@ -103,6 +103,17 @@ var keywords = map[string]TokenType{
 	"continue": CONTINUE,
 }
 
+// NumberAbbreviations is a list of abbreviations that can be used in numbers eg. 1k, 20B
+var NumberAbbreviations = map[string]float64{
+	"k": 1000,
+	"m": 1000000,
+	"b": 1000000000,
+	"t": 1000000000000,
+}
+
+// NumberSeparator is a separator for numbers eg. 1_000_000
+var NumberSeparator = '_'
+
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok
