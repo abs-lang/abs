@@ -347,6 +347,20 @@ func (l *Lexer) readIdentifier() string {
 	return string(l.input[position:l.position])
 }
 
+// List of character that can appear in a "number"
+//
+// * digits
+// * dot for floats
+// * scientific notation characters (12e-1)
+// * separators (1_000_000)
+// * abbreviations (12M)
+func isCharAllowedInNumber(c rune) bool {
+	lowchar := unicode.ToLower(c)
+	_, isAbbr := token.NumberAbbreviations[string(lowchar)]
+
+	return isDigit(lowchar) || lowchar == '.' || lowchar == '+' || lowchar == '-' || c == 'e' || lowchar == token.NumberSeparator || isAbbr
+}
+
 // 12
 // 12.2
 // 12e-1
@@ -354,12 +368,11 @@ func (l *Lexer) readIdentifier() string {
 // 12e1
 func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 	position := l.position
-	hasDot := false
 	kind = token.NUMBER
-	hasExponent := false
+	var hasDot bool
+	var hasExponent bool
 
-	// List of character that can appear in a "number"
-	for isDigit(l.ch) || l.ch == '.' || l.ch == '+' || l.ch == '-' || l.ch == 'e' || l.ch == '_' {
+	for isCharAllowedInNumber(l.ch) {
 		// If we have a plus / minus but there was no exponent
 		// in this number, it means we're at the end of the
 		// number and we're at an addition / subtraction.
@@ -371,6 +384,14 @@ func (l *Lexer) readNumber() (number string, kind token.TokenType) {
 		// we're using scientific notation
 		if l.ch == 'e' {
 			hasExponent = true
+		}
+
+		// If this character is a number abbreviation
+		// (eg. the K in 12K), let's read it and complete
+		// the number
+		if _, isAbbr := token.NumberAbbreviations[string(l.ch)]; isAbbr {
+			l.readChar()
+			return string(l.input[position:l.position]), kind
 		}
 
 		// If we have a dot, let's check whether this is a range

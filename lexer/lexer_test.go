@@ -85,6 +85,14 @@ $111
 10_000
 10_00.00
 1_2e1
+12k
+12K
+12m
+12M
+12t
+12T
+12b
+12B
 小明
 ❤
 hello_w0rld
@@ -316,6 +324,14 @@ a[1:3]
 		{token.NUMBER, "10000"},
 		{token.NUMBER, "1000.00"},
 		{token.NUMBER, "12e1"},
+		{token.NUMBER, "12k"},
+		{token.NUMBER, "12K"},
+		{token.NUMBER, "12m"},
+		{token.NUMBER, "12M"},
+		{token.NUMBER, "12t"},
+		{token.NUMBER, "12T"},
+		{token.NUMBER, "12b"},
+		{token.NUMBER, "12B"},
 		{token.IDENT, "小明"},
 		{token.ILLEGAL, "❤"},
 		{token.IDENT, "hello_w0rld"},
