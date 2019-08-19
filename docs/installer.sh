@@ -27,7 +27,7 @@ if [ "${MACHINE_TYPE}" = 'x86_64' ]; then
   ARCH="amd64"
 fi
 
-VERSION=1.6.1
+VERSION=1.6.2
 
 echo "Trying to detect the details of your architecture."
 echo ""
