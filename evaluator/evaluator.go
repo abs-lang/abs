@@ -1092,11 +1092,16 @@ func evalIndexExpression(node *ast.IndexExpression, env *object.Environment) obj
 }
 
 func evalStringIndexExpression(tok token.Token, array, index object.Object, end object.Object, isRange bool) object.Object {
+	// TODO this gotta be refactored so that
+	// evalStringIndexExpression and evalArrayIndexExpression
+	// reuse most of their code, now it's a bit messy as
+	// the code is duplicated in both places
 	stringObject := array.(*object.String)
 	idx := index.(*object.Number).Int()
-	max := len(stringObject.Value)
+	max := len(stringObject.Value) - 1
 
 	if isRange {
+		max += 1
 		// A range's minimum value is 0
 		if idx < 0 {
 			idx = 0
@@ -1140,6 +1145,7 @@ func evalArrayIndexExpression(tok token.Token, array, index object.Object, end o
 	max := len(arrayObject.Elements) - 1
 
 	if isRange {
+		max += 1
 		// A range's minimum value is 0
 		if idx < 0 {
 			idx = 0
@@ -1153,7 +1159,7 @@ func evalArrayIndexExpression(tok token.Token, array, index object.Object, end o
 			if endIdx.Int() < 0 {
 				max = int(math.Max(float64(max+endIdx.Int()), 0))
 			} else if endIdx.Int() < max {
-				max = endIdx.Int() - 1
+				max = endIdx.Int()
 			}
 		} else if end != NULL {
 			// if the end index is not a number nor null, then we have an error
@@ -1167,7 +1173,7 @@ func evalArrayIndexExpression(tok token.Token, array, index object.Object, end o
 			return &object.Array{Token: tok, Elements: []object.Object{}}
 		}
 
-		return &object.Array{Token: tok, Elements: arrayObject.Elements[idx : max+1]}
+		return &object.Array{Token: tok, Elements: arrayObject.Elements[idx:max]}
 	}
 
 	if idx < 0 || idx > max {
