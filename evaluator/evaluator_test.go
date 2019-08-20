@@ -47,6 +47,21 @@ func TestEvalFloatExpression(t *testing.T) {
 	}
 }
 
+func TestEvalNumberAbbreviations(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"5k", 5000},
+		{"1m / 1M", 1},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testNumberObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestEvalNumberExpression(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -880,6 +895,9 @@ c")`, []string{"a", "b", "c"}},
 		{`[1,2,3].slice(-1, 3)`, []int{3}},
 		{`[1,2,3].slice(-1, 1)`, []int{3}},
 		{`"a".replace("a", "b", -1)`, "b"},
+		{`"a".replace("a", "b")`, "b"},
+		{`"ac".replace(["a", "c"], "b", -1)`, "bb"},
+		{`"ac".replace(["a", "c"], "b")`, "bb"},
 		{`"a".str()`, "a"},
 		{`1.str()`, "1"},
 		{`[1].str()`, "[1]"},

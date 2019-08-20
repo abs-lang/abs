@@ -396,10 +396,24 @@ func randFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // exit(code:0)
+// exit(code:0, message:"Adios!")
 func exitFn(tok token.Token, args ...object.Object) object.Object {
-	err := validateArgs(tok, "exit", args, 1, [][]string{{object.NUMBER_OBJ}})
+	var err object.Object
+	var message string
+
+	if len(args) == 2 {
+		err = validateArgs(tok, "exit", args, 2, [][]string{{object.NUMBER_OBJ}, {object.STRING_OBJ}})
+		message = args[1].(*object.String).Value
+	} else {
+		err = validateArgs(tok, "exit", args, 1, [][]string{{object.NUMBER_OBJ}})
+	}
+
 	if err != nil {
 		return err
+	}
+
+	if message != "" {
+		fmt.Fprintf(globalEnv.Writer, message)
 	}
 
 	arg := args[0].(*object.Number)
@@ -715,7 +729,7 @@ func typeFn(tok token.Token, args ...object.Object) object.Object {
 	return &object.String{Token: tok, Value: string(args[0].Type())}
 }
 
-// split(string:"hello")
+// split(string:"hello world!", sep:" ")
 func splitFn(tok token.Token, args ...object.Object) object.Object {
 	err := validateArgs(tok, "split", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
@@ -1151,14 +1165,41 @@ func repeatFn(tok token.Token, args ...object.Object) object.Object {
 	return &object.String{Token: tok, Value: strings.Repeat(args[0].(*object.String).Value, int(args[1].(*object.Number).Value))}
 }
 
-// replace("abc", "b", "f", -1)
+// replace("abd", "d", "c") --> short form
+// replace("abd", "d", "c", -1)
+// replace("abc", ["a", "b"], "c", -1)
 func replaceFn(tok token.Token, args ...object.Object) object.Object {
-	err := validateArgs(tok, "replace", args, 4, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ}, {object.NUMBER_OBJ}})
+	var err object.Object
+
+	// Support short form
+	if len(args) == 3 {
+		err = validateArgs(tok, "replace", args, 3, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ}})
+	} else {
+		err = validateArgs(tok, "replace", args, 4, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ}, {object.NUMBER_OBJ}})
+	}
+
 	if err != nil {
 		return err
 	}
 
-	return &object.String{Token: tok, Value: strings.Replace(args[0].(*object.String).Value, args[1].(*object.String).Value, args[2].(*object.String).Value, int(args[3].(*object.Number).Value))}
+	original := args[0].(*object.String).Value
+	replacement := args[2].(*object.String).Value
+
+	n := -1
+
+	if len(args) == 4 {
+		n = int(args[3].(*object.Number).Value)
+	}
+
+	if characters, ok := args[1].(*object.Array); ok {
+		for _, c := range characters.Elements {
+			original = strings.Replace(original, c.Inspect(), replacement, n)
+		}
+
+		return &object.String{Token: tok, Value: original}
+	}
+
+	return &object.String{Token: tok, Value: strings.Replace(original, args[1].(*object.String).Value, replacement, n)}
 }
 
 // title("some thing")

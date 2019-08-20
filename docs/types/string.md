@@ -337,13 +337,21 @@ Creates a new string, repeating the original one `i` times:
 "string".repeat(2) # "stringstring"
 ```
 
-### replace(x, y, n)
+### replace(x, y [, n])
 
 Replaces occurrences of `x` with `y`, `n` times.
-If `n` is negative it will replace all occurrencies:
+If `n` is omitted, or negative, it will replace all occurrencies:
 
 ``` bash
 "string".replace("i", "o", -1) # "strong"
+"aaaa".replace("a", "x") # "xxxx"
+"aaaa".replace("a", "x", 2) # "xxaa"
+```
+
+You can also replace an array of characters:
+
+``` bash
+"string".replace(["i", "g"], "o") # "strono"
 ```
 
 ### title()

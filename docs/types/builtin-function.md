@@ -75,12 +75,20 @@ for input in stdin {
 ...
 ```
 
-### exit(code)
+### exit(code [, message])
 
-Exists the script with status `code`:
+Exits the script with status `code`:
 
 ``` bash
 exit(99)
+```
+
+You can specify a message that's going to be outputted right
+before exiting:
+
+``` bash
+⧐  exit(99, "Got problems...")
+Got problems...%
 ```
 
 ### rand(max)
@@ -243,7 +251,7 @@ $ cat ~/.absrc
 source("~/abs/lib/library.abs")
 
 $ abs
-Hello user, welcome to the ABS (1.6.2) programming language!
+Hello user, welcome to the ABS (1.7.0) programming language!
 Type 'quit' when you are done, 'help' if you get lost!
 ⧐ adder(1, 2)
 3
