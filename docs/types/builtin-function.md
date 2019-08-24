@@ -259,6 +259,11 @@ available inside it, and vice-versa. The only
 variable available to the caller (the script requiring
 the module) is the module's return value.
 
+Note that `require` uses paths that are relative to
+the current script. Say that you have 2 files (`a.abs` and `b.abs`)
+in the `/tmp` folder, `a.abs` can `require("./b.abs")`
+without having to specify the full path (eg. `require("/tmp/b.abs")`).
+
 ### source(path_to_file.abs)
 
 Evaluates the script at `path_to_file.abs` in the context of the 

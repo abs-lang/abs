@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
@@ -361,7 +362,7 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 }
 
 // len(var:"hello")
-func lenFn(tok token.Token, args ...object.Object) object.Object {
+func lenFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "len", args, 1, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}})
 	if err != nil {
 		return err
@@ -378,7 +379,7 @@ func lenFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // rand(max:20)
-func randFn(tok token.Token, args ...object.Object) object.Object {
+func randFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "rand", args, 1, [][]string{{object.NUMBER_OBJ}})
 	if err != nil {
 		return err
@@ -396,7 +397,7 @@ func randFn(tok token.Token, args ...object.Object) object.Object {
 
 // exit(code:0)
 // exit(code:0, message:"Adios!")
-func exitFn(tok token.Token, args ...object.Object) object.Object {
+func exitFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	var err object.Object
 	var message string
 
@@ -412,7 +413,7 @@ func exitFn(tok token.Token, args ...object.Object) object.Object {
 	}
 
 	if message != "" {
-		fmt.Fprintf(globalEnv.Writer, message)
+		fmt.Fprintf(env.Writer, message)
 	}
 
 	arg := args[0].(*object.Number)
@@ -421,7 +422,7 @@ func exitFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // flag("my-flag")
-func flagFn(tok token.Token, args ...object.Object) object.Object {
+func flagFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	// TODO:
 	// This seems a bit more complicated than it should,
 	// and I could probably use some unit testing for this.
@@ -485,7 +486,7 @@ func flagFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // pwd()
-func pwdFn(tok token.Token, args ...object.Object) object.Object {
+func pwdFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	dir, err := os.Getwd()
 	if err != nil {
 		return newError(tok, err.Error())
@@ -494,7 +495,7 @@ func pwdFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // cd() or cd(path) returns expanded path and path.ok
-func cdFn(tok token.Token, args ...object.Object) object.Object {
+func cdFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	user, ok := user.Current()
 	if ok != nil {
 		return newError(tok, ok.Error())
@@ -520,10 +521,10 @@ func cdFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // echo(arg:"hello")
-func echoFn(tok token.Token, args ...object.Object) object.Object {
+func echoFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	if len(args) == 0 {
 		// allow echo() without crashing
-		fmt.Fprintln(globalEnv.Writer, "")
+		fmt.Fprintln(env.Writer, "")
 		return NULL
 	}
 	var arguments []interface{} = make([]interface{}, len(args)-1)
@@ -533,15 +534,15 @@ func echoFn(tok token.Token, args ...object.Object) object.Object {
 		}
 	}
 
-	fmt.Fprintf(globalEnv.Writer, args[0].Inspect(), arguments...)
-	fmt.Fprintln(globalEnv.Writer, "")
+	fmt.Fprintf(env.Writer, args[0].Inspect(), arguments...)
+	fmt.Fprintln(env.Writer, "")
 
 	return NULL
 }
 
 // int(string:"123")
 // int(number:123)
-func intFn(tok token.Token, args ...object.Object) object.Object {
+func intFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "int", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -554,7 +555,7 @@ func intFn(tok token.Token, args ...object.Object) object.Object {
 
 // round(string:"123.1")
 // round(number:123.1)
-func roundFn(tok token.Token, args ...object.Object) object.Object {
+func roundFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	// Validate first argument
 	err := validateArgs(tok, "round", args[:1], 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 	if err != nil {
@@ -580,7 +581,7 @@ func roundFn(tok token.Token, args ...object.Object) object.Object {
 
 // floor(string:"123.1")
 // floor(number:123.1)
-func floorFn(tok token.Token, args ...object.Object) object.Object {
+func floorFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "floor", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -591,7 +592,7 @@ func floorFn(tok token.Token, args ...object.Object) object.Object {
 
 // ceil(string:"123.1")
 // ceil(number:123.1)
-func ceilFn(tok token.Token, args ...object.Object) object.Object {
+func ceilFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "ceil", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -626,7 +627,7 @@ func applyMathFunction(tok token.Token, arg object.Object, fn func(float64) floa
 }
 
 // number(string:"1.23456")
-func numberFn(tok token.Token, args ...object.Object) object.Object {
+func numberFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "number", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -650,7 +651,7 @@ func numberFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // is_number(string:"1.23456")
-func isNumberFn(tok token.Token, args ...object.Object) object.Object {
+func isNumberFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "number", args, 1, [][]string{{object.NUMBER_OBJ, object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -668,7 +669,7 @@ func isNumberFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // stdin() -- implemented with 2 functions
-func stdinFn(tok token.Token, args ...object.Object) object.Object {
+func stdinFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	v := scanner.Scan()
 
 	if !v {
@@ -691,7 +692,7 @@ func stdinNextFn() (object.Object, object.Object) {
 }
 
 // env(variable:"PWD")
-func envFn(tok token.Token, args ...object.Object) object.Object {
+func envFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "env", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -702,7 +703,7 @@ func envFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // arg(position:1)
-func argFn(tok token.Token, args ...object.Object) object.Object {
+func argFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "arg", args, 1, [][]string{{object.NUMBER_OBJ}})
 	if err != nil {
 		return err
@@ -719,7 +720,7 @@ func argFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // type(variable:"hello")
-func typeFn(tok token.Token, args ...object.Object) object.Object {
+func typeFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "type", args, 1, [][]string{})
 	if err != nil {
 		return err
@@ -729,7 +730,7 @@ func typeFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // split(string:"hello world!", sep:" ")
-func splitFn(tok token.Token, args ...object.Object) object.Object {
+func splitFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "split", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -750,7 +751,7 @@ func splitFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // lines(string:"a\nb")
-func linesFn(tok token.Token, args ...object.Object) object.Object {
+func linesFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "lines", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -772,7 +773,7 @@ func linesFn(tok token.Token, args ...object.Object) object.Object {
 
 // "{}".json()
 // Converts a valid JSON document to an ABS hash.
-func jsonFn(tok token.Token, args ...object.Object) object.Object {
+func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	// One interesting thing here is that we're creating
 	// a new environment from scratch, whereas it might
 	// be interesting to use the existing one. That would
@@ -791,7 +792,7 @@ func jsonFn(tok token.Token, args ...object.Object) object.Object {
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env := object.NewEnvironment(globalEnv.Writer)
+	env = object.NewEnvironment(env.Writer)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -840,7 +841,7 @@ func jsonFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // "a %s".fmt(b)
-func fmtFn(tok token.Token, args ...object.Object) object.Object {
+func fmtFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	list := []interface{}{}
 
 	for _, s := range args[1:] {
@@ -851,7 +852,7 @@ func fmtFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // sum(array:[1, 2, 3])
-func sumFn(tok token.Token, args ...object.Object) object.Object {
+func sumFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "sum", args, 1, [][]string{{object.ARRAY_OBJ}})
 	if err != nil {
 		return err
@@ -881,7 +882,7 @@ func sumFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // sort(array:[1, 2, 3])
-func sortFn(tok token.Token, args ...object.Object) object.Object {
+func sortFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "sort", args, 1, [][]string{{object.ARRAY_OBJ}})
 	if err != nil {
 		return err
@@ -931,7 +932,7 @@ func sortFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // map(array:[1, 2, 3], function:f(x) { x + 1 })
-func mapFn(tok token.Token, args ...object.Object) object.Object {
+func mapFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "map", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
 	if err != nil {
 		return err
@@ -943,7 +944,7 @@ func mapFn(tok token.Token, args ...object.Object) object.Object {
 	copy(newElements, arr.Elements)
 
 	for k, v := range arr.Elements {
-		evaluated := applyFunction(tok, args[1], []object.Object{v})
+		evaluated := applyFunction(tok, args[1], env, []object.Object{v})
 
 		if isError(evaluated) {
 			return evaluated
@@ -955,7 +956,7 @@ func mapFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // some(array:[1, 2, 3], function:f(x) { x == 2 })
-func someFn(tok token.Token, args ...object.Object) object.Object {
+func someFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "some", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
 	if err != nil {
 		return err
@@ -966,7 +967,7 @@ func someFn(tok token.Token, args ...object.Object) object.Object {
 	arr := args[0].(*object.Array)
 
 	for _, v := range arr.Elements {
-		r := applyFunction(tok, args[1], []object.Object{v})
+		r := applyFunction(tok, args[1], env, []object.Object{v})
 
 		if isTruthy(r) {
 			result = true
@@ -978,7 +979,7 @@ func someFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // every(array:[1, 2, 3], function:f(x) { x == 2 })
-func everyFn(tok token.Token, args ...object.Object) object.Object {
+func everyFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "every", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
 	if err != nil {
 		return err
@@ -989,7 +990,7 @@ func everyFn(tok token.Token, args ...object.Object) object.Object {
 	arr := args[0].(*object.Array)
 
 	for _, v := range arr.Elements {
-		r := applyFunction(tok, args[1], []object.Object{v})
+		r := applyFunction(tok, args[1], env, []object.Object{v})
 
 		if !isTruthy(r) {
 			result = false
@@ -1000,7 +1001,7 @@ func everyFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // find(array:[1, 2, 3], function:f(x) { x == 2 })
-func findFn(tok token.Token, args ...object.Object) object.Object {
+func findFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "find", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
 	if err != nil {
 		return err
@@ -1009,7 +1010,7 @@ func findFn(tok token.Token, args ...object.Object) object.Object {
 	arr := args[0].(*object.Array)
 
 	for _, v := range arr.Elements {
-		r := applyFunction(tok, args[1], []object.Object{v})
+		r := applyFunction(tok, args[1], env, []object.Object{v})
 
 		if isTruthy(r) {
 			return v
@@ -1020,7 +1021,7 @@ func findFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // filter(array:[1, 2, 3], function:f(x) { x == 2 })
-func filterFn(tok token.Token, args ...object.Object) object.Object {
+func filterFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "filter", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
 	if err != nil {
 		return err
@@ -1030,7 +1031,7 @@ func filterFn(tok token.Token, args ...object.Object) object.Object {
 	arr := args[0].(*object.Array)
 
 	for _, v := range arr.Elements {
-		evaluated := applyFunction(tok, args[1], []object.Object{v})
+		evaluated := applyFunction(tok, args[1], env, []object.Object{v})
 
 		if isError(evaluated) {
 			return evaluated
@@ -1045,7 +1046,7 @@ func filterFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // unique(array:[1, 2, 3])
-func uniqueFn(tok token.Token, args ...object.Object) object.Object {
+func uniqueFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "filter", args, 1, [][]string{{object.ARRAY_OBJ}})
 	if err != nil {
 		return err
@@ -1068,7 +1069,7 @@ func uniqueFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // contains("str", "tr")
-func containsFn(tok token.Token, args ...object.Object) object.Object {
+func containsFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "contains", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ, object.NUMBER_OBJ}})
 	if err != nil {
 		return err
@@ -1115,7 +1116,7 @@ func containsFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // str(1)
-func strFn(tok token.Token, args ...object.Object) object.Object {
+func strFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "str", args, 1, [][]string{})
 	if err != nil {
 		return err
@@ -1125,7 +1126,7 @@ func strFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // any("abc", "b")
-func anyFn(tok token.Token, args ...object.Object) object.Object {
+func anyFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "any", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1135,7 +1136,7 @@ func anyFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // prefix("abc", "a")
-func prefixFn(tok token.Token, args ...object.Object) object.Object {
+func prefixFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "prefix", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1145,7 +1146,7 @@ func prefixFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // suffix("abc", "a")
-func suffixFn(tok token.Token, args ...object.Object) object.Object {
+func suffixFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "suffix", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1155,7 +1156,7 @@ func suffixFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // repeat("abc", 3)
-func repeatFn(tok token.Token, args ...object.Object) object.Object {
+func repeatFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "repeat", args, 2, [][]string{{object.STRING_OBJ}, {object.NUMBER_OBJ}})
 	if err != nil {
 		return err
@@ -1167,7 +1168,7 @@ func repeatFn(tok token.Token, args ...object.Object) object.Object {
 // replace("abd", "d", "c") --> short form
 // replace("abd", "d", "c", -1)
 // replace("abc", ["a", "b"], "c", -1)
-func replaceFn(tok token.Token, args ...object.Object) object.Object {
+func replaceFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	var err object.Object
 
 	// Support short form
@@ -1202,7 +1203,7 @@ func replaceFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // title("some thing")
-func titleFn(tok token.Token, args ...object.Object) object.Object {
+func titleFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "title", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1212,7 +1213,7 @@ func titleFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // lower("ABC")
-func lowerFn(tok token.Token, args ...object.Object) object.Object {
+func lowerFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "lower", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1222,7 +1223,7 @@ func lowerFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // upper("abc")
-func upperFn(tok token.Token, args ...object.Object) object.Object {
+func upperFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "upper", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1232,7 +1233,7 @@ func upperFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // wait(`sleep 10 &`)
-func waitFn(tok token.Token, args ...object.Object) object.Object {
+func waitFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "wait", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1249,7 +1250,7 @@ func waitFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // kill(`sleep 10 &`)
-func killFn(tok token.Token, args ...object.Object) object.Object {
+func killFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "kill", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1270,7 +1271,7 @@ func killFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // trim("abc")
-func trimFn(tok token.Token, args ...object.Object) object.Object {
+func trimFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "trim", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1280,7 +1281,7 @@ func trimFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // trim_by("abc", "c")
-func trimByFn(tok token.Token, args ...object.Object) object.Object {
+func trimByFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "trim_by", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1290,7 +1291,7 @@ func trimByFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // index("abc", "c")
-func indexFn(tok token.Token, args ...object.Object) object.Object {
+func indexFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "index", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1306,7 +1307,7 @@ func indexFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // last_index("abcc", "c")
-func lastIndexFn(tok token.Token, args ...object.Object) object.Object {
+func lastIndexFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "last_index", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1322,7 +1323,7 @@ func lastIndexFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // slice("abcc", 0, -1)
-func sliceFn(tok token.Token, args ...object.Object) object.Object {
+func sliceFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "slice", args, 3, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.NUMBER_OBJ}, {object.NUMBER_OBJ}})
 	if err != nil {
 		return err
@@ -1375,7 +1376,7 @@ func sliceStartAndEnd(l int, start int, end int) (int, int) {
 }
 
 // shift([1,2,3]) removes and returns first value or null if array is empty
-func shiftFn(tok token.Token, args ...object.Object) object.Object {
+func shiftFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "shift", args, 1, [][]string{{object.ARRAY_OBJ}})
 	if err != nil {
 		return err
@@ -1392,7 +1393,7 @@ func shiftFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // reverse([1,2,3])
-func reverseFn(tok token.Token, args ...object.Object) object.Object {
+func reverseFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "reverse", args, 1, [][]string{{object.ARRAY_OBJ}})
 	if err != nil {
 		return err
@@ -1408,7 +1409,7 @@ func reverseFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // push([1,2,3], 4)
-func pushFn(tok token.Token, args ...object.Object) object.Object {
+func pushFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "push", args, 2, [][]string{{object.ARRAY_OBJ}, {object.NULL_OBJ,
 		object.ARRAY_OBJ, object.NUMBER_OBJ, object.STRING_OBJ, object.HASH_OBJ}})
 	if err != nil {
@@ -1423,7 +1424,7 @@ func pushFn(tok token.Token, args ...object.Object) object.Object {
 
 // pop([1,2,3]) removes and returns last value or null if array is empty
 // pop({"a":1, "b":2, "c":3}, "a") removes and returns {"key": value} or null if key not found
-func popFn(tok token.Token, args ...object.Object) object.Object {
+func popFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	// pop has 2 signatures: pop(array), and pop(hash, key)
 	var err object.Object
 	if len(args) > 0 {
@@ -1464,7 +1465,7 @@ func popFn(tok token.Token, args ...object.Object) object.Object {
 
 // keys([1,2,3]) returns array of indices
 // keys({"a": 1, "b": 2, "c": 3}) returns array of keys
-func keysFn(tok token.Token, args ...object.Object) object.Object {
+func keysFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "keys", args, 1, [][]string{{object.ARRAY_OBJ, object.HASH_OBJ}})
 	if err != nil {
 		return err
@@ -1490,7 +1491,7 @@ func keysFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // values({"a": 1, "b": 2, "c": 3}) returns array of values
-func valuesFn(tok token.Token, args ...object.Object) object.Object {
+func valuesFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "values", args, 1, [][]string{{object.HASH_OBJ}})
 	if err != nil {
 		return err
@@ -1506,7 +1507,7 @@ func valuesFn(tok token.Token, args ...object.Object) object.Object {
 }
 
 // items({"a": 1, "b": 2, "c": 3}) returns array of [key, value] tuples: [[a, 1], [b, 2] [c, 3]]
-func itemsFn(tok token.Token, args ...object.Object) object.Object {
+func itemsFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "items", args, 1, [][]string{{object.HASH_OBJ}})
 	if err != nil {
 		return err
@@ -1523,7 +1524,7 @@ func itemsFn(tok token.Token, args ...object.Object) object.Object {
 	return &object.Array{Elements: items}
 }
 
-func joinFn(tok token.Token, args ...object.Object) object.Object {
+func joinFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "join", args, 2, [][]string{{object.ARRAY_OBJ}, {object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1540,7 +1541,7 @@ func joinFn(tok token.Token, args ...object.Object) object.Object {
 	return &object.String{Token: tok, Value: strings.Join(newElements, args[1].(*object.String).Value)}
 }
 
-func sleepFn(tok token.Token, args ...object.Object) object.Object {
+func sleepFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "sleep", args, 1, [][]string{{object.NUMBER_OBJ}})
 	if err != nil {
 		return err
@@ -1558,16 +1559,20 @@ const ABS_SOURCE_DEPTH = "10"
 var sourceDepth, _ = strconv.Atoi(ABS_SOURCE_DEPTH)
 var sourceLevel = 0
 
-func sourceFn(tok token.Token, args ...object.Object) object.Object {
-	return doSource(tok, globalEnv, args...)
+func sourceFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	file, _ := util.ExpandPath(args[0].Inspect())
+	return doSource(tok, env, file, args...)
 }
 
 // require("file.abs")
-func requireFn(tok token.Token, args ...object.Object) object.Object {
-	return doSource(tok, object.NewEnvironment(globalEnv.Writer), args...)
+func requireFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	file := filepath.Join(env.Dir, args[0].Inspect())
+	e := object.NewEnvironment(env.Writer)
+	e.Dir = filepath.Dir(file)
+	return doSource(tok, e, file, args...)
 }
 
-func doSource(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+func doSource(tok token.Token, env *object.Environment, fileName string, args ...object.Object) object.Object {
 	err := validateArgs(tok, "source", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		// reset the source level
@@ -1576,7 +1581,7 @@ func doSource(tok token.Token, env *object.Environment, args ...object.Object) o
 	}
 
 	// get configured source depth if any
-	sourceDepthStr := util.GetEnvVar(globalEnv, "ABS_SOURCE_DEPTH", ABS_SOURCE_DEPTH)
+	sourceDepthStr := util.GetEnvVar(env, "ABS_SOURCE_DEPTH", ABS_SOURCE_DEPTH)
 	sourceDepth, _ = strconv.Atoi(sourceDepthStr)
 
 	// limit source file inclusion depth
@@ -1592,7 +1597,6 @@ func doSource(tok token.Token, env *object.Environment, args ...object.Object) o
 	sourceLevel++
 
 	// load the source file
-	fileName, _ := util.ExpandPath(args[0].Inspect())
 	code, error := ioutil.ReadFile(fileName)
 	if error != nil {
 		// reset the source level
@@ -1614,7 +1618,7 @@ func doSource(tok token.Token, env *object.Environment, args ...object.Object) o
 		}
 		return newError(tok, "error found in source file: %s\n%s", fileName, errMsg)
 	}
-	// invoke BeginEval() passing in the sourced program, globalEnv, and our lexer
+	// invoke BeginEval() passing in the sourced program, env, and our lexer
 	// we save the current global lexer and restore it after we return from BeginEval()
 	// NB. saving the lexer allows error line numbers to be relative to any nested source files
 	savedLexer := lex
@@ -1633,7 +1637,7 @@ func doSource(tok token.Token, env *object.Environment, args ...object.Object) o
 	return evaluated
 }
 
-func evalFn(tok token.Token, args ...object.Object) object.Object {
+func evalFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "eval", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1651,11 +1655,11 @@ func evalFn(tok token.Token, args ...object.Object) object.Object {
 		}
 		return newError(tok, "error found in eval block: %s\n%s", args[0].Inspect(), errMsg)
 	}
-	// invoke BeginEval() passing in the sourced program, globalEnv, and our lexer
+	// invoke BeginEval() passing in the sourced program, env, and our lexer
 	// we save the current global lexer and restore it after we return from BeginEval()
 	// NB. saving the lexer allows error line numbers to be relative to any nested source files
 	savedLexer := lex
-	evaluated := BeginEval(program, globalEnv, l)
+	evaluated := BeginEval(program, env, l)
 	lex = savedLexer
 
 	if evaluated != nil && evaluated.Type() == object.ERROR_OBJ {
@@ -1669,7 +1673,7 @@ func evalFn(tok token.Token, args ...object.Object) object.Object {
 	return evaluated
 }
 
-func execFn(tok token.Token, args ...object.Object) object.Object {
+func execFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "exec", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		return err
@@ -1678,7 +1682,7 @@ func execFn(tok token.Token, args ...object.Object) object.Object {
 	cmd = strings.Trim(cmd, " ")
 
 	// interpolate any $vars in the cmd string
-	cmd = util.InterpolateStringVars(cmd, globalEnv)
+	cmd = util.InterpolateStringVars(cmd, env)
 
 	var commands []string
 	var executor string

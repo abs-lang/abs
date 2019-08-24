@@ -2,6 +2,7 @@ package object
 
 import (
 	"io"
+	"os"
 	"sort"
 )
 
@@ -19,7 +20,8 @@ func NewEnclosedEnvironment(outer *Environment) *Environment {
 // ABS in
 func NewEnvironment(w io.Writer) *Environment {
 	s := make(map[string]Object)
-	return &Environment{store: s, outer: nil, Writer: w}
+	d, _ := os.Getwd()
+	return &Environment{store: s, outer: nil, Writer: w, Dir: d}
 }
 
 // Environment represent the environment associated
@@ -31,6 +33,16 @@ type Environment struct {
 	// Used to capture output. This is typically os.Stdout,
 	// but you could capture in any io.Writer of choice
 	Writer io.Writer
+	// Dir represents the directory from which we're executing code.
+	// It starts as the directory from which we invoke the ABS
+	// executable, but changes when we call require("...") as each
+	// require call resets the dir to its own directory, so that
+	// relative imports work.
+	//
+	// If we have script A and B in /tmp, A can require("B")
+	// wihout having to specify its full absolute path
+	// eg. require("/tmp/B")
+	Dir string
 }
 
 // Get returns an identifier stored within the environment

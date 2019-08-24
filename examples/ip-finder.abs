@@ -1,0 +1,3 @@
+return f() {
+    return `curl icanhazip.com`
+}
