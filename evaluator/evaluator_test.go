@@ -929,6 +929,10 @@ c")`, []string{"a", "b", "c"}},
 		{`sleep(0.01)`, nil},
 		{`$()`, ""},
 		{`a = 1; eval("a")`, 1},
+		{`"a = 2; return 10" >> "test-source-vs-require.abs.ignore"; a = 1; x = source("test-source-vs-require.abs.ignore"); a`, 2},
+		{`"a = 2; return 10" >> "test-source-vs-require.abs.ignore"; a = 1; x = require("test-source-vs-require.abs.ignore"); a`, 1},
+		{`"a = 2; return 10" >> "test-source-vs-require.abs.ignore"; a = 1; x = source("test-source-vs-require.abs.ignore"); x`, 10},
+		{`"a = 2; return 10" >> "test-source-vs-require.abs.ignore"; a = 1; x = require("test-source-vs-require.abs.ignore"); x`, 10},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)

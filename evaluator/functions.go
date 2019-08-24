@@ -319,16 +319,15 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    sleepFn,
 		},
-		// source("fileName")
-		// aka require()
+		// source("file.abs") -- soure a file, with access to the global environment
 		"source": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
 		},
-		// require("fileName") -- alias for source()
+		// require("file.abs") -- require a file without giving it access to the global environment
 		"require": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
-			Fn:    sourceFn,
+			Fn:    requireFn,
 		},
 		// exec(command) -- execute command with interactive stdIO
 		"exec": &object.Builtin{
@@ -1553,14 +1552,22 @@ func sleepFn(tok token.Token, args ...object.Object) object.Object {
 	return NULL
 }
 
-// source("fileName")
-// aka require()
+// source("file.abs")
 const ABS_SOURCE_DEPTH = "10"
 
 var sourceDepth, _ = strconv.Atoi(ABS_SOURCE_DEPTH)
 var sourceLevel = 0
 
 func sourceFn(tok token.Token, args ...object.Object) object.Object {
+	return doSource(tok, globalEnv, args...)
+}
+
+// require("file.abs")
+func requireFn(tok token.Token, args ...object.Object) object.Object {
+	return doSource(tok, object.NewEnvironment(globalEnv.Writer), args...)
+}
+
+func doSource(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "source", args, 1, [][]string{{object.STRING_OBJ}})
 	if err != nil {
 		// reset the source level
@@ -1611,7 +1618,7 @@ func sourceFn(tok token.Token, args ...object.Object) object.Object {
 	// we save the current global lexer and restore it after we return from BeginEval()
 	// NB. saving the lexer allows error line numbers to be relative to any nested source files
 	savedLexer := lex
-	evaluated := BeginEval(program, globalEnv, l)
+	evaluated := BeginEval(program, env, l)
 	lex = savedLexer
 	if evaluated != nil && evaluated.Type() == object.ERROR_OBJ {
 		// use errObj.Message instead of errObj.Inspect() to avoid nested "ERROR: " prefixes

@@ -229,15 +229,49 @@ Halts the process for as many `ms` you specified:
 sleep(1000) # sleeps for 1 second
 ```
 
-### source(path_to_file) aka require(path_to_file) 
+### require(path_to_file.abs)
 
-Evaluates the script at `path_to_file` in the context of the ABS global
-environment. The results of any expressions in the file become
-available to other commands in the REPL command line or to other
+Evaluates the script at `path_to_file.abs`, and makes
+its return value available to the caller.
+
+For example, suppose we have a `module.abs` file:
+
+``` bash
+adder = f(a, b) { a + b }
+multiplier = f(a, b) { a * b }
+
+return {"adder": adder, "multiplier": multiplier}
+```
+
+and a `main.abs` such as:
+
+``` bash
+mod = require("module.abs")
+
+echo(mod.adder(1, 2)) # 3
+```
+
+This is mostly useful to create external library
+functions, like NPM modules or PIP packages, that
+do not have access to the global environment. Any
+variable set outside of the module will not be
+available inside it, and vice-versa. The only
+variable available to the caller (the script requiring
+the module) is the module's return value.
+
+### source(path_to_file.abs)
+
+Evaluates the script at `path_to_file.abs` in the context of the 
+ABS global environment. The results of any expressions in the file
+become available to other commands in the REPL command line or to other
 scripts in the current script execution chain. 
 
-This is most useful for creating `library functions` in a script
-that can be used by many other scripts. Often the library functions
+This is very similar to `require`, but allows the module to access
+and edit the global environment. Any variable set inside the module
+will also be available outside of it.
+
+This is most useful for creating library functions in a startup script,
+or variables that can be used by many other scripts. Often these library functions
 are loaded via the ABS Init File `~/.absrc` (see [ABS Init File](/introduction/how-to-run-abs-code)).
 
 For example:
@@ -291,6 +325,7 @@ For example an ABS Init File may contain:
 ABS_SOURCE_DEPTH = 15
 source("~/path/to/abs/lib")
 ```
+
 This will limit the source inclusion depth to 15 levels for this
 `source()` statement and will also apply to future `source()`
 statements until changed.
