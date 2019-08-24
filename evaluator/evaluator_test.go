@@ -1586,7 +1586,7 @@ func TestStringIndexExpressions(t *testing.T) {
 }
 
 func testEval(input string) object.Object {
-	env := object.NewEnvironment(os.Stdout)
+	env := object.NewEnvironment(os.Stdout, "")
 	lex := lexer.New(input)
 	p := parser.New(lex)
 	program := p.ParseProgram()

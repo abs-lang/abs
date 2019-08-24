@@ -37,7 +37,8 @@ var (
 )
 
 func init() {
-	env = object.NewEnvironment(os.Stdout)
+	d, _ := os.Getwd()
+	env = object.NewEnvironment(os.Stdout, d)
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
