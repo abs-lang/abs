@@ -2,7 +2,6 @@ package object
 
 import (
 	"io"
-	"os"
 	"sort"
 )
 
@@ -11,17 +10,18 @@ import (
 // new environment has access to identifiers stored
 // in the outer one.
 func NewEnclosedEnvironment(outer *Environment) *Environment {
-	env := NewEnvironment(outer.Writer)
+	env := NewEnvironment(outer.Writer, outer.Dir)
 	env.outer = outer
 	return env
 }
 
 // NewEnvironment creates a new environment to run
-// ABS in
-func NewEnvironment(w io.Writer) *Environment {
+// ABS in, specifying a writer for the output of the
+// program and the base dir (which is used to require
+// other scripts)
+func NewEnvironment(w io.Writer, dir string) *Environment {
 	s := make(map[string]Object)
-	d, _ := os.Getwd()
-	return &Environment{store: s, outer: nil, Writer: w, Dir: d}
+	return &Environment{store: s, outer: nil, Writer: w, Dir: dir}
 }
 
 // Environment represent the environment associated

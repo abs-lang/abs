@@ -792,7 +792,7 @@ func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env = object.NewEnvironment(env.Writer)
+	env = object.NewEnvironment(env.Writer, env.Dir)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -1567,8 +1567,7 @@ func sourceFn(tok token.Token, env *object.Environment, args ...object.Object) o
 // require("file.abs")
 func requireFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	file := filepath.Join(env.Dir, args[0].Inspect())
-	e := object.NewEnvironment(env.Writer)
-	e.Dir = filepath.Dir(file)
+	e := object.NewEnvironment(env.Writer, filepath.Dir(file))
 	return doSource(tok, e, file, args...)
 }
 
