@@ -1096,7 +1096,7 @@ func evalStringIndexExpression(tok token.Token, array, index object.Object, end 
 	max := len(stringObject.Value) - 1
 
 	if isRange {
-		max += 1
+		max++
 		// A range's minimum value is 0
 		if idx < 0 {
 			idx = 0
@@ -1127,8 +1127,23 @@ func evalStringIndexExpression(tok token.Token, array, index object.Object, end 
 		return &object.String{Token: tok, Value: string(stringObject.Value[idx:max])}
 	}
 
-	if idx < 0 || idx > max {
-		return NULL
+	// Out of bounds? Return an empty string
+	if idx > max {
+		return &object.String{Token: tok, Value: ""}
+	}
+
+	if idx < 0 {
+		length := max + 1
+
+		// Negative out of bounds? Return an empty string
+		if math.Abs(float64(idx)) > float64(length) {
+			return &object.String{Token: tok, Value: ""}
+		}
+
+		// Our index was negative, so the actual index is length of the string + the index
+		// eg 3 + (-2) = 1
+		// "123"[-2]   = "2"
+		idx = length + idx
 	}
 
 	return &object.String{Token: tok, Value: string(stringObject.Value[idx])}
@@ -1140,7 +1155,7 @@ func evalArrayIndexExpression(tok token.Token, array, index object.Object, end o
 	max := len(arrayObject.Elements) - 1
 
 	if isRange {
-		max += 1
+		max++
 		// A range's minimum value is 0
 		if idx < 0 {
 			idx = 0
@@ -1171,8 +1186,23 @@ func evalArrayIndexExpression(tok token.Token, array, index object.Object, end o
 		return &object.Array{Token: tok, Elements: arrayObject.Elements[idx:max]}
 	}
 
-	if idx < 0 || idx > max {
+	// Out of bounds? Return a null element
+	if idx > max {
 		return NULL
+	}
+
+	if idx < 0 {
+		length := max + 1
+
+		// Negative out of bounds? Return a null element
+		if math.Abs(float64(idx)) > float64(length) {
+			return NULL
+		}
+
+		// Our index was negative, so the actual index is length of the string + the index
+		// eg 3 + (-2) = 1
+		// [1,2,3][-2] = 2
+		idx = length + idx
 	}
 
 	return arrayObject.Elements[idx]
