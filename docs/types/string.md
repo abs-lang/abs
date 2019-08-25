@@ -32,7 +32,14 @@ with the index notation:
 "hello world"[1] # e
 ```
 
-Accessing an index that does not exist returns null.
+Accessing an index that does not exist returns an empty string.
+
+You can access the Nth last character of the string using a
+negative index:
+
+``` bash
+"string"[-2] # "n"
+```
 
 You can also access a range of the string with the `[start:end]` notation:
 
@@ -42,7 +49,8 @@ You can also access a range of the string with the `[start:end]` notation:
 
 where `start` is the starting position in the array, and `end` is
 the ending one. If `start` is not specified, it is assumed to be 0,
-and if `end` is omitted it is assumed to be the character in the string:
+and if `end` is omitted it is assumed to be the last character in the
+string:
 
 ``` bash
 "string"[0:3] // "str"

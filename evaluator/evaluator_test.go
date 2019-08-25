@@ -1377,8 +1377,24 @@ func TestArrayIndexExpressions(t *testing.T) {
 			nil,
 		},
 		{
-			"[1, 2, 3][-1]",
+			"[1, 2, 3][-2]",
+			2,
+		},
+		{
+			"[1, 2, 3][-10]",
 			nil,
+		},
+		{
+			"[1, 2, 3][-3]",
+			1,
+		},
+		{
+			"[1, 2, 3][-4]",
+			nil,
+		},
+		{
+			"[1, 2, 3][-0]",
+			1,
 		},
 		{
 			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][1:-300]; a[0]",
@@ -1512,7 +1528,7 @@ func TestStringIndexExpressions(t *testing.T) {
 	}{
 		{
 			`"123"[10]`,
-			nil,
+			"",
 		},
 		{
 			`"123"[1]`,
@@ -1533,6 +1549,18 @@ func TestStringIndexExpressions(t *testing.T) {
 		{
 			`"123"[:-1]`,
 			"12",
+		},
+		{
+			`"123"[-2]`,
+			"2",
+		},
+		{
+			`"123"[-1]`,
+			"3",
+		},
+		{
+			`"123"[-10]`,
+			"",
 		},
 		{
 			`"123"[2:-10]`,
@@ -1559,10 +1587,6 @@ func TestStringIndexExpressions(t *testing.T) {
 			`index ranges can only be numerical: got "{}" (type HASH)`,
 		},
 		{
-			`"123"[-2]`,
-			"",
-		},
-		{
 			`"123"[3]`,
 			"",
 		},
@@ -1575,12 +1599,12 @@ func TestStringIndexExpressions(t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		switch result := evaluated.(type) {
-		case *object.Null:
-			testNullObject(t, evaluated)
 		case *object.String:
 			testStringObject(t, evaluated, tt.expected.(string))
 		case *object.Error:
 			logErrorWithPosition(t, result.Message, tt.expected)
+		default:
+			t.Errorf("object is not the right result. got=%s ('%+v' expected)", result.Inspect(), tt.expected)
 		}
 	}
 }
