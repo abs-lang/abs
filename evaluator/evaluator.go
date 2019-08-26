@@ -93,7 +93,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return NULL
 
 	case *ast.StringLiteral:
-		return &object.String{Token: node.Token, Value: node.Value}
+		return &object.String{Token: node.Token, Value: util.InterpolateStringVars(node.Value, env)}
 
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)

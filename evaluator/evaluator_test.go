@@ -365,6 +365,22 @@ func TestStringWriters(t *testing.T) {
 	}
 }
 
+func TestStringInterpolation(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`a = "123"; "abc$a"`, "abc123"},
+		{`a = "123"; "abc\$a"`, "abc$a"},
+		{`a = "123"; "$$a$$a$$a"`, "$123$123$123"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestForInExpressions(t *testing.T) {
 	tests := []struct {
 		input    string

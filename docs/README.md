@@ -80,7 +80,7 @@ if !res.ok {
 ip = res.json().ip
 total = ip.split(".").map(int).sum()
 if total > 100 {
-    echo("The sum of [%s] is a large number, %s.", ip, total)
+    echo("The sum of [$ip] is a large number, $total.")
 }
 ```
 
