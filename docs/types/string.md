@@ -83,6 +83,25 @@ To test for the existence of substrings within strings use the `in` operator:
 "xyz" in "string"   # false
 ```
 
+## Interpolation
+
+You can also replace parts of the string with variables
+declared within your program using the `$` symbol:
+
+``` bash
+file = "/etc/hosts"
+x = "File name is: $file"
+echo(x) # "File name is: /etc/hosts"
+```
+
+If you need `$` literals in your command, you
+simply need to escape them with a `\`:
+
+``` bash
+"$non_existing_var" # "" since the ABS variable 'non_existing_var' doesn't exist
+"\$non_existing_var" # "$non_existing_var"
+```
+
 ## Special characters embedded in strings
 
 Double and single quoted strings behave differently if the string contains
