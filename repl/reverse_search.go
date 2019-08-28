@@ -9,7 +9,7 @@ import (
 var reverseSearchStr string
 var lastSearchPosition int
 
-func clearReverseSearch() {
+func clearReverseSearch(p *prompt.Document) {
 	reverseSearchStr = ""
 	initReverseSearch()
 }
