@@ -3,6 +3,7 @@ package evaluator
 import (
 	"bufio"
 	"crypto/rand"
+	"encoding/csv"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -335,9 +336,15 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    execFn,
 		},
+		// eval(code) -- evaluates code in the context of the current ABS environment
 		"eval": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    evalFn,
+		},
+		// tsv([[1,2,3,4], [5,6,7,8]]) -- converts an array into a TSV string
+		"tsv": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    tsvFn,
 		},
 	}
 }
@@ -1670,6 +1677,138 @@ func evalFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	return evaluated
+}
+
+// [[1,2], [3,4]].tsv()
+// [{"a": 1, "b": 2}, {"b": 3, "c": 4}].tsv()
+func tsvFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	// all arguments were passed
+	if len(args) == 3 {
+		err := validateArgs(tok, "tsv", args, 3, [][]string{{object.ARRAY_OBJ}, {object.STRING_OBJ}, {object.ARRAY_OBJ}})
+		if err != nil {
+			return err
+		}
+	}
+
+	// If no header was passed, let's set it to empty list by default
+	if len(args) == 2 {
+		err := validateArgs(tok, "tsv", args, 2, [][]string{{object.ARRAY_OBJ}, {object.STRING_OBJ}})
+		if err != nil {
+			return err
+		}
+		args = append(args, &object.Array{Elements: []object.Object{}})
+	}
+
+	// If no separator and header was passed, let's set them to tab and empty list by default
+	if len(args) == 1 {
+		err := validateArgs(tok, "tsv", args, 1, [][]string{{object.ARRAY_OBJ}})
+		if err != nil {
+			return err
+		}
+		args = append(args, &object.String{Value: "\t"})
+		args = append(args, &object.Array{Elements: []object.Object{}})
+	}
+
+	array := args[0].(*object.Array)
+	separator := args[1].(*object.String).Value
+
+	if len(separator) < 1 {
+		return newError(tok, "the separator argument to the tsv() function needs to be a valid character, '%s' given", separator)
+	}
+	// the final outut
+	out := &strings.Builder{}
+	tsv := csv.NewWriter(out)
+	tsv.Comma = rune(separator[0])
+
+	// whether our array is made of ALL arrays or ALL hashes
+	var isArray bool
+	var isHash bool
+	homogeneous := array.Homogeneous()
+
+	if len(array.Elements) > 0 {
+		_, isArray = array.Elements[0].(*object.Array)
+		_, isHash = array.Elements[0].(*object.Hash)
+	}
+
+	// if the array is not homogeneous, we cannot process it
+	if !homogeneous || (!isArray && !isHash) {
+		return newError(tok, "tsv() must be called on an array of arrays or objects, such as [[1, 2, 3], [4, 5, 6]], '%s' given as argument", array.Inspect())
+	}
+
+	headerObj := args[2].(*object.Array)
+	header := []string{}
+
+	if len(headerObj.Elements) > 0 {
+		for _, v := range headerObj.Elements {
+			header = append(header, v.Inspect())
+		}
+	} else if isHash {
+		// if our array is made of hashes, we will include a header in
+		// our TSV output, made of all possible keys found in every object
+		for _, rows := range array.Elements {
+			for _, pair := range rows.(*object.Hash).Pairs {
+				header = append(header, pair.Key.Inspect())
+			}
+		}
+
+		// When no header is provided, we will simply
+		// use the list of keys from all object, alphabetically
+		// sorted
+		header = util.UniqueStrings(header)
+		sort.Strings(header)
+	}
+
+	if len(header) > 0 {
+		err := tsv.Write(header)
+
+		if err != nil {
+			return newError(tok, err.Error())
+		}
+	}
+
+	for _, row := range array.Elements {
+		// Row values
+		values := []string{}
+
+		// In the case of an array, creating the row is fairly
+		// straightforward: we loop through the elements and extract
+		// their value
+		if isArray {
+			for _, element := range row.(*object.Array).Elements {
+				values = append(values, element.Inspect())
+			}
+
+		}
+
+		// In case of an hash, we want to extract values based on
+		// the header. If a key is not present in an hash, we will
+		// simply set it to null
+		if isHash {
+			for _, key := range header {
+				pair, ok := row.(*object.Hash).GetPair(key)
+				var value object.Object
+
+				if ok {
+					value = pair.Value
+				} else {
+					value = NULL
+				}
+
+				values = append(values, value.Inspect())
+			}
+		}
+
+		// Add the row to the final output, by concatenating
+		// it with the given separator
+		err := tsv.Write(values)
+
+		if err != nil {
+			return newError(tok, err.Error())
+		}
+	}
+
+	tsv.Flush()
+	return &object.String{Value: strings.TrimSpace(out.String())}
 }
 
 func execFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
