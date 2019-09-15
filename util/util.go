@@ -86,3 +86,17 @@ func InterpolateStringVars(str string, env *object.Environment) string {
 	})
 	return str
 }
+
+// UniqueStrings takes an input list of strings
+// and returns a version without duplicate values
+func UniqueStrings(slice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}

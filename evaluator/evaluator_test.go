@@ -949,6 +949,14 @@ c")`, []string{"a", "b", "c"}},
 		{`"a = 2; return 10" >> "test-source-vs-require.abs.ignore"; a = 1; x = require("test-source-vs-require.abs.ignore"); a`, 1},
 		{`"a = 2; return 10" >> "test-source-vs-require.abs.ignore"; a = 1; x = source("test-source-vs-require.abs.ignore"); x`, 10},
 		{`"a = 2; return 10" >> "test-source-vs-require.abs.ignore"; a = 1; x = require("test-source-vs-require.abs.ignore"); x`, 10},
+		{`[[1,2,3], [2,3,4]].tsv()`, "1\t2\t3\n2\t3\t4"},
+		{`[1].tsv()`, "tsv() must be called on an array of arrays or objects, such as [[1, 2, 3], [4, 5, 6]], '[1]' given"},
+		{`[{"c": 3, "b": "hello"}, {"b": 20, "c": 0}].tsv()`, "b\tc\nhello\t3\n20\t0"},
+		{`[[1,2,3], [2,3,4]].tsv(",")`, "1,2,3\n2,3,4"},
+		{`[[1,2,3], [2]].tsv(",")`, "1,2,3\n2"},
+		{`[[1,2,3], [2,3,4]].tsv("abc")`, "1a2a3\n2a3a4"},
+		{`[[1,2,3], [2,3,4]].tsv("")`, "the separator argument to the tsv() function needs to be a valid character, '' given"},
+		{`[{"c": 3, "b": "hello"}, {"b": 20, "c": 0}].tsv("\t", ["c", "b", "a"])`, "c\tb\ta\n3\thello\tnull\n0\t20\tnull"},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
