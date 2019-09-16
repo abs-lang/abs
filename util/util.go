@@ -1,6 +1,8 @@
 package util
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -99,4 +101,18 @@ func UniqueStrings(slice []string) []string {
 		}
 	}
 	return list
+}
+
+func ReadAliasFromFile(path string) (string, error) {
+	var packageAlias map[string]string
+	a, _ := ioutil.ReadFile("./packages.abs.json")
+	err := json.Unmarshal(a, &packageAlias)
+	if err != nil {
+		return path, err
+	}
+
+	if packageAlias[path] != "" {
+		return packageAlias[path], nil
+	}
+	return path, nil
 }

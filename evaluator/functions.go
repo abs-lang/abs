@@ -1572,10 +1572,31 @@ func sourceFn(tok token.Token, env *object.Environment, args ...object.Object) o
 }
 
 // require("file.abs")
+var history = make(map[string]string)
+
+type StringFn func(string) (string, error)
+
 func requireFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	file := filepath.Join(env.Dir, args[0].Inspect())
+	getAlias := Memoize(util.ReadAliasFromFile)
+	a, error := getAlias(args[0].Inspect())
+	if error != nil {
+		return newError(tok, "error resolving '%s': %s\n", args[0].Inspect(), error.Error())
+	}
+
+	file := filepath.Join(env.Dir, a)
 	e := object.NewEnvironment(env.Writer, filepath.Dir(file))
 	return doSource(tok, e, file, args...)
+}
+
+func Memoize(fn StringFn) StringFn {
+	return func(str string) (string, error) {
+		if res, ok := history[str]; ok {
+			return res, nil
+		}
+		res, err := fn(str)
+		history[str] = res
+		return res, err
+	}
 }
 
 func doSource(tok token.Token, env *object.Environment, fileName string, args ...object.Object) object.Object {
