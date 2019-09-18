@@ -1,6 +1,7 @@
 package util
 
 import (
+	"os"
 	"testing"
 )
 
@@ -11,10 +12,10 @@ func TestUnaliasPath(t *testing.T) {
 		expected string
 	}{
 		{"test", map[string]string{}, "test"},
-		{"test/sample.abs", map[string]string{}, "test/sample.abs"},
-		{"test/sample.abs", map[string]string{"test": "path"}, "path/sample.abs"},
-		{"test", map[string]string{"test": "path"}, "path/index.abs"},
-		{"./test", map[string]string{"test": "path"}, "./test"},
+		{"test" + string(os.PathSeparator) + "sample.abs", map[string]string{}, "test" + string(os.PathSeparator) + "sample.abs"},
+		{"test" + string(os.PathSeparator) + "sample.abs", map[string]string{"test": "path"}, "path" + string(os.PathSeparator) + "sample.abs"},
+		{"test", map[string]string{"test": "path"}, "path" + string(os.PathSeparator) + "index.abs"},
+		{"." + string(os.PathSeparator) + "test", map[string]string{"test": "path"}, "." + string(os.PathSeparator) + "test"},
 	}
 
 	for _, tt := range tests {
