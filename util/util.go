@@ -1,8 +1,6 @@
 package util
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -104,26 +102,9 @@ func UniqueStrings(slice []string) []string {
 	return list
 }
 
-// ReadAliasFromFile translates a path alias
+// UnaliasPath translates a path alias
 // to the full path in the filesystem.
-func ReadAliasFromFile(path string) (string, error) {
-	var packageAlias map[string]string
-	a, err := ioutil.ReadFile("./packages.abs.json")
-
-	// We couldn't open the packages, file, possibly doesn't exists
-	// and the code shouldn't fail
-	if err != nil {
-		return path, nil
-	}
-
-	// Try to decode the packages file:
-	// if an error occurs we will simply
-	// ignore it
-	err = json.Unmarshal(a, &packageAlias)
-	if err != nil {
-		return path, err
-	}
-
+func UnaliasPath(path string, packageAlias map[string]string) (string, error) {
 	// An alias can come in different forms:
 	//  - package
 	//  - package/file.abs

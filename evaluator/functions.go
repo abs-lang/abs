@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/rand"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -1574,11 +1575,26 @@ func sourceFn(tok token.Token, env *object.Environment, args ...object.Object) o
 // require("file.abs")
 var history = make(map[string]string)
 
-type StringFn func(string) (string, error)
+var packageAliases map[string]string
+var packageAliasesLoaded bool
 
 func requireFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	getAlias := Memoize(util.ReadAliasFromFile)
-	a, error := getAlias(args[0].Inspect())
+	if !packageAliasesLoaded {
+		a, err := ioutil.ReadFile("./packages.abs.json")
+
+		// We couldn't open the packages, file, possibly doesn't exists
+		// and the code shouldn't fail
+		if err == nil {
+			// Try to decode the packages file:
+			// if an error occurs we will simply
+			// ignore it
+			json.Unmarshal(a, &packageAliases)
+		}
+
+		packageAliasesLoaded = true
+	}
+
+	a, error := util.UnaliasPath(args[0].Inspect(), packageAliases)
 	if error != nil {
 		return newError(tok, "error resolving '%s': %s\n", args[0].Inspect(), error.Error())
 	}
@@ -1586,17 +1602,6 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 	file := filepath.Join(env.Dir, a)
 	e := object.NewEnvironment(env.Writer, filepath.Dir(file))
 	return doSource(tok, e, file, args...)
-}
-
-func Memoize(fn StringFn) StringFn {
-	return func(str string) (string, error) {
-		if res, ok := history[str]; ok {
-			return res, nil
-		}
-		res, err := fn(str)
-		history[str] = res
-		return res, err
-	}
 }
 
 func doSource(tok token.Token, env *object.Environment, fileName string, args ...object.Object) object.Object {
