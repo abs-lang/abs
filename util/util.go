@@ -122,15 +122,18 @@ func UnaliasPath(path string, packageAlias map[string]string) string {
 		// paths
 		p := []string{packageAlias[parts[0]]}
 		p = append(p, parts[1:]...)
-
-		// If our path didn't end with an ABS file,
-		// let's assume it's a directory and we will
-		// auto-include the index.abs file from it
-		if filepath.Ext(path) != ".abs" {
-			p = append(p, "index.abs")
-		}
-
-		return filepath.Join(p...)
+		path = filepath.Join(p...)
 	}
+	return appendIndexFile(path)
+}
+
+// If our path didn't end with an ABS file (.abs),
+// let's assume it's a directory and we will
+// auto-include the index.abs file from it
+func appendIndexFile(path string) string {
+	if filepath.Ext(path) != ".abs" {
+		return filepath.Join(path, "index.abs")
+	}
+
 	return path
 }

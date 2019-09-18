@@ -339,4 +339,4 @@ statements until changed.
 
 That's about it for this section!
 
-You can now head over to read a little bit about [errors](/misc/error).
+You can now head over to read a little bit about [how to install 3rd party libraries](/misc/3pl).

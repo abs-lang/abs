@@ -11,11 +11,11 @@ func TestUnaliasPath(t *testing.T) {
 		aliases  map[string]string
 		expected string
 	}{
-		{"test", map[string]string{}, "test"},
+		{"test", map[string]string{}, "test" + string(os.PathSeparator) + "index.abs"},
 		{"test" + string(os.PathSeparator) + "sample.abs", map[string]string{}, "test" + string(os.PathSeparator) + "sample.abs"},
 		{"test" + string(os.PathSeparator) + "sample.abs", map[string]string{"test": "path"}, "path" + string(os.PathSeparator) + "sample.abs"},
 		{"test", map[string]string{"test": "path"}, "path" + string(os.PathSeparator) + "index.abs"},
-		{"." + string(os.PathSeparator) + "test", map[string]string{"test": "path"}, "." + string(os.PathSeparator) + "test"},
+		{"." + string(os.PathSeparator) + "test", map[string]string{"test": "path"}, "test" + string(os.PathSeparator) + "index.abs"},
 	}
 
 	for _, tt := range tests {
