@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/abs-lang/abs/object"
 )
@@ -103,16 +104,52 @@ func UniqueStrings(slice []string) []string {
 	return list
 }
 
+// ReadAliasFromFile translates a path alias
+// to the full path in the filesystem.
 func ReadAliasFromFile(path string) (string, error) {
 	var packageAlias map[string]string
-	a, _ := ioutil.ReadFile("./packages.abs.json")
-	err := json.Unmarshal(a, &packageAlias)
+	a, err := ioutil.ReadFile("./packages.abs.json")
+
+	// We couldn't open the packages, file, possibly doesn't exists
+	// and the code shouldn't fail
+	if err != nil {
+		return path, nil
+	}
+
+	// Try to decode the packages file:
+	// if an error occurs we will simply
+	// ignore it
+	err = json.Unmarshal(a, &packageAlias)
 	if err != nil {
 		return path, err
 	}
 
-	if packageAlias[path] != "" {
-		return packageAlias[path], nil
+	// An alias can come in different forms:
+	//  - package
+	//  - package/file.abs
+	// but we only really need to resolve the
+	// first path in the alias.
+	parts := strings.Split(path, string(os.PathSeparator))
+
+	if len(parts) < 1 {
+		return path, nil
+	}
+
+	if packageAlias[parts[0]] != "" {
+		// If we are able to resolve a path, then
+		// we should join in back with the rest of the
+		// paths
+		p := []string{packageAlias[parts[0]]}
+		p = append(p, parts[1:]...)
+
+		// If our path didn't end with an ABS file,
+		// let's assume it's a directory and we will
+		// auto-include the index.abs file from it
+		if filepath.Ext(path) != ".abs" {
+			p = append(p, "index.abs")
+		}
+
+		return filepath.Join(p...), nil
 	}
 	return path, nil
 }

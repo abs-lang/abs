@@ -18,7 +18,6 @@ func valid(module string) bool {
 }
 
 func Install(module string) {
-
 	if !valid(module) {
 		fmt.Printf(`Error reading URL. Please use "github.com/USER/REPO" format to install`)
 		return
@@ -44,7 +43,7 @@ func Install(module string) {
 	return
 }
 
-func PrintLoader(done chan int64, message string) {
+func printLoader(done chan int64, message string) {
 	var stop bool = false
 	symbols := []string{"🌑 ", "🌒 ", "🌓 ", "🌔 ", "🌕 ", "🌖 ", "🌗 ", "🌘 "}
 	i := 0
@@ -92,7 +91,7 @@ func getZip(module string) error {
 	url := fmt.Sprintf("https://%s/archive/master.zip", module)
 
 	done := make(chan int64)
-	go PrintLoader(done, "Downloading archive")
+	go printLoader(done, "Downloading archive")
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -189,21 +188,19 @@ func createAlias(module string) (string, error) {
 
 	data := make(map[string]string)
 	moduleName := filepath.Base(module)
+	// Appending "master" as Github zip file has "-master" suffix
 	modulePath := fmt.Sprintf("./vendor/%s-master", module)
 
 	// If package.abs.json file is empty
 	if len(b) == 0 {
-		// Appending "master" as Github zip file has "-master" suffix
 		// Add alias key-value pair to file
 		data[moduleName] = modulePath
-
 	} else {
 		err = json.Unmarshal(b, &data)
 		if err != nil {
 			fmt.Printf("Could not unmarshal alias json %s\n", err)
 			return "", err
 		}
-
 		// module already installed and aliased
 		if data[moduleName] == modulePath {
 			return moduleName, nil
@@ -211,12 +208,14 @@ func createAlias(module string) (string, error) {
 
 		if data[moduleName] != "" {
 			fmt.Printf("This module could not be aliased because module of same name exists\n")
-			moduleName = module
-			data[moduleName] = modulePath
+			return modulePath, nil
 		}
+
+		data[moduleName] = modulePath
 	}
 
 	newData, err := json.MarshalIndent(data, "", "    ")
+
 	if err != nil {
 		fmt.Printf("Could not marshal alias json when installing module %s\n", err)
 		return "", err
