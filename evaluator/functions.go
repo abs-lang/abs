@@ -1594,11 +1594,7 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		packageAliasesLoaded = true
 	}
 
-	a, error := util.UnaliasPath(args[0].Inspect(), packageAliases)
-	if error != nil {
-		return newError(tok, "error resolving '%s': %s\n", args[0].Inspect(), error.Error())
-	}
-
+	a := util.UnaliasPath(args[0].Inspect(), packageAliases)
 	file := filepath.Join(env.Dir, a)
 	e := object.NewEnvironment(env.Writer, filepath.Dir(file))
 	return doSource(tok, e, file, args...)

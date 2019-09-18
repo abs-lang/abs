@@ -104,7 +104,7 @@ func UniqueStrings(slice []string) []string {
 
 // UnaliasPath translates a path alias
 // to the full path in the filesystem.
-func UnaliasPath(path string, packageAlias map[string]string) (string, error) {
+func UnaliasPath(path string, packageAlias map[string]string) string {
 	// An alias can come in different forms:
 	//  - package
 	//  - package/file.abs
@@ -113,7 +113,7 @@ func UnaliasPath(path string, packageAlias map[string]string) (string, error) {
 	parts := strings.Split(path, string(os.PathSeparator))
 
 	if len(parts) < 1 {
-		return path, nil
+		return path
 	}
 
 	if packageAlias[parts[0]] != "" {
@@ -130,7 +130,7 @@ func UnaliasPath(path string, packageAlias map[string]string) (string, error) {
 			p = append(p, "index.abs")
 		}
 
-		return filepath.Join(p...), nil
+		return filepath.Join(p...)
 	}
-	return path, nil
+	return path
 }
