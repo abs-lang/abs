@@ -10,16 +10,18 @@ import (
 // new environment has access to identifiers stored
 // in the outer one.
 func NewEnclosedEnvironment(outer *Environment) *Environment {
-	env := NewEnvironment(outer.Writer)
+	env := NewEnvironment(outer.Writer, outer.Dir)
 	env.outer = outer
 	return env
 }
 
 // NewEnvironment creates a new environment to run
-// ABS in
-func NewEnvironment(w io.Writer) *Environment {
+// ABS in, specifying a writer for the output of the
+// program and the base dir (which is used to require
+// other scripts)
+func NewEnvironment(w io.Writer, dir string) *Environment {
 	s := make(map[string]Object)
-	return &Environment{store: s, outer: nil, Writer: w}
+	return &Environment{store: s, outer: nil, Writer: w, Dir: dir}
 }
 
 // Environment represent the environment associated
@@ -31,6 +33,16 @@ type Environment struct {
 	// Used to capture output. This is typically os.Stdout,
 	// but you could capture in any io.Writer of choice
 	Writer io.Writer
+	// Dir represents the directory from which we're executing code.
+	// It starts as the directory from which we invoke the ABS
+	// executable, but changes when we call require("...") as each
+	// require call resets the dir to its own directory, so that
+	// relative imports work.
+	//
+	// If we have script A and B in /tmp, A can require("B")
+	// wihout having to specify its full absolute path
+	// eg. require("/tmp/B")
+	Dir string
 }
 
 // Get returns an identifier stored within the environment

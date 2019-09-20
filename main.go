@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/abs-lang/abs/install"
 	"github.com/abs-lang/abs/repl"
 )
 
-var Version = "1.7.0"
+var Version = "1.8.0"
 
 // The ABS interpreter
 func main() {
@@ -16,6 +17,12 @@ func main() {
 		fmt.Println(Version)
 		return
 	}
+
+	if len(args) == 3 && args[1] == "get" {
+		install.Install(args[2])
+		return
+	}
+
 	// begin the REPL
 	repl.BeginRepl(args, Version)
 }

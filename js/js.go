@@ -23,7 +23,7 @@ func runCode(this js.Value, i []js.Value) interface{} {
 	var buf bytes.Buffer
 	// the first argument to our function
 	code := i[0].String()
-	env := object.NewEnvironment(&buf)
+	env := object.NewEnvironment(&buf, "")
 	lex := lexer.New(code)
 	p := parser.New(lex)
 

@@ -22,14 +22,21 @@ notation:
 array[3]
 ```
 
-Accessing an index that does not exist returns null.
+Accessing an index that does not exist returns `null`.
+
+You can also access the Nth last element of an array by
+using a negative index:
+
+``` bash
+["a", "b", "c", "d"][-2] # "c"
+```
 
 You can also access a range of indexes with the `[start:end]` notation:
 
 ``` bash
 array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-array[0:2] // [0, 1, 2]
+array[0:2] # [0, 1, 2]
 ```
 
 where `start` is the starting position in the array, and `end` is
@@ -38,14 +45,14 @@ and if `end` is omitted it is assumed to be the last index in the
 array:
 
 ``` bash
-array[:2] // [0, 1, 2]
-array[7:] // [7, 8, 9]
+array[:2] # [0, 1, 2]
+array[7:] # [7, 8, 9]
 ```
 
 If `end` is negative, it will be converted to `length of array - end`:
 
 ``` bash
-array[:-3] // [0, 1, 2, 3, 4, 5, 6]
+array[:-3] # [0, 1, 2, 3, 4, 5, 6]
 ```
 
 To concatenate arrays, "sum" them:
@@ -113,7 +120,7 @@ a # [1, 2, 3, 4, 99, 55, 66]
 An array is defined as "homogeneous" when all its elements
 are of a single type:
 
-```
+``` bash
 [1, 2, 3] # homogeneous
 [null, 0, "", {}] # heterogeneous
 ```
@@ -289,6 +296,47 @@ Sums the elements of the array. Only supported on arrays of numbers:
 
 ``` bash
 [1, 1, 1].sum() # 3
+```
+
+### tsv([separator], [header])
+
+Formats the array into TSV:
+
+``` bash
+[["LeBron", "James"], ["James", "Harden"]].tsv()
+LeBron	James
+James	Harden
+```
+
+You can also specify the separator to be used if you
+prefer not to use tabs:
+
+``` bash
+[["LeBron", "James"], ["James", "Harden"]].tsv(",")
+LeBron,James
+James,Harden
+```
+
+The input array needs to be an array of arrays or hashes. If
+you use hashes, their keys will be used as heading of the TSV:
+
+```bash
+[{"name": "Lebron", "last": "James", "jersey": 23}, {"name": "James", "last": "Harden"}].tsv()
+jersey	last	name
+23	James	Lebron
+null	Harden	James
+```
+
+The heading will, by default, be a combination of all keys present in the hashes,
+sorted alphabetically. If a key is missing in an hash, `null` will be used as value.
+If you wish to specify the output format, you can pass a list of keys to be used
+as header:
+
+```bash
+[{"name": "Lebron", "last": "James", "jersey": 23}, {"name": "James", "last": "Harden"}].tsv("\t", ["name", "last", "jersey", "additional_key"])
+name	last	jersey	additional_key
+Lebron	James	23	null
+James	Harden	null	null
 ```
 
 ### unique()

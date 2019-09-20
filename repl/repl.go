@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path/filepath"
 	"strings"
 
 	"github.com/abs-lang/abs/evaluator"
@@ -36,7 +37,8 @@ var (
 )
 
 func init() {
-	env = object.NewEnvironment(os.Stdout)
+	d, _ := os.Getwd()
+	env = object.NewEnvironment(os.Stdout, d)
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
@@ -200,6 +202,10 @@ func BeginRepl(args []string, version string) {
 	} else {
 		interactive = false
 		env.Set("ABS_INTERACTIVE", evaluator.FALSE)
+		// Make sure we set the right Dir when evaluating a script,
+		// so that the script thinks it's running from its location
+		// and things like relative require() calls work.
+		env.Dir = filepath.Dir(args[1])
 	}
 
 	// get abs init file

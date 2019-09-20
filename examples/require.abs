@@ -1,0 +1,7 @@
+ip_finder = require("ip-finder.abs")
+script = require("./second_level/script.abs")
+ip_finder_2 = require("./ip-finder.abs")
+
+echo("My IP is %s", ip_finder())
+echo("The script said '%s'", script())
+echo("My IP is %s", ip_finder_2())

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/abs-lang/abs/object"
 )
@@ -85,4 +86,54 @@ func InterpolateStringVars(str string, env *object.Environment) string {
 		return v.Inspect()
 	})
 	return str
+}
+
+// UniqueStrings takes an input list of strings
+// and returns a version without duplicate values
+func UniqueStrings(slice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
+// UnaliasPath translates a path alias
+// to the full path in the filesystem.
+func UnaliasPath(path string, packageAlias map[string]string) string {
+	// An alias can come in different forms:
+	//  - package
+	//  - package/file.abs
+	// but we only really need to resolve the
+	// first path in the alias.
+	parts := strings.Split(path, string(os.PathSeparator))
+
+	if len(parts) < 1 {
+		return path
+	}
+
+	if packageAlias[parts[0]] != "" {
+		// If we are able to resolve a path, then
+		// we should join in back with the rest of the
+		// paths
+		p := []string{packageAlias[parts[0]]}
+		p = append(p, parts[1:]...)
+		path = filepath.Join(p...)
+	}
+	return appendIndexFile(path)
+}
+
+// If our path didn't end with an ABS file (.abs),
+// let's assume it's a directory and we will
+// auto-include the index.abs file from it
+func appendIndexFile(path string) string {
+	if filepath.Ext(path) != ".abs" {
+		return filepath.Join(path, "index.abs")
+	}
+
+	return path
 }

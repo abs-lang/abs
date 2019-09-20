@@ -28,6 +28,7 @@
 
 ## Miscellaneous
 
+* [Installing 3rd party libraries](/misc/3pl)
 * [Errors](/misc/error)
 * [Configuring the REPL](/misc/configuring-the-repl)
 * [Runtime](/misc/runtime)

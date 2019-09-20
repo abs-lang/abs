@@ -13,7 +13,7 @@ import (
 	"github.com/abs-lang/abs/token"
 )
 
-type BuiltinFunction func(tok token.Token, args ...Object) Object
+type BuiltinFunction func(tok token.Token, env *Environment, args ...Object) Object
 
 type ObjectType string
 
@@ -304,6 +304,9 @@ func (ao *Array) Next() (Object, Object) {
 func (ao *Array) Reset() {
 	ao.position = 0
 }
+
+// Homogeneous returns whether the array is homogeneous,
+// meaning all of its elements are of a single type
 func (ao *Array) Homogeneous() bool {
 	if ao.Empty() {
 		return true

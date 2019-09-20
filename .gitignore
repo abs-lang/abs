@@ -1,7 +1,9 @@
 docs/_site
 *.ignore
+test-ignore-*
 vendor
 builds/*
 !builds/.gitkeep
 .idea/
 .vscode/
+packages.abs.json

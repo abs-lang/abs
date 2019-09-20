@@ -365,6 +365,22 @@ func TestStringWriters(t *testing.T) {
 	}
 }
 
+func TestStringInterpolation(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`a = "123"; "abc$a"`, "abc123"},
+		{`a = "123"; "abc\$a"`, "abc$a"},
+		{`a = "123"; "$$a$$a$$a"`, "$123$123$123"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestForInExpressions(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -786,7 +802,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`find([1,2,3,3], f(x) {x == 3})`, 3},
 		{`find([1,2], f(x) {x == "some"})`, nil},
 		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
-		{`arg(3)`, ""},
+		{`arg(99)`, ""},
 		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1).suffix("/evaluator")`, true}, // Little trick to get travis to run this test, as the base path is not /go/src/
 		{`cwd = cd(); cwd == pwd()`, true},
 		{`cwd = cd("path/to/nowhere"); cwd == pwd()`, false},
@@ -929,6 +945,18 @@ c")`, []string{"a", "b", "c"}},
 		{`sleep(0.01)`, nil},
 		{`$()`, ""},
 		{`a = 1; eval("a")`, 1},
+		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = source("test-ignore-source-vs-require.abs"); a`, 2},
+		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = require("test-ignore-source-vs-require.abs"); a`, 1},
+		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = source("test-ignore-source-vs-require.abs"); x`, 10},
+		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = require("test-ignore-source-vs-require.abs"); x`, 10},
+		{`[[1,2,3], [2,3,4]].tsv()`, "1\t2\t3\n2\t3\t4"},
+		{`[1].tsv()`, "tsv() must be called on an array of arrays or objects, such as [[1, 2, 3], [4, 5, 6]], '[1]' given"},
+		{`[{"c": 3, "b": "hello"}, {"b": 20, "c": 0}].tsv()`, "b\tc\nhello\t3\n20\t0"},
+		{`[[1,2,3], [2,3,4]].tsv(",")`, "1,2,3\n2,3,4"},
+		{`[[1,2,3], [2]].tsv(",")`, "1,2,3\n2"},
+		{`[[1,2,3], [2,3,4]].tsv("abc")`, "1a2a3\n2a3a4"},
+		{`[[1,2,3], [2,3,4]].tsv("")`, "the separator argument to the tsv() function needs to be a valid character, '' given"},
+		{`[{"c": 3, "b": "hello"}, {"b": 20, "c": 0}].tsv("\t", ["c", "b", "a"])`, "c\tb\ta\n3\thello\tnull\n0\t20\tnull"},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -1373,8 +1401,24 @@ func TestArrayIndexExpressions(t *testing.T) {
 			nil,
 		},
 		{
-			"[1, 2, 3][-1]",
+			"[1, 2, 3][-2]",
+			2,
+		},
+		{
+			"[1, 2, 3][-10]",
 			nil,
+		},
+		{
+			"[1, 2, 3][-3]",
+			1,
+		},
+		{
+			"[1, 2, 3][-4]",
+			nil,
+		},
+		{
+			"[1, 2, 3][-0]",
+			1,
 		},
 		{
 			"a = [1, 2, 3, 4, 5, 6, 7, 8, 9][1:-300]; a[0]",
@@ -1508,7 +1552,7 @@ func TestStringIndexExpressions(t *testing.T) {
 	}{
 		{
 			`"123"[10]`,
-			nil,
+			"",
 		},
 		{
 			`"123"[1]`,
@@ -1529,6 +1573,18 @@ func TestStringIndexExpressions(t *testing.T) {
 		{
 			`"123"[:-1]`,
 			"12",
+		},
+		{
+			`"123"[-2]`,
+			"2",
+		},
+		{
+			`"123"[-1]`,
+			"3",
+		},
+		{
+			`"123"[-10]`,
+			"",
 		},
 		{
 			`"123"[2:-10]`,
@@ -1555,10 +1611,6 @@ func TestStringIndexExpressions(t *testing.T) {
 			`index ranges can only be numerical: got "{}" (type HASH)`,
 		},
 		{
-			`"123"[-2]`,
-			"",
-		},
-		{
 			`"123"[3]`,
 			"",
 		},
@@ -1571,18 +1623,18 @@ func TestStringIndexExpressions(t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		switch result := evaluated.(type) {
-		case *object.Null:
-			testNullObject(t, evaluated)
 		case *object.String:
 			testStringObject(t, evaluated, tt.expected.(string))
 		case *object.Error:
 			logErrorWithPosition(t, result.Message, tt.expected)
+		default:
+			t.Errorf("object is not the right result. got=%s ('%+v' expected)", result.Inspect(), tt.expected)
 		}
 	}
 }
 
 func testEval(input string) object.Object {
-	env := object.NewEnvironment(os.Stdout)
+	env := object.NewEnvironment(os.Stdout, "")
 	lex := lexer.New(input)
 	p := parser.New(lex)
 	program := p.ParseProgram()

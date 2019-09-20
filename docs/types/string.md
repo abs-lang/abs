@@ -32,7 +32,14 @@ with the index notation:
 "hello world"[1] # e
 ```
 
-Accessing an index that does not exist returns null.
+Accessing an index that does not exist returns an empty string.
+
+You can access the Nth last character of the string using a
+negative index:
+
+``` bash
+"string"[-2] # "n"
+```
 
 You can also access a range of the string with the `[start:end]` notation:
 
@@ -42,7 +49,8 @@ You can also access a range of the string with the `[start:end]` notation:
 
 where `start` is the starting position in the array, and `end` is
 the ending one. If `start` is not specified, it is assumed to be 0,
-and if `end` is omitted it is assumed to be the character in the string:
+and if `end` is omitted it is assumed to be the last character in the
+string:
 
 ``` bash
 "string"[0:3] // "str"
@@ -73,6 +81,25 @@ To test for the existence of substrings within strings use the `in` operator:
 ``` bash
 "str" in "string"   # true
 "xyz" in "string"   # false
+```
+
+## Interpolation
+
+You can also replace parts of the string with variables
+declared within your program using the `$` symbol:
+
+``` bash
+file = "/etc/hosts"
+x = "File name is: $file"
+echo(x) # "File name is: /etc/hosts"
+```
+
+If you need `$` literals in your command, you
+simply need to escape them with a `\`:
+
+``` bash
+"$non_existing_var" # "" since the ABS variable 'non_existing_var' doesn't exist
+"\$non_existing_var" # "$non_existing_var"
 ```
 
 ## Special characters embedded in strings

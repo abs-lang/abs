@@ -26,9 +26,6 @@ var (
 	Fns   map[string]*object.Builtin
 )
 
-// This program's global environment can be used by builtin's to modify the env
-var globalEnv *object.Environment
-
 // This program's lexer used for error location in Eval(program)
 var lex *lexer.Lexer
 
@@ -55,8 +52,6 @@ func newContinueError(tok token.Token, format string, a ...interface{}) *object.
 // REPL and testing modules call this function to init the global lexer pointer for error location
 // NB. Eval(node, env) is recursive
 func BeginEval(program ast.Node, env *object.Environment, lexer *lexer.Lexer) object.Object {
-	// global environment
-	globalEnv = env
 	// global lexer
 	lex = lexer
 	// run the evaluator
@@ -98,7 +93,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return NULL
 
 	case *ast.StringLiteral:
-		return &object.String{Token: node.Token, Value: node.Value}
+		return &object.String{Token: node.Token, Value: util.InterpolateStringVars(node.Value, env)}
 
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
@@ -178,7 +173,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return args[0]
 		}
 
-		return applyFunction(node.Token, function, args)
+		return applyFunction(node.Token, function, env, args)
 
 	case *ast.MethodExpression:
 		o := Eval(node.Object, env)
@@ -191,7 +186,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return args[0]
 		}
 
-		return applyMethod(node.Token, o, node.Method.String(), args)
+		return applyMethod(node.Token, o, node.Method.String(), env, args)
 
 	case *ast.PropertyExpression:
 		return evalPropertyExpression(node, env)
@@ -1004,7 +999,7 @@ func evalPropertyExpression(pe *ast.PropertyExpression, env *object.Environment)
 	return newError(pe.Token, "invalid property '%s' on type %s", pe.Property.String(), o.Type())
 }
 
-func applyFunction(tok token.Token, fn object.Object, args []object.Object) object.Object {
+func applyFunction(tok token.Token, fn object.Object, env *object.Environment, args []object.Object) object.Object {
 	switch fn := fn.(type) {
 
 	case *object.Function:
@@ -1017,14 +1012,14 @@ func applyFunction(tok token.Token, fn object.Object, args []object.Object) obje
 		return unwrapReturnValue(evaluated)
 
 	case *object.Builtin:
-		return fn.Fn(tok, args...)
+		return fn.Fn(tok, env, args...)
 
 	default:
 		return newError(tok, "not a function: %s", fn.Type())
 	}
 }
 
-func applyMethod(tok token.Token, o object.Object, method string, args []object.Object) object.Object {
+func applyMethod(tok token.Token, o object.Object, method string, env *object.Environment, args []object.Object) object.Object {
 	f, ok := Fns[method]
 
 	if !ok {
@@ -1036,7 +1031,7 @@ func applyMethod(tok token.Token, o object.Object, method string, args []object.
 	}
 
 	args = append([]object.Object{o}, args...)
-	return f.Fn(tok, args...)
+	return f.Fn(tok, env, args...)
 }
 
 func extendFunctionEnv(
@@ -1101,7 +1096,7 @@ func evalStringIndexExpression(tok token.Token, array, index object.Object, end 
 	max := len(stringObject.Value) - 1
 
 	if isRange {
-		max += 1
+		max++
 		// A range's minimum value is 0
 		if idx < 0 {
 			idx = 0
@@ -1132,8 +1127,23 @@ func evalStringIndexExpression(tok token.Token, array, index object.Object, end 
 		return &object.String{Token: tok, Value: string(stringObject.Value[idx:max])}
 	}
 
-	if idx < 0 || idx > max {
-		return NULL
+	// Out of bounds? Return an empty string
+	if idx > max {
+		return &object.String{Token: tok, Value: ""}
+	}
+
+	if idx < 0 {
+		length := max + 1
+
+		// Negative out of bounds? Return an empty string
+		if math.Abs(float64(idx)) > float64(length) {
+			return &object.String{Token: tok, Value: ""}
+		}
+
+		// Our index was negative, so the actual index is length of the string + the index
+		// eg 3 + (-2) = 1
+		// "123"[-2]   = "2"
+		idx = length + idx
 	}
 
 	return &object.String{Token: tok, Value: string(stringObject.Value[idx])}
@@ -1145,7 +1155,7 @@ func evalArrayIndexExpression(tok token.Token, array, index object.Object, end o
 	max := len(arrayObject.Elements) - 1
 
 	if isRange {
-		max += 1
+		max++
 		// A range's minimum value is 0
 		if idx < 0 {
 			idx = 0
@@ -1176,8 +1186,23 @@ func evalArrayIndexExpression(tok token.Token, array, index object.Object, end o
 		return &object.Array{Token: tok, Elements: arrayObject.Elements[idx:max]}
 	}
 
-	if idx < 0 || idx > max {
+	// Out of bounds? Return a null element
+	if idx > max {
 		return NULL
+	}
+
+	if idx < 0 {
+		length := max + 1
+
+		// Negative out of bounds? Return a null element
+		if math.Abs(float64(idx)) > float64(length) {
+			return NULL
+		}
+
+		// Our index was negative, so the actual index is length of the string + the index
+		// eg 3 + (-2) = 1
+		// [1,2,3][-2] = 2
+		idx = length + idx
 	}
 
 	return arrayObject.Elements[idx]
