@@ -441,7 +441,7 @@ Returns the last index at which `str` is found:
 
 > This function is deprecated and might be removed in future versions.
 >
-> Use the index notation instead: `"string"[0, 3]`
+> Use the index notation instead: `"string"[0:3]`
 
 Returns a portion of the string, from `start` to `end`:
 
