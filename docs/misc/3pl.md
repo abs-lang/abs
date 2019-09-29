@@ -16,7 +16,7 @@ Creating alias...
 Install Success. You can use the module with `require("abs-sample-module")`
 ```
 
-Modules will be saved under the `vendor/$MODULE-master` directory. Each module
+Modules will be saved under the `vendor/$MODULE` directory. Each module
 also gets an alias to facilitate requiring them in your code, meaning that
 both of these forms are supported:
 
@@ -24,11 +24,9 @@ both of these forms are supported:
 ⧐  require("abs-sample-module/sample.abs")
 {"another": f() {return hello world;}}
 
-⧐  require("vendor/github.com/abs-lang/abs-sample-module-master/sample.abs")
+⧐  require("vendor/github.com/abs-lang/abs-sample-module/sample.abs")
 {"another": f() {return hello world;}}
 ```
-
-Note that the `-master` prefix [will be removed](https://github.com/abs-lang/abs/issues/286) in future versions of ABS.
 
 Module aliases are saved in the `packages.abs.json` file
 which is created in the same directory where you run the
@@ -43,7 +41,7 @@ Install Success. You can use the module with `require("abs-sample-module")`
 
 $ cat packages.abs.json 
 {
-    "abs-sample-module": "./vendor/github.com/abs-lang/abs-sample-module-master"
+    "abs-sample-module": "./vendor/github.com/abs-lang/abs-sample-module"
 }
 ```
 
@@ -58,7 +56,7 @@ $ abs get github.com/abs-lang/abs-sample-module
 Unpacking...
 Creating alias...This module could not be aliased because module of same name exists
 
-Install Success. You can use the module with `require("./vendor/github.com/abs-lang/abs-sample-module-master")`
+Install Success. You can use the module with `require("./vendor/github.com/abs-lang/abs-sample-module")`
 ```
 
 When requiring a module, ABS will try to load the `index.abs` file unless

@@ -68,7 +68,7 @@ func printLoader(done chan int64, message string) {
 }
 
 func getZip(module string) error {
-	path := fmt.Sprintf("./vendor/%s", module)
+	path := fmt.Sprintf("./vendor/%s-master.zip", module)
 	// Create all the parent directories if needed
 	err := os.MkdirAll(filepath.Dir(path), 0755)
 
@@ -123,7 +123,7 @@ func getZip(module string) error {
 // Unzip will decompress a zip archive
 func unzip(module string) error {
 	fmt.Printf("\nUnpacking...")
-	src := fmt.Sprintf("./vendor/%s", module)
+	src := fmt.Sprintf("./vendor/%s-master.zip", module)
 	dest := filepath.Dir(src)
 
 	r, err := zip.OpenReader(src)
@@ -133,8 +133,17 @@ func unzip(module string) error {
 	defer r.Close()
 
 	for _, f := range r.File {
+		filename := f.Name
+		parts := strings.Split(f.Name, string(os.PathSeparator))
+		if len(parts) > 1 {
+			if strings.HasSuffix(parts[0], "-master") {
+				// Trim "master" suffix due to github's naming convention for archives
+				parts[0] = strings.TrimSuffix(parts[0], "-master")
+				filename = strings.Join(parts, string(os.PathSeparator))
+			}
+		}
 		// Store filename/path for returning and using later on
-		fpath := filepath.Join(dest, f.Name)
+		fpath := filepath.Join(dest, filename)
 
 		// Check for ZipSlip. More Info: http://bit.ly/2MsjAWE
 		if !strings.HasPrefix(fpath, filepath.Clean(dest)+string(os.PathSeparator)) {
@@ -188,8 +197,7 @@ func createAlias(module string) (string, error) {
 
 	data := make(map[string]string)
 	moduleName := filepath.Base(module)
-	// Appending "master" as Github zip file has "-master" suffix
-	modulePath := fmt.Sprintf("./vendor/%s-master", module)
+	modulePath := fmt.Sprintf("./vendor/%s", module)
 
 	// If package.abs.json file is empty
 	if len(b) == 0 {
