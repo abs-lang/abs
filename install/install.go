@@ -39,12 +39,12 @@ func Install(module string) {
 		return
 	}
 
-	fmt.Printf("\nInstall Success. You can use the module with `require(\"%s\")`\n", alias)
+	fmt.Printf("Install Success. You can use the module with `require(\"%s\")`\n", alias)
 	return
 }
 
 func printLoader(done chan int64, message string) {
-	var stop bool = false
+	var stop = false
 	symbols := []string{"🌑 ", "🌒 ", "🌓 ", "🌔 ", "🌕 ", "🌖 ", "🌗 ", "🌘 "}
 	i := 0
 
@@ -122,7 +122,7 @@ func getZip(module string) error {
 
 // Unzip will decompress a zip archive
 func unzip(module string) error {
-	fmt.Printf("\nUnpacking...")
+	fmt.Printf("Unpacking...\n")
 	src := fmt.Sprintf("./vendor/%s-master.zip", module)
 	dest := filepath.Dir(src)
 
@@ -181,11 +181,18 @@ func unzip(module string) error {
 			return err
 		}
 	}
+
+	// remove the zip file after we extract it
+	err = os.Remove(src)
+	if err != nil {
+		fmt.Printf("Could not remove archive zip file at %s, err: %s\n", src, err)
+	}
+
 	return nil
 }
 
 func createAlias(module string) (string, error) {
-	fmt.Printf("\nCreating alias...")
+	fmt.Printf("Creating alias...\n")
 	f, err := os.OpenFile("./packages.abs.json", os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Printf("Could not open alias file %s\n", err)
