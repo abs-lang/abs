@@ -1532,14 +1532,33 @@ func TestHashIndexExpressions(t *testing.T) {
 			`{}.foo`,
 			nil,
 		},
+		{
+			`a = {"fn": null}; a.fn`,
+			nil,
+		},
+		{
+			`a = {"fn": f() { return 1 }}; a.fn()`,
+			1,
+		},
+		{
+			`a = {"fn": f(x, y) { return y * x }}; a.fn(5, 3)`,
+			15,
+		},
+		{
+			`a = {}; a.fn()`,
+			`HASH does not have method 'fn()'`,
+		},
 	}
 
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
-		integer, ok := tt.expected.(int)
-		if ok {
-			testNumberObject(t, evaluated, float64(integer))
-		} else {
+
+		switch result := evaluated.(type) {
+		case *object.Number:
+			testNumberObject(t, evaluated, float64(tt.expected.(int)))
+		case *object.Error:
+			logErrorWithPosition(t, result.Message, tt.expected)
+		default:
 			testNullObject(t, evaluated)
 		}
 	}
