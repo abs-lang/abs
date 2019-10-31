@@ -93,6 +93,7 @@ h # {a: 1, b: 2, c: {x: 10, y: 20}, z: {xx: 11, yy: 21}}
 ## Supported functions
 
 ### str()
+
 Returns the string representation of the hash:
 
 ``` bash
@@ -102,6 +103,7 @@ str(h)  # "{k: v}"
 ```
 
 ### keys()
+
 Returns an array of keys to the hash. 
 
 Note well that only the first level keys are returned.
@@ -113,6 +115,7 @@ keys(h) # [a, b, c]
 ```
 
 ### values()
+
 Returns an array of values in the hash. 
 
 Note well that only the first level values are returned.
@@ -124,6 +127,7 @@ values(h)   # [1, 2, 3]
 ```
 
 ### items()
+
 Returns an array of [key, value] tuples for each item in the hash.
 
 Note well that only the first level items are returned.
@@ -135,6 +139,7 @@ items(h)    # [[a, 1], [b, 2], [c, 3]]
 ```
 
 ### pop(k)
+
 Removes and returns the matching `{"key": value}` item from the hash. If the key does not exist `hash.pop("key")` returns `null`.
 
 Note well that only the first level items can be popped.
@@ -153,6 +158,15 @@ h   # {b: 2}
 
 ```
 
+## User-defined functions
+
+A useful property of being able to assign keys of any type to an hash
+results in the ability to define objects with custom functions, such as:
+
+``` bash
+hash = {"greeter": f(name) { return "Hello $name!" }}
+hash.greeter("Sally") # "Hello Sally!"
+```
 
 ## Next
 

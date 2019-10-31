@@ -362,6 +362,18 @@ func (h *Hash) GetPair(key string) (HashPair, bool) {
 	return record, ok
 }
 
+// GetKeyType returns the type of a given key in the hash.
+// If no key is found, it is considered to be a NULL.
+func (h *Hash) GetKeyType(k string) ObjectType {
+	pair, ok := h.GetPair(k)
+
+	if !ok {
+		return NULL_OBJ
+	}
+
+	return pair.Value.Type()
+}
+
 func (h *Hash) Inspect() string {
 	var out bytes.Buffer
 
