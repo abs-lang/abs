@@ -1020,16 +1020,29 @@ func applyFunction(tok token.Token, fn object.Object, env *object.Environment, a
 }
 
 func applyMethod(tok token.Token, o object.Object, method string, env *object.Environment, args []object.Object) object.Object {
+	// Check if the current object is an hash,
+	// it might have user-defined functions
+	hash, isHash := o.(*object.Hash)
+
+	// If so, run the user-defined function
+	if isHash && hash.GetKeyType(method) == object.FUNCTION_OBJ {
+		pair, _ := hash.GetPair(method)
+		return applyFunction(tok, pair.Value.(*object.Function), env, args)
+	}
+
+	// Now, check if there is a builtin function with the given name
 	f, ok := Fns[method]
 
 	if !ok {
 		return newError(tok, "%s does not have method '%s()'", o.Type(), method)
 	}
 
+	// Make sure the builtin function can be called on the given type
 	if !util.Contains(f.Types, string(o.Type())) && len(f.Types) != 0 {
 		return newError(tok, "cannot call method '%s()' on '%s'", method, o.Type())
 	}
 
+	// Magic!
 	args = append([]object.Object{o}, args...)
 	return f.Fn(tok, env, args...)
 }
