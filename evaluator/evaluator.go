@@ -186,7 +186,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return args[0]
 		}
 
-		return applyMethod(node.Token, o, node.Method.String(), env, args)
+		return applyMethod(node.Token, o, node, env, args)
 
 	case *ast.PropertyExpression:
 		return evalPropertyExpression(node, env)
@@ -996,6 +996,10 @@ func evalPropertyExpression(pe *ast.PropertyExpression, env *object.Environment)
 		return evalHashIndexExpression(obj.Token, obj, &object.String{Token: pe.Token, Value: pe.Property.String()})
 	}
 
+	if pe.Optional {
+		return NULL
+	}
+
 	return newError(pe.Token, "invalid property '%s' on type %s", pe.Property.String(), o.Type())
 }
 
@@ -1019,7 +1023,8 @@ func applyFunction(tok token.Token, fn object.Object, env *object.Environment, a
 	}
 }
 
-func applyMethod(tok token.Token, o object.Object, method string, env *object.Environment, args []object.Object) object.Object {
+func applyMethod(tok token.Token, o object.Object, me *ast.MethodExpression, env *object.Environment, args []object.Object) object.Object {
+	method := me.Method.String()
 	// Check if the current object is an hash,
 	// it might have user-defined functions
 	hash, isHash := o.(*object.Hash)
@@ -1034,6 +1039,10 @@ func applyMethod(tok token.Token, o object.Object, method string, env *object.En
 	f, ok := Fns[method]
 
 	if !ok {
+		if me.Optional {
+			return NULL
+		}
+
 		return newError(tok, "%s does not have method '%s()'", o.Type(), method)
 	}
 
