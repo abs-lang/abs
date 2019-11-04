@@ -1504,6 +1504,45 @@ func TestHashLiterals(t *testing.T) {
 	}
 }
 
+func TestOptionalChaining(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			`a = null; a?.b?.c`,
+			nil,
+		},
+		{
+			`a = 1; a?.b?.c`,
+			nil,
+		},
+		{
+			`a = 1; a?.b?.c()`,
+			nil,
+		},
+		{
+			`a = {"b" : {"c": 1}}; a?.b?.c`,
+			1,
+		},
+		{
+			`a = {"b": 1}; a.b`,
+			1,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		switch evaluated.(type) {
+		case *object.Number:
+			testNumberObject(t, evaluated, float64(tt.expected.(int)))
+		default:
+			testNullObject(t, evaluated)
+		}
+	}
+}
+
 func TestHashIndexExpressions(t *testing.T) {
 	tests := []struct {
 		input    string

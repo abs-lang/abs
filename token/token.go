@@ -66,6 +66,7 @@ const (
 	LBRACKET = "["
 	RBRACKET = "]"
 	DOT      = "."
+	QUESTION = "?"
 	COMMAND  = "$()"
 
 	// Keywords
