@@ -255,6 +255,7 @@ type MethodExpression struct {
 	Object    Expression
 	Method    Expression
 	Arguments []Expression
+	Optional  bool
 }
 
 func (me *MethodExpression) expressionNode()      {}
@@ -268,6 +269,9 @@ func (me *MethodExpression) String() string {
 	}
 
 	out.WriteString(me.Object.String())
+	if me.Optional {
+		out.WriteString("?")
+	}
 	out.WriteString(".")
 	out.WriteString(me.Method.String())
 	out.WriteString("(")
@@ -530,6 +534,7 @@ type PropertyExpression struct {
 	Token    token.Token // The . token
 	Object   Expression
 	Property Expression
+	Optional bool
 }
 
 func (pe *PropertyExpression) expressionNode()      {}
@@ -539,6 +544,11 @@ func (pe *PropertyExpression) String() string {
 
 	out.WriteString("(")
 	out.WriteString(pe.Object.String())
+
+	if pe.Optional {
+		out.WriteString("?")
+	}
+
 	out.WriteString(".")
 	out.WriteString(pe.Property.String())
 	out.WriteString(")")

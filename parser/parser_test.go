@@ -1463,6 +1463,62 @@ func TestParsingProperty(t *testing.T) {
 	}
 }
 
+func TestParsingOptionalProperty(t *testing.T) {
+	input := "var?.prop"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	propExpr, ok := stmt.Expression.(*ast.PropertyExpression)
+
+	if !ok {
+		t.Fatalf("exp not *ast.PropertyExpression. got=%T", stmt.Expression)
+	}
+
+	if !testIdentifier(t, propExpr.Object, "var") {
+		return
+	}
+
+	if !testIdentifier(t, propExpr.Property, "prop") {
+		return
+	}
+
+	if propExpr.Optional != true {
+		t.Fatalf("exp is not an optional property")
+	}
+}
+
+func TestParsingOptionalmethod(t *testing.T) {
+	input := "var?.prop()"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	methodExpr, ok := stmt.Expression.(*ast.MethodExpression)
+
+	if !ok {
+		t.Fatalf("exp not *ast.methodExpression. got=%T", stmt.Expression)
+	}
+
+	if !testIdentifier(t, methodExpr.Object, "var") {
+		return
+	}
+
+	if !testIdentifier(t, methodExpr.Method, "prop") {
+		return
+	}
+
+	if methodExpr.Optional != true {
+		t.Fatalf("exp is not an optional property")
+	}
+}
+
 func TestParsingEmptyHashLiteral(t *testing.T) {
 	input := "{}"
 

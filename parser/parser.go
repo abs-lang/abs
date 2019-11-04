@@ -22,7 +22,8 @@ const (
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
 	INDEX       // array[index]
-	DOT         // some.function() or some | function() or some.property
+	QUESTION    // some?.function() or some?.property
+	DOT         // some.function() or some.property
 )
 
 var precedences = map[token.TokenType]int{
@@ -58,6 +59,7 @@ var precedences = map[token.TokenType]int{
 	token.RANGE:         RANGE,
 	token.LPAREN:        CALL,
 	token.LBRACKET:      INDEX,
+	token.QUESTION:      QUESTION,
 	token.DOT:           DOT,
 }
 
@@ -112,6 +114,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.CONTINUE, p.parseContinue)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerInfix(token.QUESTION, p.parseQuestionExpression)
 	p.registerInfix(token.DOT, p.parseDottedExpression)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
@@ -514,6 +517,25 @@ func (p *Parser) parseDottedExpression(object ast.Expression) ast.Expression {
 		exp := &ast.PropertyExpression{Token: t, Object: object}
 		exp.Property = p.parseIdentifier()
 		p.prevPropertyExpression = exp
+		return exp
+	}
+}
+
+// some?.function() or some?.property
+// Here we skip the "?" and parse the expression as a regular dotted one.
+// When we're back, we mark the expression as optional.
+func (p *Parser) parseQuestionExpression(object ast.Expression) ast.Expression {
+	p.nextToken()
+	exp := p.parseDottedExpression(object)
+
+	switch res := exp.(type) {
+	case *ast.PropertyExpression:
+		res.Optional = true
+		return res
+	case *ast.MethodExpression:
+		res.Optional = true
+		return res
+	default:
 		return exp
 	}
 }

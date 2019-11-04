@@ -105,6 +105,8 @@ for true {
 	continue
 }
 a[1:3]
+a?.b
+a?.b()
 `
 
 	tests := []struct {
@@ -353,6 +355,16 @@ a[1:3]
 		{token.COLON, ":"},
 		{token.NUMBER, "3"},
 		{token.RBRACKET, "]"},
+		{token.IDENT, "a"},
+		{token.QUESTION, "?"},
+		{token.DOT, "."},
+		{token.IDENT, "b"},
+		{token.IDENT, "a"},
+		{token.QUESTION, "?"},
+		{token.DOT, "."},
+		{token.IDENT, "b"},
+		{token.LPAREN, "("},
+		{token.RPAREN, ")"},
 		{token.EOF, ""},
 	}
 

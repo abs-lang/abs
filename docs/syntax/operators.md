@@ -230,6 +230,49 @@ true || false # true
 "hello" || "world" # "hello"
 ```
 
+## .
+
+Property accessor, used to access properties or methods of specific variables:
+
+``` bash
+hello = {"to_who": "the world"}
+hello.to_who # "the world"
+```
+
+There are some builtin functions that you can access through the property accessor:
+
+``` bash
+"hello".len() # 5
+```
+
+(a comprehensive list of function is documented in the "*Types and functions*" section of the documentation)
+
+## ?.
+
+Optional chaining operator, used to access properties in a "safe" way.
+
+Given the following object:
+
+``` bash
+test = {"property": 1}
+```
+
+An error would be raised if you were trying to access a non-existing property
+such as `test.something.something_else`:
+
+```
+ERROR: invalid property 'something_else' on type NULL
+	[1:15]	test.something.something_else
+```
+
+Optional chainig prevents those errors from being raised, auto-magically
+converting non-existing properties and methods to `NULL`:
+
+``` bash
+test?.something?.something_else # null
+test?.something?.something_else() # null
+```
+
 ## ..
 
 Range operator, which creates an array from start to end:

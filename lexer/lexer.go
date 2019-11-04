@@ -228,6 +228,8 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			tok = l.newToken(token.DOT)
 		}
+	case '?':
+		tok = l.newToken(token.QUESTION)
 	case '|':
 		if l.peekChar() == '|' {
 			tok.Type = token.OR
