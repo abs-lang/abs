@@ -126,6 +126,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    argFn,
 		},
+		// args()
+		"args": &object.Builtin{
+			Types: []string{},
+			Fn:    argsFn,
+		},
 		// type(variable:"hello")
 		"type": &object.Builtin{
 			Types: []string{},
@@ -725,6 +730,11 @@ func argFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	}
 
 	return &object.String{Token: tok, Value: os.Args[i]}
+}
+
+// args()
+func argsFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return &object.Number{Token: tok, Value: float64(len(os.Args))}
 }
 
 // type(variable:"hello")
