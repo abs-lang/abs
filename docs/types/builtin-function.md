@@ -124,6 +124,18 @@ Returns the `n`th argument to the current script:
 arg(0) # /usr/bin/abs
 ```
 
+### args()
+
+Returns the number of arguments to the current script (including the current script itself)
+
+``` bash
+$ abs --flag1 --flag2 arg1 arg2
+Hello user, welcome to the ABS programming language!
+Type 'quit' when you're done, 'help' if you get lost!
+⧐   args()
+5
+```
+
 ### type(var)
 
 Returns the type if the given variable:
