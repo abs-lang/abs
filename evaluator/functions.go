@@ -720,7 +720,7 @@ func argFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	arg := args[0].(*object.Number)
 	i := arg.Int()
 
-	if int(i) > len(os.Args)-1 {
+	if i > len(os.Args)-1 || i < 0 {
 		return &object.String{Token: tok, Value: ""}
 	}
 
