@@ -804,7 +804,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`arg("o")`, "argument 0 to arg(...) is not supported (got: o, allowed: NUMBER)"},
 		{`arg(99)`, ""},
 		{`arg(-1)`, ""},
-		{`(0..99).map( f(i) { arg(i) } ).filter( f(i) { i != "" } ).len() == args()`, true},
+		{`(0..99).map( f(i) { arg(i) } ).filter( f(i) { i != "" } ).len() == args().len()`, true},
+		{`arg(0) == args()[0]`, true},
+		{`arg(1) == args()[1]`, true},
+		{`arg(2) == args()[2]`, true},
 		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1).suffix("/evaluator")`, true}, // Little trick to get travis to run this test, as the base path is not /go/src/
 		{`cwd = cd(); cwd == pwd()`, true},
 		{`cwd = cd("path/to/nowhere"); cwd == pwd()`, false},
