@@ -126,13 +126,15 @@ arg(0) # /usr/bin/abs
 
 ### args()
 
-Returns the number of arguments to the current script (including the current script itself)
+Returns the list of arguments to the current script (including the current script itself)
 
 ``` bash
 $ abs --flag1 --flag2 arg1 arg2
 Hello user, welcome to the ABS programming language!
 Type 'quit' when you're done, 'help' if you get lost!
 ⧐   args()
+["abs", "--flag1", "--flag2", "arg1", "arg2"]
+⧐   args().len()
 5
 ```
 
