@@ -835,6 +835,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len([])`, 0},
 		{`echo("hello", "world!")`, nil},
 		{`env("CONTEXT")`, "abs"},
+		{`env("FOO")`, ""},
+		{`env("FOO", "bar")`, "bar"},
 		{`type("SOME")`, "STRING"},
 		{`type(1)`, "NUMBER"},
 		{`type({})`, "HASH"},

@@ -116,9 +116,9 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{},
 			Fn:    stdinFn,
 		},
-		// env(variable:"PWD")
+		// env(variable:"PWD") or env(string:"KEY", string:"VAL")
 		"env": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
+			Types: []string{},
 			Fn:    envFn,
 		},
 		// arg(position:1)
@@ -720,15 +720,21 @@ func stdinNextFn() (object.Object, object.Object) {
 	return &object.Number{Value: float64(scannerPosition)}, &object.String{Token: tok, Value: scanner.Text()}
 }
 
-// env(variable:"PWD")
+// env(variable:"PWD") or env(string:"KEY", string:"VAL")
 func envFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "env", args, 1, [][]string{{object.STRING_OBJ}})
+	err := validateVarArgs(tok, "env", args, 1, [][][]string{{{object.STRING_OBJ}, {object.STRING_OBJ}}})
 	if err != nil {
 		return err
 	}
 
-	arg := args[0].(*object.String)
-	return &object.String{Token: tok, Value: os.Getenv(arg.Value)}
+	key := args[0].(*object.String)
+
+	if len(args) > 1 {
+		val := args[1].(*object.String)
+		os.Setenv(key.Value, val.Value)
+	}
+
+	return &object.String{Token: tok, Value: os.Getenv(key.Value)}
 }
 
 // arg(position:1)
