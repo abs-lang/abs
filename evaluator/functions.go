@@ -374,6 +374,22 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 	return nil
 }
 
+func validateVarArgs(tok token.Token, name string, args []object.Object, required int, types [][][]string) object.Object {
+	if len(args) < required {
+		return newError(tok, "wrong number of arguments to %s(...): got=%d, min=%d, max=%d", name, len(args), required, len(types))
+	}
+
+	for i, set := range types {
+		for _, t := range set {
+			if !util.Contains(t, string(args[i].Type())) {
+				return newError(tok, "argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
+			}
+		}
+	}
+
+	return nil
+}
+
 // len(var:"hello")
 func lenFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "len", args, 1, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}})
