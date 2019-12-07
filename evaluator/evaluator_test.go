@@ -835,6 +835,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len([])`, 0},
 		{`echo("hello", "world!")`, nil},
 		{`env("CONTEXT")`, "abs"},
+		{`env("FOO")`, ""},
+		{`env("FOO", "bar")`, "bar"},
 		{`type("SOME")`, "STRING"},
 		{`type(1)`, "NUMBER"},
 		{`type({})`, "HASH"},
@@ -1505,6 +1507,45 @@ func TestHashLiterals(t *testing.T) {
 		}
 
 		testNumberObject(t, pair.Value, expectedValue)
+	}
+}
+
+func TestOptionalChaining(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			`a = null; a?.b?.c`,
+			nil,
+		},
+		{
+			`a = 1; a?.b?.c`,
+			nil,
+		},
+		{
+			`a = 1; a?.b?.c()`,
+			nil,
+		},
+		{
+			`a = {"b" : {"c": 1}}; a?.b?.c`,
+			1,
+		},
+		{
+			`a = {"b": 1}; a.b`,
+			1,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		switch evaluated.(type) {
+		case *object.Number:
+			testNumberObject(t, evaluated, float64(tt.expected.(int)))
+		default:
+			testNullObject(t, evaluated)
+		}
 	}
 }
 

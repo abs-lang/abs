@@ -116,9 +116,9 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{},
 			Fn:    stdinFn,
 		},
-		// env(variable:"PWD")
+		// env(variable:"PWD") or env(string:"KEY", string:"VAL")
 		"env": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
+			Types: []string{},
 			Fn:    envFn,
 		},
 		// arg(position:1)
@@ -368,6 +368,22 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 	for i, t := range types {
 		if !util.Contains(t, string(args[i].Type())) {
 			return newError(tok, "argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
+		}
+	}
+
+	return nil
+}
+
+func validateVarArgs(tok token.Token, name string, args []object.Object, required int, types [][][]string) object.Object {
+	if len(args) < required {
+		return newError(tok, "wrong number of arguments to %s(...): got=%d, min=%d, max=%d", name, len(args), required, len(types))
+	}
+
+	for i, set := range types {
+		for _, t := range set {
+			if !util.Contains(t, string(args[i].Type())) {
+				return newError(tok, "argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
+			}
 		}
 	}
 
@@ -704,15 +720,21 @@ func stdinNextFn() (object.Object, object.Object) {
 	return &object.Number{Value: float64(scannerPosition)}, &object.String{Token: tok, Value: scanner.Text()}
 }
 
-// env(variable:"PWD")
+// env(variable:"PWD") or env(string:"KEY", string:"VAL")
 func envFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "env", args, 1, [][]string{{object.STRING_OBJ}})
+	err := validateVarArgs(tok, "env", args, 1, [][][]string{{{object.STRING_OBJ}, {object.STRING_OBJ}}})
 	if err != nil {
 		return err
 	}
 
-	arg := args[0].(*object.String)
-	return &object.String{Token: tok, Value: os.Getenv(arg.Value)}
+	key := args[0].(*object.String)
+
+	if len(args) > 1 {
+		val := args[1].(*object.String)
+		os.Setenv(key.Value, val.Value)
+	}
+
+	return &object.String{Token: tok, Value: os.Getenv(key.Value)}
 }
 
 // arg(position:1)
