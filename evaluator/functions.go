@@ -781,8 +781,6 @@ func envFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 		{{object.STRING_OBJ}},
 	})
 
-	fmt.Printf("matched %d\n", spec)
-
 	if err != nil {
 		return err
 	}
