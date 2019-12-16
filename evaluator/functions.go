@@ -374,20 +374,74 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 	return nil
 }
 
-func validateVarArgs(tok token.Token, name string, args []object.Object, required int, types [][][]string) object.Object {
-	if len(args) < required {
-		return newError(tok, "wrong number of arguments to %s(...): got=%d, min=%d, max=%d", name, len(args), required, len(types))
-	}
+// spec is an array of {
+//   {															// signature: func(num|str, arr)
+//     { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
+//     { ARRAY_OBJ},								// type options for arg 1
+//   },
+//   {															// signature: func(num|str)
+//     { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
+//   },
+// }
+func validateVarArgs(tok token.Token, name string, args []object.Object, specs [][][]string) (object.Object, int) {
+	required := -1
+	max := 0
 
-	for i, set := range types {
-		for _, t := range set {
-			if !util.Contains(t, string(args[i].Type())) {
-				return newError(tok, "argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
-			}
+	for _, spec := range specs {
+		// find the min number of arguments required
+		if required == -1 || len(spec) < required {
+			required = len(spec)
+		}
+
+		// find the max number of arguments supported
+		if len(spec) > max {
+			max = len(spec)
 		}
 	}
 
-	return nil
+	if len(args) < required || len(args) > max {
+		return newError(tok, "wrong number of arguments to %s(...): got=%d, min=%d, max=%d", name, len(args), required, max), -1
+	}
+
+	for which, spec := range specs {
+		// does the number of args match this spec?
+		if len(args) != len(spec) {
+			continue
+		}
+
+		// do the caller's args match this spec?
+		match := true
+		for i, types := range spec {
+			if i < len(args) && !util.Contains(types, string(args[i].Type())) {
+				match = false
+				break
+			}
+		}
+
+		// found a match; return the index of the matched spec
+		if match {
+			return nil, which
+		}
+	}
+
+	// no signature specs matched
+	return newError(tok, usageVarArgs(name, specs)), -1
+}
+
+func usageVarArgs(name string, specs [][][]string) string {
+	signatures := []string{}
+
+	for _, spec := range specs {
+		args := []string{}
+
+		for _, types := range spec {
+			args = append(args, strings.Join(types, " | "))
+		}
+
+		signatures = append(signatures, fmt.Sprintf("%s(%s)", name, strings.Join(args, ", ")))
+	}
+
+	return strings.Join(signatures, "\n")
 }
 
 // len(var:"hello")
@@ -722,14 +776,20 @@ func stdinNextFn() (object.Object, object.Object) {
 
 // env(variable:"PWD") or env(string:"KEY", string:"VAL")
 func envFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateVarArgs(tok, "env", args, 1, [][][]string{{{object.STRING_OBJ}, {object.STRING_OBJ}}})
+	err, spec := validateVarArgs(tok, "env", args, [][][]string{
+		{{object.STRING_OBJ}, {object.STRING_OBJ}},
+		{{object.STRING_OBJ}},
+	})
+
+	fmt.Printf("matched %d\n", spec)
+
 	if err != nil {
 		return err
 	}
 
 	key := args[0].(*object.String)
 
-	if len(args) > 1 {
+	if spec == 0 {
 		val := args[1].(*object.String)
 		os.Setenv(key.Value, val.Value)
 	}
