@@ -836,15 +836,23 @@ func typeFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 // split(string:"hello world!", sep:" ")
 func splitFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "split", args, 2, [][]string{{object.STRING_OBJ}, {object.STRING_OBJ}})
+	err, spec := validateVarArgs(tok, "split", args, [][][]string{
+		{{object.STRING_OBJ}, {object.STRING_OBJ}},
+		{{object.STRING_OBJ}},
+	})
+
 	if err != nil {
 		return err
 	}
 
 	s := args[0].(*object.String)
-	sep := args[1].(*object.String)
 
-	parts := strings.Split(s.Value, sep.Value)
+	sep := " "
+	if spec == 0 {
+		sep = args[1].(*object.String).Value
+	}
+
+	parts := strings.Split(s.Value, sep)
 	length := len(parts)
 	elements := make([]object.Object, length, length)
 
