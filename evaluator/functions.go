@@ -288,7 +288,7 @@ func getFns() map[string]*object.Builtin {
 		},
 		// reverse([1,2,3])
 		"reverse": &object.Builtin{
-			Types: []string{object.ARRAY_OBJ},
+			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn:    reverseFn,
 		},
 		// push([1,2,3], 4)
@@ -1507,18 +1507,34 @@ func shiftFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 
 // reverse([1,2,3])
 func reverseFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "reverse", args, 1, [][]string{{object.ARRAY_OBJ}})
+	err, spec := validateVarArgs(tok, "reverse", args, [][][]string{
+		{{object.ARRAY_OBJ}},
+		{{object.STRING_OBJ}},
+	})
+
 	if err != nil {
 		return err
 	}
 
-	array := args[0].(*object.Array)
+	if spec == 0 {
+		// array
+		array := args[0].(*object.Array)
 
-	for i, j := 0, len(array.Elements)-1; i < j; i, j = i+1, j-1 {
-		array.Elements[i], array.Elements[j] = array.Elements[j], array.Elements[i]
+		for i, j := 0, len(array.Elements)-1; i < j; i, j = i+1, j-1 {
+			array.Elements[i], array.Elements[j] = array.Elements[j], array.Elements[i]
+		}
+
+		return array
+	} else {
+		// string
+		str := []rune(args[0].(*object.String).Value)
+
+		for i, j := 0, len(str)-1; i < j; i, j = i+1, j-1 {
+			str[i], str[j] = str[j], str[i]
+		}
+
+		return &object.String{Token: tok, Value: string(str)}
 	}
-
-	return array
 }
 
 // push([1,2,3], 4)
