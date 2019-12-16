@@ -183,10 +183,11 @@ Returns the length of the array:
 
 ### join(separator)
 
-Joins the elements of the array by `separator`:
+Joins the elements of the array by `separator`, defaulting to an empty string:
 
 ``` bash
 [1, 2, 3].join("_") # "1_2_3"
+[1, 2, 3].join()    # "123"
 ```
 
 ### keys()
