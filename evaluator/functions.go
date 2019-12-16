@@ -1632,9 +1632,18 @@ func itemsFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 }
 
 func joinFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "join", args, 2, [][]string{{object.ARRAY_OBJ}, {object.STRING_OBJ}})
+	err, spec := validateVarArgs(tok, "join", args, [][][]string{
+		{{object.ARRAY_OBJ}, {object.STRING_OBJ}},
+		{{object.ARRAY_OBJ}},
+	})
+
 	if err != nil {
 		return err
+	}
+
+	glue := ""
+	if spec == 0 {
+		glue = args[1].(*object.String).Value
 	}
 
 	arr := args[0].(*object.Array)
@@ -1645,7 +1654,7 @@ func joinFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 		newElements[k] = v.Inspect()
 	}
 
-	return &object.String{Token: tok, Value: strings.Join(newElements, args[1].(*object.String).Value)}
+	return &object.String{Token: tok, Value: strings.Join(newElements, glue)}
 }
 
 func sleepFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
