@@ -280,10 +280,11 @@ The string must represent a number.
 
 ### split(separator)
 
-Splits a string by separator:
+Splits a string by separator, defaulting to a single space:
 
 ``` bash
 "1.2.3.4".split(".") # ["1", "2", "3", "4"]
+"1 2 3 4".split()    # ["1", "2", "3", "4"]
 ```
 
 ### lines()
