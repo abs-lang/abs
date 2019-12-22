@@ -64,7 +64,7 @@ another file is specified:
 
 ```
 $ ~/projects/abs/builds/abs                                          
-Hello alex, welcome to the ABS (1.9.0) programming language!
+Hello alex, welcome to the ABS (1.10.0) programming language!
 Type 'quit' when you're done, 'help' if you get lost!
 
 ⧐  require("abs-sample-module")
