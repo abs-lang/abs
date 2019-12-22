@@ -382,6 +382,15 @@ You can also replace an array of characters:
 "string".replace(["i", "g"], "o") # "strono"
 ```
 
+### reverse()
+
+Returns a new string with the order of characters/glyphs reversed from the
+source.
+
+``` bash
+"hello world".reverse() # "dlrow olleh"
+```
+
 ### title()
 
 Titlecases the string:
