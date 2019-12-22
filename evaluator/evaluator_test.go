@@ -855,6 +855,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`'[1, 2, 3]'.json()`, []int{1, 2, 3}},
 		{`'"hello'.json()`, "argument to `json` must be a valid JSON object, got '\"hello'"},
 		{`split("a\"b\"c", "\"")`, []string{"a", "b", "c"}},
+		{`split("a b c", " ")`, []string{"a", "b", "c"}},
+		{`split("a b c")`, []string{"a", "b", "c"}},
 		{`lines("a
 b
 c")`, []string{"a", "b", "c"}},
@@ -879,6 +881,7 @@ c")`, []string{"a", "b", "c"}},
 		{`[1, 2].keys()`, []int{0, 1}},
 		{`[1, 2].join("-")`, "1-2"},
 		{`["a", "b"].join("-")`, "a-b"},
+		{`["a", "b"].join()`, "ab"},
 		{`"a".any("b")`, false},
 		{`"a".any("a")`, true},
 		{`"a".prefix("b")`, false},
