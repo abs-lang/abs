@@ -762,20 +762,23 @@ func evalForExpression(
 
 		// If truthy, execute the block and the closer
 		if isTruthy(evaluated) {
-			err = Eval(fe.Block, env)
-			if isError(err) {
+			res := Eval(fe.Block, env)
+			if isError(res) {
 				// If we have an error it could be:
 				// * a break, so we get out of the loop
 				// * a continue, so we go ahead with the next execution
 				// * an actual error, so we wreak havoc
-				switch err.(type) {
+				switch res.(type) {
 				case *object.BreakError:
 					return NULL
 				case *object.ContinueError:
 
 				case *object.Error:
-					return err
+					return res
 				}
+			} else if res != NULL {
+				// We had a return from withink the FOR loop
+				return res
 			}
 
 			err = Eval(fe.Closer, env)
@@ -853,21 +856,24 @@ func loopIterable(next func() (object.Object, object.Object), env *object.Enviro
 		// environment
 		env.Set(fie.Key, k)
 		env.Set(fie.Value, v)
-		err := Eval(fie.Block, env)
+		res := Eval(fie.Block, env)
 
-		if isError(err) {
+		if isError(res) {
 			// If we have an error it could be:
 			// * a break, so we get out of the loop
 			// * a continue, so we go ahead with the next execution
 			// * an actual error, so we wreak havoc
-			switch err.(type) {
+			switch res.(type) {
 			case *object.BreakError:
 				return NULL
 			case *object.ContinueError:
 
 			case *object.Error:
-				return err
+				return res
 			}
+		} else if res != NULL {
+			// We had a return from withink the FOR..IN loop
+			return res
 		}
 
 		// Let's increment our index, and
