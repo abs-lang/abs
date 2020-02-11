@@ -300,6 +300,11 @@ func (p *Parser) parseAssignStatement() ast.Statement {
 			stmt.Value = p.parseExpression(LOWEST)
 			// consume the IndexExpression
 			p.prevIndexExpression = nil
+
+			if p.peekTokenIs(token.SEMICOLON) {
+				p.nextToken()
+			}
+
 			return stmt
 		}
 		if p.prevPropertyExpression != nil {
@@ -309,6 +314,11 @@ func (p *Parser) parseAssignStatement() ast.Statement {
 			stmt.Value = p.parseExpression(LOWEST)
 			// consume the PropertyExpression
 			p.prevPropertyExpression = nil
+
+			if p.peekTokenIs(token.SEMICOLON) {
+				p.nextToken()
+			}
+
 			return stmt
 		}
 	}
@@ -326,6 +336,7 @@ func (p *Parser) parseAssignStatement() ast.Statement {
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
+
 	return stmt
 }
 
