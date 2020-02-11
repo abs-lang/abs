@@ -265,6 +265,10 @@ func TestForExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`x = f() { for k = 0; k < 11; k = k + 1 { return k }}; x()`, 0},                           // https://github.com/abs-lang/abs/issues/303
+		{`y = {}; x = f() { for k = 0; k < 11; k = k + 1 { y.x = k; return null; }}; x(); y.x`, 0}, // https://github.com/abs-lang/abs/issues/303
+		{`y = {}; x = f() { for k = 0; k < 11; k = k + 1 { y.x = k; return 12; }}; x()`, 12},       // https://github.com/abs-lang/abs/issues/303
+		{`y = {}; x = f() { for k = 0; k < 11; k = k + 1 { y.x = k; }}; x(); y.x`, 10},             // https://github.com/abs-lang/abs/issues/303
 		{`x = 0; for k = 0; k < 11; k = k + 1 { if k < 10 { break; }; x += k }; x`, 0},
 		{`x = 0; for k = 0; k < 11; k = k + 1 { if k < 10 { continue; }; x += k }; x`, 10},
 		{"a = 0; for x = 0; x < 10; x = x + 1 { a = a + 1}; a", 10},
@@ -387,6 +391,10 @@ func TestForInExpressions(t *testing.T) {
 		expected interface{}
 	}{
 		{`x = 0; for v in 1..10 { if v < 10 { break; }; x += v }; x`, 0},
+		{`x = f() { for x in 1..10 { return x }}; x()`, 1},                                   // https://github.com/abs-lang/abs/issues/303
+		{`y = {}; x = f() { for x in 1000..2000 { y.x = x; return null; }}; x(); y.x`, 1000}, // https://github.com/abs-lang/abs/issues/303
+		{`y = {}; x = f() { for x in 1000..2000 { y.x = x; return 12; }}; x()`, 12},          // https://github.com/abs-lang/abs/issues/303
+		{`y = {}; x = f() { for x in 1000..2000 { y.x = x; }}; x(); y.x`, 2000},              // https://github.com/abs-lang/abs/issues/303
 		{`x = 0; for v in 1..10 { if v < 10 { continue; }; x += v }; x`, 10},
 		{"a = 1..3; b = 0; c = 0; for x in a { b = x }; for x in a { c = x }; c", 3}, // See: https://github.com/abs-lang/abs/issues/112
 		{"a = 0; for k, x in 1 { a = a + 1}; a", "'1' is a NUMBER, not an iterable, cannot be used in for loop"},
