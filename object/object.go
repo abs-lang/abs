@@ -131,6 +131,7 @@ type Function struct {
 	Parameters []*ast.Identifier
 	Body       *ast.BlockStatement
 	Env        *Environment
+	Node       *ast.FunctionLiteral
 }
 
 func (f *Function) Type() ObjectType { return FUNCTION_OBJ }
@@ -294,7 +295,15 @@ func (b *Builtin) Json() string     { return b.Inspect() }
 type Array struct {
 	Token    token.Token
 	Elements []Object
-	position int
+	// ... is aliased to an array of arguments.
+	//
+	// Since this is a special case of an array,
+	// we need a flag to make sure we know when
+	// to unpack them, else if we do func(...),
+	// func would receive only one array argument
+	// as opposd to the unpacked arguments.
+	IsCurrentArgs bool
+	position      int
 }
 
 func (ao *Array) Type() ObjectType { return ARRAY_OBJ }

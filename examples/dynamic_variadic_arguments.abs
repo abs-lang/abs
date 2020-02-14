@@ -1,0 +1,38 @@
+# ... is a special "keyword" to identify
+# the arguments passed to the current function
+
+f breakline() {
+    echo("--------")
+}
+
+f f1() {
+    echo(...)
+}
+
+f1("hello %s", "world")
+
+breakline()
+
+f f2() {
+    echo(....len())
+}
+
+f2(1,2,3,4,5)
+
+breakline()
+
+f f3() {
+    echo(sum(... + [1]))
+}
+
+f3(1)
+
+breakline()
+
+f f4() {
+    for arg in ... {
+        echo(arg)
+    }
+}
+
+f4(1,2,3,4,5)

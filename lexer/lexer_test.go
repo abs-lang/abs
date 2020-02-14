@@ -110,6 +110,9 @@ a?.b()
 f hello(x, y) {
 	x + y;
 };
+@decorator
+@decorator()
+...
 `
 
 	tests := []struct {
@@ -382,6 +385,13 @@ f hello(x, y) {
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
+		{token.AT, "@"},
+		{token.IDENT, "decorator"},
+		{token.AT, "@"},
+		{token.IDENT, "decorator"},
+		{token.LPAREN, "("},
+		{token.RPAREN, ")"},
+		{token.CURRENT_ARGS, "..."},
 		{token.EOF, ""},
 	}
 

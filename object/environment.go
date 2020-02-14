@@ -9,9 +9,10 @@ import (
 // with another one embedded to it, so that the
 // new environment has access to identifiers stored
 // in the outer one.
-func NewEnclosedEnvironment(outer *Environment) *Environment {
+func NewEnclosedEnvironment(outer *Environment, args []Object) *Environment {
 	env := NewEnvironment(outer.Writer, outer.Dir)
 	env.outer = outer
+	env.CurrentArgs = args
 	return env
 }
 
@@ -29,7 +30,17 @@ func NewEnvironment(w io.Writer, dir string) *Environment {
 // holds all variables etc.
 type Environment struct {
 	store map[string]Object
-	outer *Environment
+	// Arguments this environment was created in.
+	// When we call function(1, 2, 3), a new environment
+	// for the function to execute is created, and 1/2/3
+	// are recorded as arguments for this environment.
+	//
+	// Later, if we need to access the arguments passed
+	// to the function, we can refer back to them
+	// through env.CurrentArgs. This is how ... is
+	// implemented.
+	CurrentArgs []Object
+	outer       *Environment
 	// Used to capture output. This is typically os.Stdout,
 	// but you could capture in any io.Writer of choice
 	Writer io.Writer
