@@ -410,6 +410,7 @@ func (ce *CommandExpression) String() string {
 
 type FunctionLiteral struct {
 	Token      token.Token // The 'fn' token
+	Name       string      // identifier for this function
 	Parameters []*Identifier
 	Body       *BlockStatement
 }

@@ -107,6 +107,9 @@ for true {
 a[1:3]
 a?.b
 a?.b()
+f hello(x, y) {
+	x + y;
+};
 `
 
 	tests := []struct {
@@ -365,6 +368,20 @@ a?.b()
 		{token.IDENT, "b"},
 		{token.LPAREN, "("},
 		{token.RPAREN, ")"},
+		{token.FUNCTION, "f"},
+		{token.IDENT, "hello"},
+		{token.LPAREN, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 

@@ -32,7 +32,8 @@ Functions must be called with the right number of arguments:
 
 ``` bash
 fn = f(x) { x }
-fn() # ERROR: Wrong number of arguments passed to f(x) {
+fn()
+# ERROR: Wrong number of arguments passed to f(x) {
 # x
 # }. Want [x], got []
 ```
@@ -78,6 +79,31 @@ func = f(x) {
         return x + 1
     }
 }
+```
+
+## Named functions
+
+You can create named functions by specifying an identifier
+after the `f` keyword:
+
+``` bash
+f greeter(name) {
+    echo("Hello $name!")
+}
+
+greeter(`whoami`) # "Hello root!"
+```
+
+As an alternative, you can manually assign
+a function declaration to a variable, though
+this is not the recommended approach:
+
+``` bash
+greeter = f (name) {
+    echo("Hello $name!")
+}
+
+greeter(`whoami`) # "Hello root!"
 ```
 
 ## Supported functions

@@ -1081,10 +1081,12 @@ func TestFunctionParameterParsing(t *testing.T) {
 	tests := []struct {
 		input          string
 		expectedParams []string
+		name           string
 	}{
 		{input: "f() {};", expectedParams: []string{}},
 		{input: "f(x) {};", expectedParams: []string{"x"}},
 		{input: "f(x, y, z) {};", expectedParams: []string{"x", "y", "z"}},
+		{input: "f hello() {};", expectedParams: []string{}, name: "hello"},
 	}
 
 	for _, tt := range tests {
@@ -1097,8 +1099,11 @@ func TestFunctionParameterParsing(t *testing.T) {
 		function := stmt.Expression.(*ast.FunctionLiteral)
 
 		if len(function.Parameters) != len(tt.expectedParams) {
-			t.Errorf("length parameters wrong. want %d, got=%d\n",
-				len(tt.expectedParams), len(function.Parameters))
+			t.Errorf("length parameters wrong. want %d, got=%d\n", len(tt.expectedParams), len(function.Parameters))
+		}
+
+		if tt.name != function.Name {
+			t.Errorf("name parameter wrong. want %s, got=%s\n", tt.name, function.Name)
 		}
 
 		for i, ident := range tt.expectedParams {
