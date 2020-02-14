@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/abs-lang/abs/ast"
@@ -1108,6 +1109,100 @@ func TestFunctionParameterParsing(t *testing.T) {
 
 		for i, ident := range tt.expectedParams {
 			testLiteralExpression(t, function.Parameters[i], ident)
+		}
+	}
+}
+
+func TestCurrentArgsParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{input: "...", expected: "..."},
+		{input: "xyz(...)", expected: "..."},
+		{input: "f x() {env(...)}", expected: "env(...)"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+
+		var result ast.Node
+		switch expr := stmt.Expression.(type) {
+		case *ast.CurrentArgsLiteral:
+			result = stmt.Expression.(*ast.CurrentArgsLiteral)
+		case *ast.FunctionLiteral:
+			result = expr.Body.Statements[0]
+		case *ast.CallExpression:
+			result = expr.Arguments[0]
+		default:
+			t.Errorf("unknown type %T", expr)
+		}
+
+		if result.String() != tt.expected {
+			t.Errorf("args not parsed correctly. want '%s', got=%s\n", tt.expected, result.String())
+		}
+	}
+}
+
+func TestDecoratorParsing(t *testing.T) {
+	tests := []struct {
+		input     string
+		args      []string
+		name      string
+		decorated string
+		err       string
+	}{
+		{input: "@decorator", err: "a decorator should decorate a named function"},
+		{input: "@decorator('x', 'y')", err: "a decorator should decorate a named function"},
+		{input: "@decorator f hello(){}", name: "decorator", args: []string{}, decorated: "hello"},
+		{input: "@decorator('x', 'y') f hello(){}", name: "decorator", args: []string{"x", "y"}, decorated: "hello"},
+		{input: "@decorator('x', 'y') f (){}", err: "a decorator should decorate a named function"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+
+		if tt.err != "" {
+			if len(p.Errors()) == 0 {
+				t.Errorf("no parsing error detected")
+				t.FailNow()
+			}
+
+			parseError := p.Errors()[len(p.Errors())-1]
+			if !strings.HasPrefix(parseError, tt.err) {
+				t.Errorf("wrong parser error detected: want '%s', got '%s'", tt.err, parseError)
+			}
+			continue
+		} else {
+			checkParserErrors(t, p)
+		}
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		decorator := stmt.Expression.(*ast.Decorator)
+
+		if len(decorator.Arguments) != len(tt.args) {
+			t.Errorf("length arguments wrong. want %d, got=%d\n", len(tt.args), len(decorator.Arguments))
+		}
+
+		if tt.name != decorator.Name {
+			t.Errorf("name parameter wrong. want %s, got=%s\n", tt.name, decorator.Name)
+		}
+
+		if decorator.Decorated.Name == "" {
+			t.Errorf("a decorator should have a decorated function")
+		}
+
+		for i, arg := range tt.args {
+			if arg != decorator.Arguments[i].String() {
+				t.Errorf("wrong argument. want %s, got=%s\n", arg, decorator.Arguments[i])
+			}
 		}
 	}
 }

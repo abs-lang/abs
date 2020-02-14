@@ -429,7 +429,7 @@ func validateVarArgs(tok token.Token, name string, args []object.Object, specs [
 }
 
 func usageVarArgs(name string, specs [][][]string) string {
-	signatures := []string{"Usage:"}
+	signatures := []string{"Wrong arguments passed to '" + name + "'. Usage:"}
 
 	for _, spec := range specs {
 		args := []string{}

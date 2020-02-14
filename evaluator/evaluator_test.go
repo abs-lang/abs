@@ -728,6 +728,67 @@ func TestFunctionApplication(t *testing.T) {
 	}
 }
 
+func TestDecorators(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"@decorator f hello() {}", "function 'decorator' is not defined (used as decorator)"},
+		{"a = 1; @a f hello(){}", "decorator 'a' must be a function, NUMBER given"},
+		{"f decorator(fn) { return f () { return fn() * 2 } }; @decorator f test() { return 1 }; test()", 2},
+		{"f decorator(fn) { return f () { return fn(...) * 2 } }; @decorator f test(x) { return x }; test(1)", 2},
+		{"f decorator(fn, multiplier) { return f () { return fn() * multiplier } }; @decorator(4) f test() { return 1 }; test()", 4},
+		{"f decorator(fn, multiplier) { return f () { return fn(...) * multiplier } }; @decorator(1000) f test(x) { return x }; test(1)", 1000},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
+		case int:
+			testNumberObject(t, evaluated, float64(expected))
+		default:
+			t.Fatalf("unhandled type %T", expected)
+		}
+	}
+}
+
+func TestCurrentArgs(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"f wrap_env() { return env(*args) }; wrap_env('x')", ""},
+		{"env('x', '2'); f wrap_env() { return env(...) }; wrap_env('x').int()", 2},
+		{"env('x', '2'); f wrap_env() { return env(...) }; wrap_env('x', '5'); wrap_env('x').int()", 5},
+		{"f test() { sum(... + [1]) }; test(1,1,1,1)", 5},
+		{"f argsummer() { x = 0; for i in ... {x += i }; return x }; f test() { argsummer(..., 20) }; test(10, 10)", 40},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+			logErrorWithPosition(t, errObj.Message, tt.expected)
+		case int:
+			testNumberObject(t, evaluated, float64(expected))
+		default:
+			t.Fatalf("unhandled type %T", expected)
+		}
+	}
+}
+
 func TestEnclosingEnvironments(t *testing.T) {
 	input := `
 first = 10;

@@ -1,0 +1,39 @@
+# Function to print
+# the current ts in milliseconds
+f current_ts_milliseconds() {
+    return ` date +%s%3N`.int()
+}
+
+# A decorator that prints execution time of a function
+f timer(fn) {
+    return f() {
+        start = current_ts_milliseconds()
+        fn(...)
+        end = current_ts_milliseconds()
+
+        echo("function took %s milliseconds", end - start)
+    }
+}
+
+# A decorator that sleeps before a function
+f sleeper(fn, duration) {
+    return f() {
+        `sleep $duration`
+        echo("Yawn, I slept for $duration second")
+        fn(...)
+    }
+}
+
+@timer
+f greeter(name) {
+    echo("hello $name")
+}
+
+greeter(`whoami`)
+
+@sleeper(1)
+f greeter(name) {
+    echo("hello $name")
+}
+
+greeter(`whoami`)

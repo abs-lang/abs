@@ -25,6 +25,7 @@
 * [Hash](/types/hash)
 * [Functions](/types/function)
 * [Builtin functions](/types/builtin-function)
+* [Decorators](/types/decorator)
 
 ## Miscellaneous
 
