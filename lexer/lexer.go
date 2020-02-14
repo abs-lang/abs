@@ -156,6 +156,8 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '^':
 		tok = l.newToken(token.BIT_XOR)
+	case '@':
+		tok = l.newToken(token.AT)
 	case '*':
 		if l.peekChar() == '*' {
 			l.readChar()
@@ -220,11 +222,21 @@ func (l *Lexer) NextToken() token.Token {
 	case ',':
 		tok = l.newToken(token.COMMA)
 	case '.':
+		position := l.position
+
 		if l.peekChar() == '.' {
-			tok.Type = token.RANGE
-			tok.Position = l.position
-			tok.Literal = ".."
 			l.readChar()
+
+			if l.peekChar() == '.' {
+				tok.Type = token.CURRENT_ARGS
+				tok.Position = position
+				tok.Literal = "..."
+				l.readChar()
+			} else {
+				tok.Type = token.RANGE
+				tok.Position = position
+				tok.Literal = ".."
+			}
 		} else {
 			tok = l.newToken(token.DOT)
 		}

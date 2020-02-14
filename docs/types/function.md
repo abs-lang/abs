@@ -106,6 +106,66 @@ greeter = f (name) {
 greeter(`whoami`) # "Hello root!"
 ```
 
+Named functions are the basis of [decorators](/types/decorators).
+
+## Accessing function arguments
+
+Functions can receive a dynamic number of arguments,
+and arguments can be "packed" through the special
+`...` variable:
+
+```py
+f sum_numbers() {
+    s = 0
+    for x in ... {
+        s += x
+    }
+
+    return s
+}
+
+sum_numbers(1) # 1
+sum_numbers(1, 2, 3) # 6
+```
+
+`...` is a special variable that acts
+like an array, so you can loop and slice
+it however you want:
+
+```py
+f first_arg() {
+    if ....len() > 0 {
+        return ...[0]
+    }
+
+    return "No first arg"
+}
+
+first_arg() # "No first arg"
+first_arg(1) # 1
+```
+
+When you pass `...` directly to a function,
+it will be unpacked:
+
+```py
+f echo_wrapper() {
+    echo(...)
+}
+
+echo_wrapper("hello %s", "root") # "hello root"
+```
+
+and you can add additional arguments as well:
+
+```py
+f echo_wrapper() {
+    echo(..., "root")
+}
+
+echo_wrapper("hello %s %s", "sir") # "hello sir root"
+```
+
 ## Supported functions
 
 ### str()
