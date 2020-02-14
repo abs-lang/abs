@@ -127,6 +127,7 @@ type ContinueError struct {
 
 type Function struct {
 	Token      token.Token
+	Name       string
 	Parameters []*ast.Identifier
 	Body       *ast.BlockStatement
 	Env        *Environment
@@ -142,6 +143,11 @@ func (f *Function) Inspect() string {
 	}
 
 	out.WriteString("f")
+
+	if f.Name != "" {
+		out.WriteString(" " + f.Name)
+	}
+
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") {")

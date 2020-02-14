@@ -699,6 +699,8 @@ func TestFunctionApplication(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{"f test() { return 12 }; test()", 12},
+		{"f test(x) { return x }; test(12)", 12},
 		{"identity = f(x) { x; }; identity(5);", 5},
 		{"identity = f(x) { return x; }; identity(5);", 5},
 		{"double = f(x) { x * 2; }; double(5);", 10},
@@ -718,8 +720,10 @@ func TestFunctionApplication(t *testing.T) {
 				continue
 			}
 			logErrorWithPosition(t, errObj.Message, tt.expected)
-		case float64:
+		case int:
 			testNumberObject(t, evaluated, float64(expected))
+		default:
+			t.Fatalf("unhandled type %T", expected)
 		}
 	}
 }
