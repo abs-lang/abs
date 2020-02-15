@@ -1041,6 +1041,8 @@ c")`, []string{"a", "b", "c"}},
 		{`[[1,2,3], [2,3,4]].tsv("abc")`, "1a2a3\n2a3a4"},
 		{`[[1,2,3], [2,3,4]].tsv("")`, "the separator argument to the tsv() function needs to be a valid character, '' given"},
 		{`[{"c": 3, "b": "hello"}, {"b": 20, "c": 0}].tsv("\t", ["c", "b", "a"])`, "c\tb\ta\n3\thello\tnull\n0\t20\tnull"},
+		{`adder = f (a, b) { return a + b }; adder.call([5, 5])`, 10},
+		{`int.call(["12"])`, 12},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
