@@ -93,6 +93,15 @@ f(x){}.str()
 # }
 ```
 
+### call(args)
+
+Calls a function with the given arguments:
+
+``` bash
+doubler = f(x) { x * 2 }
+doubler.call([10]) # 20
+```
+
 ## Next
 
 That's about it for this section!
