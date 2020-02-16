@@ -92,6 +92,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.NullLiteral:
 		return NULL
 
+	case *ast.CurrentArgsLiteral:
+		return &object.Array{Token: node.Token, Elements: env.CurrentArgs, IsCurrentArgs: true}
+
 	case *ast.StringLiteral:
 		return &object.String{Token: node.Token, Value: util.InterpolateStringVars(node.Value, env)}
 
@@ -109,38 +112,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalInfixExpression(node.Token, node.Operator, node.Left, node.Right, env)
 
 	case *ast.CompoundAssignment:
-		left := Eval(node.Left, env)
-		if isError(left) {
-			return left
-		}
-		right := Eval(node.Right, env)
-		if isError(right) {
-			return right
-		}
-		// multi-character operators like "+=" and "**=" are reduced to "+" or "**" for evalInfixExpression()
-		op := node.Operator
-		if len(op) >= 2 {
-			op = op[:len(op)-1]
-		}
-		// get the result of the infix operation
-		expr := evalInfixExpression(node.Token, op, node.Left, node.Right, env)
-		if isError(expr) {
-			return expr
-		}
-		switch nodeLeft := node.Left.(type) {
-		case *ast.Identifier:
-			env.Set(nodeLeft.String(), expr)
-			return NULL
-		case *ast.IndexExpression:
-			// support index assignment expressions: a[0] += 1, h["a"] += 1
-			return evalIndexAssignment(nodeLeft, expr, env)
-		case *ast.PropertyExpression:
-			// support assignment to hash property: h.a += 1
-			return evalPropertyAssignment(nodeLeft, expr, env)
-		}
-		// otherwise
-		env.Set(node.Left.String(), expr)
-		return NULL
+		return evalCompoundAssignment(node, env)
 
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
@@ -160,7 +132,17 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.FunctionLiteral:
 		params := node.Parameters
 		body := node.Body
-		return &object.Function{Token: node.Token, Parameters: params, Env: env, Body: body}
+		name := node.Name
+		fn := &object.Function{Token: node.Token, Parameters: params, Env: env, Body: body, Name: name, Node: node}
+
+		if name != "" {
+			env.Set(name, fn)
+		}
+
+		return fn
+
+	case *ast.Decorator:
+		return evalDecorator(node, env)
 
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
@@ -169,6 +151,21 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 
 		args := evalExpressions(node.Arguments, env)
+
+		// Did we pass arguments as ...?
+		// If so, replace arguments with the
+		// environment's CurrentArgs.
+		// If other arguments were passed afterwards
+		// (eg. func(..., x, y)) we also add those.
+		if len(args) > 0 {
+			firstArg, ok := args[0].(*object.Array)
+
+			if ok && firstArg.IsCurrentArgs {
+				newArgs := env.CurrentArgs
+				args = append(newArgs, args[1:]...)
+			}
+		}
+
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
@@ -256,6 +253,63 @@ func evalBlockStatement(
 	}
 
 	return result
+}
+
+func evalCompoundAssignment(node *ast.CompoundAssignment, env *object.Environment) object.Object {
+	left := Eval(node.Left, env)
+	if isError(left) {
+		return left
+	}
+	right := Eval(node.Right, env)
+	if isError(right) {
+		return right
+	}
+	// multi-character operators like "+=" and "**=" are reduced to "+" or "**" for evalInfixExpression()
+	op := node.Operator
+	if len(op) >= 2 {
+		op = op[:len(op)-1]
+	}
+	// get the result of the infix operation
+	expr := evalInfixExpression(node.Token, op, node.Left, node.Right, env)
+	if isError(expr) {
+		return expr
+	}
+	switch nodeLeft := node.Left.(type) {
+	case *ast.Identifier:
+		env.Set(nodeLeft.String(), expr)
+		return NULL
+	case *ast.IndexExpression:
+		// support index assignment expressions: a[0] += 1, h["a"] += 1
+		return evalIndexAssignment(nodeLeft, expr, env)
+	case *ast.PropertyExpression:
+		// support assignment to hash property: h.a += 1
+		return evalPropertyAssignment(nodeLeft, expr, env)
+	}
+	// otherwise
+	env.Set(node.Left.String(), expr)
+	return NULL
+}
+
+func evalDecorator(node *ast.Decorator, env *object.Environment) object.Object {
+	decorator, ok := env.Get(node.Name)
+
+	if !ok {
+		return newError(node.Token, "function '%s' is not defined (used as decorator)", node.Name)
+	}
+
+	switch d := decorator.(type) {
+	case *object.Function:
+		fn := Eval(&ast.CallExpression{
+			Function:  d.Node,
+			Arguments: append([]ast.Expression{node.Decorated}, node.Arguments...),
+		}, env)
+
+		env.Set(node.Decorated.Name, fn)
+
+		return decorator
+	default:
+		return newError(node.Token, "decorator '%s' must be a function, %s given", node.Name, decorator.Type())
+	}
 }
 
 // support index assignment expressions: a[0] = 1, h["a"] = 1
@@ -1011,7 +1065,6 @@ func evalPropertyExpression(pe *ast.PropertyExpression, env *object.Environment)
 
 func applyFunction(tok token.Token, fn object.Object, env *object.Environment, args []object.Object) object.Object {
 	switch fn := fn.(type) {
-
 	case *object.Function:
 		extendedEnv, err := extendFunctionEnv(fn, args)
 
@@ -1066,9 +1119,9 @@ func extendFunctionEnv(
 	fn *object.Function,
 	args []object.Object,
 ) (*object.Environment, *object.Error) {
-	env := object.NewEnclosedEnvironment(fn.Env)
+	env := object.NewEnclosedEnvironment(fn.Env, args)
 
-	if len(args) != len(fn.Parameters) {
+	if len(args) < len(fn.Parameters) {
 		return nil, newError(fn.Token, "Wrong number of arguments passed to %s. Want %s, got %s", fn.Inspect(), fn.Parameters, args)
 	}
 

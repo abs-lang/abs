@@ -32,7 +32,8 @@ Functions must be called with the right number of arguments:
 
 ``` bash
 fn = f(x) { x }
-fn() # ERROR: Wrong number of arguments passed to f(x) {
+fn()
+# ERROR: Wrong number of arguments passed to f(x) {
 # x
 # }. Want [x], got []
 ```
@@ -80,6 +81,91 @@ func = f(x) {
 }
 ```
 
+## Named functions
+
+You can create named functions by specifying an identifier
+after the `f` keyword:
+
+``` bash
+f greeter(name) {
+    echo("Hello $name!")
+}
+
+greeter(`whoami`) # "Hello root!"
+```
+
+As an alternative, you can manually assign
+a function declaration to a variable, though
+this is not the recommended approach:
+
+``` bash
+greeter = f (name) {
+    echo("Hello $name!")
+}
+
+greeter(`whoami`) # "Hello root!"
+```
+
+Named functions are the basis of [decorators](/types/decorators).
+
+## Accessing function arguments
+
+Functions can receive a dynamic number of arguments,
+and arguments can be "packed" through the special
+`...` variable:
+
+```py
+f sum_numbers() {
+    s = 0
+    for x in ... {
+        s += x
+    }
+
+    return s
+}
+
+sum_numbers(1) # 1
+sum_numbers(1, 2, 3) # 6
+```
+
+`...` is a special variable that acts
+like an array, so you can loop and slice
+it however you want:
+
+```py
+f first_arg() {
+    if ....len() > 0 {
+        return ...[0]
+    }
+
+    return "No first arg"
+}
+
+first_arg() # "No first arg"
+first_arg(1) # 1
+```
+
+When you pass `...` directly to a function,
+it will be unpacked:
+
+```py
+f echo_wrapper() {
+    echo(...)
+}
+
+echo_wrapper("hello %s", "root") # "hello root"
+```
+
+and you can add additional arguments as well:
+
+```py
+f echo_wrapper() {
+    echo(..., "root")
+}
+
+echo_wrapper("hello %s %s", "sir") # "hello sir root"
+```
+
 ## Supported functions
 
 ### str()
@@ -91,6 +177,15 @@ f(x){}.str()
 # f(x) {
 #
 # }
+```
+
+### call(args)
+
+Calls a function with the given arguments:
+
+``` bash
+doubler = f(x) { x * 2 }
+doubler.call([10]) # 20
 ```
 
 ## Next

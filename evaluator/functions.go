@@ -136,6 +136,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{},
 			Fn:    typeFn,
 		},
+		// fn.call(args_array)
+		"call": &object.Builtin{
+			Types: []string{object.FUNCTION_OBJ, object.BUILTIN_OBJ},
+			Fn:    callFn,
+		},
 		// split(string:"hello")
 		"split": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -429,7 +434,7 @@ func validateVarArgs(tok token.Token, name string, args []object.Object, specs [
 }
 
 func usageVarArgs(name string, specs [][][]string) string {
-	signatures := []string{"Usage:"}
+	signatures := []string{"Wrong arguments passed to '" + name + "'. Usage:"}
 
 	for _, spec := range specs {
 		args := []string{}
@@ -832,6 +837,16 @@ func typeFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	return &object.String{Token: tok, Value: string(args[0].Type())}
+}
+
+// fn.call(args_array)
+func callFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "call", args, 2, [][]string{{object.FUNCTION_OBJ, object.BUILTIN_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	return applyFunction(tok, args[0], env, args[1].(*object.Array).Elements)
 }
 
 // split(string:"hello world!", sep:" ")

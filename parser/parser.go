@@ -112,6 +112,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.COMMENT, p.parseComment)
 	p.registerPrefix(token.BREAK, p.parseBreak)
 	p.registerPrefix(token.CONTINUE, p.parseContinue)
+	p.registerPrefix(token.CURRENT_ARGS, p.parseCurrentArgsLiteral)
+	p.registerPrefix(token.AT, p.parseDecorator)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.QUESTION, p.parseQuestionExpression)
@@ -778,6 +780,11 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 func (p *Parser) parseFunctionLiteral() ast.Expression {
 	lit := &ast.FunctionLiteral{Token: p.curToken}
 
+	if p.peekTokenIs(token.IDENT) {
+		p.nextToken()
+		lit.Name = p.curToken.Literal
+	}
+
 	if !p.expectPeek(token.LPAREN) {
 		return nil
 	}
@@ -791,6 +798,61 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	lit.Body = p.parseBlockStatement()
 
 	return lit
+}
+
+// @decorator
+// @decorator(1, 2)
+func (p *Parser) parseDecorator() ast.Expression {
+	dc := &ast.Decorator{Token: p.curToken}
+	// A decorator always preceeds a
+	// named function, so once we're done
+	// with our "own" parsing, we can defer
+	// to the function literal parsing.
+	//
+	// Note that this code does not allow
+	// nested decorators, so we will probably
+	// want to change the implementation at some
+	// point, by "recursively" parsing the next
+	// block and seeing whether they are other
+	// decorators / functions.
+	defer (func() {
+		p.nextToken()
+		exp := p.parseFunctionLiteral()
+
+		switch fn := exp.(type) {
+		case *ast.FunctionLiteral:
+			if fn.Name == "" {
+				p.reportError("a decorator should decorate a named function", dc.Token)
+			}
+
+			dc.Decorated = fn
+		default:
+			p.reportError("a decorator should decorate a named function", dc.Token)
+		}
+	})()
+
+	if p.peekTokenIs(token.IDENT) {
+		p.nextToken()
+		dc.Name = p.curToken.Literal
+	}
+
+	// This is a decorator without arguments
+	// @func
+	if !p.peekTokenIs(token.LPAREN) {
+		return dc
+	}
+
+	// This is a decorator with arguments
+	// @func(x, y, z)
+	p.nextToken()
+	dc.Arguments = p.parseExpressionList(token.RPAREN)
+
+	return dc
+}
+
+// ...
+func (p *Parser) parseCurrentArgsLiteral() ast.Expression {
+	return &ast.CurrentArgsLiteral{Token: p.curToken}
 }
 
 // f(x, y)

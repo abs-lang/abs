@@ -410,6 +410,7 @@ func (ce *CommandExpression) String() string {
 
 type FunctionLiteral struct {
 	Token      token.Token // The 'fn' token
+	Name       string      // identifier for this function
 	Parameters []*Identifier
 	Body       *BlockStatement
 }
@@ -431,6 +432,43 @@ func (fl *FunctionLiteral) String() string {
 	out.WriteString(fl.Body.String())
 
 	return out.String()
+}
+
+type Decorator struct {
+	Token     token.Token // @
+	Name      string
+	Arguments []Expression
+	Decorated *FunctionLiteral
+}
+
+func (dc *Decorator) expressionNode()      {}
+func (dc *Decorator) TokenLiteral() string { return dc.Token.Literal }
+func (dc *Decorator) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, a := range dc.Arguments {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(dc.TokenLiteral())
+	out.WriteString(dc.Name)
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(") ")
+	out.WriteString(dc.Decorated.String())
+
+	return out.String()
+}
+
+type CurrentArgsLiteral struct {
+	Token token.Token // ...
+}
+
+func (cal *CurrentArgsLiteral) expressionNode()      {}
+func (cal *CurrentArgsLiteral) TokenLiteral() string { return cal.Token.Literal }
+func (cal *CurrentArgsLiteral) String() string {
+	return "..."
 }
 
 type CallExpression struct {
