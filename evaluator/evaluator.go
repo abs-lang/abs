@@ -830,9 +830,14 @@ func evalForExpression(
 				case *object.Error:
 					return res
 				}
-			} else if res != NULL {
-				// We had a return from withink the FOR loop
+			}
+
+			// We had a return from within the FOR loop
+			switch res.(type) {
+			case *object.ReturnValue:
 				return res
+			default:
+				// do nothing
 			}
 
 			err = Eval(fe.Closer, env)
@@ -925,9 +930,14 @@ func loopIterable(next func() (object.Object, object.Object), env *object.Enviro
 			case *object.Error:
 				return res
 			}
-		} else if res != NULL {
-			// We had a return from withink the FOR..IN loop
+		}
+
+		// We had a return from within the FOR..IN loop
+		switch res.(type) {
+		case *object.ReturnValue:
 			return res
+		default:
+			// do nothing
 		}
 
 		// Let's increment our index, and

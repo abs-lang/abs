@@ -269,6 +269,9 @@ func TestForExpressions(t *testing.T) {
 		{`y = {}; x = f() { for k = 0; k < 11; k = k + 1 { y.x = k; return null; }}; x(); y.x`, 0}, // https://github.com/abs-lang/abs/issues/303
 		{`y = {}; x = f() { for k = 0; k < 11; k = k + 1 { y.x = k; return 12; }}; x()`, 12},       // https://github.com/abs-lang/abs/issues/303
 		{`y = {}; x = f() { for k = 0; k < 11; k = k + 1 { y.x = k; }}; x(); y.x`, 10},             // https://github.com/abs-lang/abs/issues/303
+		{`y = []; for x in 1..10 { y.push(x) }; y.len()`, 10},                                      // https://github.com/abs-lang/abs/issues/324
+		{`y = []; for x in 1..10 { if true { y.push(x) } }; y.len()`, 10},                          // https://github.com/abs-lang/abs/issues/324
+		{`y = []; for x in 1..10 { if true { y.push(x); return 1 } }; y.len()`, 1},                 // https://github.com/abs-lang/abs/issues/324
 		{`x = 0; for k = 0; k < 11; k = k + 1 { if k < 10 { break; }; x += k }; x`, 0},
 		{`x = 0; for k = 0; k < 11; k = k + 1 { if k < 10 { continue; }; x += k }; x`, 10},
 		{"a = 0; for x = 0; x < 10; x = x + 1 { a = a + 1}; a", 10},
