@@ -438,7 +438,7 @@ type Decorator struct {
 	Token     token.Token // @
 	Name      string
 	Arguments []Expression
-	Decorated *FunctionLiteral
+	Decorated Expression
 }
 
 func (dc *Decorator) expressionNode()      {}

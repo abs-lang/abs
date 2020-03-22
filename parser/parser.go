@@ -805,26 +805,24 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 func (p *Parser) parseDecorator() ast.Expression {
 	dc := &ast.Decorator{Token: p.curToken}
 	// A decorator always preceeds a
-	// named function, so once we're done
+	// named function or another decorator,
+	// so once we're done
 	// with our "own" parsing, we can defer
-	// to the function literal parsing.
-	//
-	// Note that this code does not allow
-	// nested decorators, so we will probably
-	// want to change the implementation at some
-	// point, by "recursively" parsing the next
-	// block and seeing whether they are other
-	// decorators / functions.
+	// to parsing the next statement, which
+	// should either return another decorator
+	// or a function.
 	defer (func() {
 		p.nextToken()
-		exp := p.parseFunctionLiteral()
+		exp := p.parseExpressionStatement()
 
-		switch fn := exp.(type) {
+		switch fn := exp.Expression.(type) {
 		case *ast.FunctionLiteral:
 			if fn.Name == "" {
 				p.reportError("a decorator should decorate a named function", dc.Token)
 			}
 
+			dc.Decorated = fn
+		case *ast.Decorator:
 			dc.Decorated = fn
 		default:
 			p.reportError("a decorator should decorate a named function", dc.Token)

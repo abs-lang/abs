@@ -742,6 +742,10 @@ func TestDecorators(t *testing.T) {
 		{"f decorator(fn) { return f () { return fn(...) * 2 } }; @decorator f test(x) { return x }; test(1)", 2},
 		{"f decorator(fn, multiplier) { return f () { return fn() * multiplier } }; @decorator(4) f test() { return 1 }; test()", 4},
 		{"f decorator(fn, multiplier) { return f () { return fn(...) * multiplier } }; @decorator(1000) f test(x) { return x }; test(1)", 1000},
+		{"f decorator(fn, multiplier) { return f () { return fn(...) * multiplier } }; @decorator(2) @decorator(2) f test(x) { return x }; test(1)", 4},
+		{"f decorator(fn, multiplier) { return f () { return fn(...) * multiplier } }; @decorator(2) @decorator(2) @decorator(2) f test(x) { return x }; test(1)", 8},
+		{"f multiply(fn, multiplier) { return f () { return fn(...) * multiplier } }; f divide(fn, div) { return f () { return fn(...) / div } }; @multiply(10) @divide(5)  f test(x) { return x }; test(1)", 2},
+		{"f decorator(fn) { return f () { return fn(...) } }; @decorator() @decorator_not_existing() f test(x) { return x }; test(1)", "function 'decorator_not_existing' is not defined (used as decorator)"},
 	}
 
 	for _, tt := range tests {
