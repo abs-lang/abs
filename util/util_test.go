@@ -3,6 +3,8 @@ package util
 import (
 	"os"
 	"testing"
+
+	"github.com/abs-lang/abs/object"
 )
 
 func TestUnaliasPath(t *testing.T) {
@@ -73,6 +75,37 @@ func TestIsNumber(t *testing.T) {
 	for _, tt := range tests {
 		if tt.expected != IsNumber(tt.number) {
 			t.Fatalf("expected %v (%s)", tt.expected, tt.number)
+		}
+	}
+}
+
+func TestInterpolateStringVars(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"string", "string"},
+		{"string $string string", "string test string"},
+		{"string $string", "string test"},
+		{"$string", "test"},
+		{"${string}", "test"},
+		{"\\$string", "$string"},
+		{"\\${string}", "${string}"},
+		{"_$string", "_test"},
+		{"string$string\\string", "stringtest\\string"},
+		{"$string_", ""},
+		{"xy\\z", "xy\\z"},
+		{"${string}_", "test_"},
+		{"${string x", "${string x"},
+	}
+
+	env := object.NewEnvironment(os.Stdout, "")
+	env.Set("string", &object.String{Value: "test"})
+
+	for _, tt := range tests {
+		output := InterpolateStringVars(tt.input, env)
+		if tt.expected != output {
+			t.Fatalf("expected '%v', got '%v' (original: %s)", tt.expected, output, tt.input)
 		}
 	}
 }
