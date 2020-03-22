@@ -63,7 +63,7 @@ func GetEnvVar(env *object.Environment, varName, defaultVal string) string {
 func InterpolateStringVars(str string, env *object.Environment) string {
 	// Match all strings preceded by
 	// a $ or a \$
-	re := regexp.MustCompile("(\\\\)?\\$([a-zA-Z_0-9]{1,})")
+	re := regexp.MustCompile("(\\\\)?\\$(\\{)?([a-zA-Z_0-9]{1,})(\\})?")
 	str = re.ReplaceAllStringFunc(str, func(m string) string {
 		// If the string starts with a backslash,
 		// that's an escape, so we should replace
@@ -72,19 +72,37 @@ func InterpolateStringVars(str string, env *object.Environment) string {
 		if string(m[0]) == "\\" {
 			return m[1:]
 		}
+
 		// If the string starts with $, then
 		// it's an interpolation. Let's
 		// replace $VAR with the variable
 		// named VAR in the ABS' environment.
+		// We need to support both ${var}
+		// and $var.
+		varName := ""
+		if m[1] == '{' {
+			// If you type a variable wrong, forgetting the
+			// closing bracket, we simply return it to you:
+			// eg "my ${variable"
+			if m[len(m)-1] != '}' {
+				return m
+			}
+
+			varName = m[2 : len(m)-1]
+		} else {
+			varName = m[1:]
+		}
+
+		v, ok := env.Get(varName)
+
 		// If the variable is not found, we
 		// just dump an empty string
-		v, ok := env.Get(m[1:])
-
 		if !ok {
 			return ""
 		}
 		return v.Inspect()
 	})
+
 	return str
 }
 

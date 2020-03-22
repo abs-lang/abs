@@ -102,6 +102,16 @@ simply need to escape them with a `\`:
 "\$non_existing_var" # "$non_existing_var"
 ```
 
+An alternative syntax (`${...}`) is available for special
+cases -- for example, when your string is embedded
+within another string:
+
+``` bash
+word = "word"
+echo("prefix$wordsuffix") # "prefix"
+echo("prefix${word}suffix") # "prefixwordsuffix"
+```
+
 ## Special characters embedded in strings
 
 Double and single quoted strings behave differently if the string contains
