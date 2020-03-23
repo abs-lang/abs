@@ -102,6 +102,17 @@ Rounds the number up to the closest integer:
 10.3.ceil() # 11
 ```
 
+### clamp(min, max)
+
+Clamps the number between min and max:
+
+``` bash
+10.clamp(0, 100) # 10
+10.clamp(0, 5) # 5
+10.clamp(50, 100) # 50
+1.5.clamp(2.5, 3) # 2.5
+```
+
 ### floor()
 
 Rounds the number down to the closest integer:

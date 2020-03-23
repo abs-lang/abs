@@ -71,6 +71,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{},
 			Fn:    cdFn,
 		},
+		// clamp(num, min, max)
+		"clamp": &object.Builtin{
+			Types: []string{object.NUMBER_OBJ},
+			Fn:    clampFn,
+		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
 			Types: []string{},
@@ -616,6 +621,34 @@ func cdFn(tok token.Token, env *object.Environment, args ...object.Object) objec
 	// this will also test true/false for cd("path/to/somewhere") && `ls`
 	dir, _ := os.Getwd()
 	return &object.String{Token: tok, Value: dir, Ok: &object.Boolean{Token: tok, Value: true}}
+}
+
+// clamp(n, min, max)
+func clampFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "clamp", args, 3, [][]string{{object.NUMBER_OBJ}, {object.NUMBER_OBJ}, {object.NUMBER_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	n := args[0].(*object.Number)
+	min := args[1].(*object.Number)
+	max := args[2].(*object.Number)
+
+	if min.Value >= max.Value {
+		return newError(tok, "arguments to clamp(min, max) must satisfy min < max (%s < %s given)", min.Inspect(), max.Inspect())
+	}
+
+	val := n.Value
+
+	if min.Value > n.Value {
+		val = min.Value
+	}
+
+	if max.Value < n.Value {
+		val = max.Value
+	}
+
+	return &object.Number{Value: val}
 }
 
 // echo(arg:"hello")
