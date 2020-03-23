@@ -222,6 +222,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    anyFn,
 		},
+		// between(number, min, max)
+		"between": &object.Builtin{
+			Types: []string{object.NUMBER_OBJ},
+			Fn:    betweenFn,
+		},
 		// prefix("abc", "a")
 		"prefix": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -1296,6 +1301,24 @@ func anyFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	}
 
 	return &object.Boolean{Token: tok, Value: strings.ContainsAny(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+}
+
+// between(10, 0, 100)
+func betweenFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "between", args, 3, [][]string{{object.NUMBER_OBJ}, {object.NUMBER_OBJ}, {object.NUMBER_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	n := args[0].(*object.Number)
+	min := args[1].(*object.Number)
+	max := args[2].(*object.Number)
+
+	if min.Value >= max.Value {
+		return newError(tok, "arguments to between(min, max) must satisfy min < max (%s < %s given)", min.Inspect(), max.Inspect())
+	}
+
+	return &object.Boolean{Token: tok, Value: ((min.Value <= n.Value) && (n.Value <= max.Value))}
 }
 
 // prefix("abc", "a")

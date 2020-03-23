@@ -84,6 +84,16 @@ by default:
 10.333.round(1) # 10.3
 ```
 
+### between(min, max)
+
+Checks whether the number is between `min` and `max`:
+
+``` bash
+10.between(0, 100) # true
+10.between(10, 100) # true
+10.between(11, 100) # false
+```
+
 ### ceil()
 
 Rounds the number up to the closest integer:
