@@ -569,6 +569,25 @@ func TestBetween(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestClamp(t *testing.T) {
+	tests := []Tests{
+		{`2.clamp(0, 10)`, 2},
+		{`2.clamp(2, 10)`, 2},
+		{`2.clamp(3, 10)`, 3},
+		{`2.clamp(0, 3)`, 2},
+		{`2.clamp(2, 3)`, 2},
+		{`2.clamp(3, 3)`, "arguments to clamp(min, max) must satisfy min < max"},
+		{`2.clamp(3, 10)`, 3},
+		{`2.clamp(0, 1)`, 1},
+		{`2.clamp(0, 2)`, 2},
+		{`2.clamp(1.5, 2.5)`, 2},
+		{`2.clamp(2.1, 2.5)`, 2.1},
+		{`2.5.clamp(2.1, 2.3)`, 2.3},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
