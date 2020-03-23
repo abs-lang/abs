@@ -27,8 +27,6 @@ if [ "${MACHINE_TYPE}" = 'x86_64' ]; then
   ARCH="amd64"
 fi
 
-VERSION=1.11.4
-
 echo "Trying to detect the details of your architecture."
 echo ""
 echo "If these don't seem correct, head over to https://github.com/abs-lang/abs/releases"
@@ -36,7 +34,6 @@ echo "and download the right binary for your architecture."
 echo ""
 echo "OS: ${OS}"
 echo "ARCH: ${ARCH}"
-echo "VERSION: ${VERSION}"
 echo ""
 echo "Are these correct? [y/N]"
 
@@ -50,8 +47,8 @@ do
   exit 1
 done < "/dev/stdin"
 
-BIN=abs-${VERSION}-${OS}-${ARCH}
-wget https://github.com/abs-lang/abs/releases/download/${VERSION}/${BIN} -O ./abs
+BIN=abs-${OS}-${ARCH}
+wget https://github.com/abs-lang/abs/releases/latest/download/${BIN} -O ./abs
 chmod +x ./abs
 
 echo "ABS installation completed!"
