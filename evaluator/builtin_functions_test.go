@@ -557,6 +557,18 @@ func TestChunk(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestBetween(t *testing.T) {
+	tests := []Tests{
+		{`1.between(0, 2)`, true},
+		{`1.between(0, 1.1)`, true},
+		{`1.between(0, 0.9)`, false},
+		{`1.between(1, 0)`, "arguments to between(min, max) must satisfy min < max (1 < 0 given)"},
+		{`1.between(1, 2)`, true},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
