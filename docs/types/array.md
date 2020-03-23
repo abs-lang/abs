@@ -146,6 +146,16 @@ of strings or numbers:
 [1, 2, 3].contains(4) # false
 ```
 
+### chunk(size)
+
+Splits the array into chunks of the given size:
+
+```bash
+[1, 2, 3].chunk(2) # [[1, 2], [3]]
+[1, 2, 3].chunk(10) # [[1,2,3]]
+[1, 2, 3].chunk(1.2) # argument to chunk must be a positive integer, got '1.2'
+```
+
 ### every(f)
 
 Returns true when all elements in the array

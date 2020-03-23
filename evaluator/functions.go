@@ -141,6 +141,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.FUNCTION_OBJ, object.BUILTIN_OBJ},
 			Fn:    callFn,
 		},
+		// chnk([...], int:2)
+		"chunk": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    chunkFn,
+		},
 		// split(string:"hello")
 		"split": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -847,6 +852,36 @@ func callFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	return applyFunction(tok, args[0], env, args[1].(*object.Array).Elements)
+}
+
+// chunk([...], integer:2)
+func chunkFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "chunk", args, 2, [][]string{{object.ARRAY_OBJ}, {object.NUMBER_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	number := args[1].(*object.Number)
+	size := int(number.Value)
+
+	if size < 1 || !number.IsInt() {
+		return newError(tok, "argument to chunk must be a positive integer, got '%s'", number.Inspect())
+	}
+
+	var chunks []object.Object
+	elements := args[0].(*object.Array).Elements
+
+	for i := 0; i < len(elements); i += size {
+		end := i + size
+
+		if end > len(elements) {
+			end = len(elements)
+		}
+
+		chunks = append(chunks, &object.Array{Elements: elements[i:end]})
+	}
+
+	return &object.Array{Elements: chunks}
 }
 
 // split(string:"hello world!", sep:" ")
