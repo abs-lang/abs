@@ -539,6 +539,24 @@ c")`, []string{"a", "b", "c"}},
 	testBuiltinFunction(tests, t)
 }
 
+func TestChunk(t *testing.T) {
+	tests := []Tests{
+		{`chunk([1,2,3,4,5])`, "wrong number of arguments to chunk(...): got=1, want=2"},
+		{`x = chunk([1,2,3,4,5], 2); len(x)`, 3},
+		{`x = chunk([1,2,3,4,5], 2); x[0]`, []int{1, 2}},
+		{`x = chunk([1,2,3,4,5], 2); x[1]`, []int{3, 4}},
+		{`x = chunk([1,2,3,4,5], 2); x[2]`, []int{5}},
+		{`x = chunk([1,2,3,4,5], 0);`, "argument to chunk must be a positive integer, got '0'"},
+		{`x = chunk([1,2,3,4,5], -1);`, "argument to chunk must be a positive integer, got '-1'"},
+		{`x = chunk([1,2,3,4,5], -1.5);`, "argument to chunk must be a positive integer, got '-1.5'"},
+		{`x = chunk([1,2,3,4,5], 1.5);`, "argument to chunk must be a positive integer, got '1.5'"},
+		{`x = chunk([], 10); len(x)`, 0},
+		{`x = chunk([], 10); x`, []int{}},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)

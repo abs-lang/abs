@@ -74,10 +74,13 @@ func (n *Number) Type() ObjectType { return NUMBER_OBJ }
 // If it's a float, let's remove as many zeroes
 // as possible (1.10000 becomes 1.1).
 func (n *Number) Inspect() string {
-	if n.Value == float64(int64(n.Value)) {
+	if n.IsInt() {
 		return fmt.Sprintf("%d", int64(n.Value))
 	}
 	return strconv.FormatFloat(n.Value, 'f', -1, 64)
+}
+func (n *Number) IsInt() bool {
+	return n.Value == float64(int64(n.Value))
 }
 func (n *Number) Json() string       { return n.Inspect() }
 func (n *Number) ZeroValue() float64 { return float64(0) }
