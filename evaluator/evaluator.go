@@ -291,25 +291,106 @@ func evalCompoundAssignment(node *ast.CompoundAssignment, env *object.Environmen
 }
 
 func evalDecorator(node *ast.Decorator, env *object.Environment) object.Object {
+	ident, fn, err := doEvalDecorator(node, env)
+
+	if isError(err) {
+		return err
+	}
+
+	env.Set(ident, fn)
+	return object.NULL
+}
+
+// This is the core of decorators. I would like
+// to refactor this at some point as I think there
+// is a much simpler way to go about this with
+// a simple touch of recursion -- without having
+// a special case for decorators of decorators
+// and for single decorators. Eventually we might
+// want to consider re-thinking the way the parser
+// works -- as currently it has 2 distinct entities,
+// functions and decorators. Ideally, the parser should
+// simply convert:
+
+// @deco()
+// f test() {}
+
+// into
+
+// f test() {}
+// test = deco(test)
+
+// which is much simpler to parse evaluate and does not
+// require any extra "entity" like a decorator. This
+// has many more implications and it's 2.55 AM so
+// let's call it for today...
+func doEvalDecorator(node *ast.Decorator, env *object.Environment) (string, object.Object, object.Object) {
 	decorator, ok := env.Get(node.Name)
 
 	if !ok {
-		return newError(node.Token, "function '%s' is not defined (used as decorator)", node.Name)
+		return "", nil, newError(node.Token, "function '%s' is not defined (used as decorator)", node.Name)
 	}
 
 	switch d := decorator.(type) {
 	case *object.Function:
-		fn := Eval(&ast.CallExpression{
-			Function:  d.Node,
-			Arguments: append([]ast.Expression{node.Decorated}, node.Arguments...),
-		}, env)
+		name, ok := getDecoratedName(node.Decorated)
 
-		env.Set(node.Decorated.Name, fn)
+		if !ok {
+			return "", nil, newError(node.Token, "error while processing decorator: unable to find the name of the function you're trying to decorate")
+		}
 
-		return decorator
+		switch decorated := node.Decorated.(type) {
+		case *ast.FunctionLiteral:
+			// Here we have a single decorator
+			return name, Eval(&ast.CallExpression{
+				Function:  d.Node,
+				Arguments: append([]ast.Expression{decorated}, node.Arguments...),
+			}, env), nil
+		case *ast.Decorator:
+			// Here we have a decorator of another decorator
+			decoratorObj, _ := env.Get(node.Name)
+			decorator := decoratorObj.(*object.Function)
+
+			// First eval the later decorator(s).
+			fnName, fn, err := doEvalDecorator(node.Decorated.(*ast.Decorator), env)
+
+			if isError(err) {
+				return "", nil, err
+			}
+
+			args := evalExpressions(node.Arguments, env)
+			return fnName, applyFunction(node.Token, decorator, env, append([]object.Object{fn}, args...)), nil
+		default:
+			return "", nil, newError(node.Token, "a decorator must decorate a named function or another decorator")
+		}
 	default:
-		return newError(node.Token, "decorator '%s' must be a function, %s given", node.Name, decorator.Type())
+		return "", nil, newError(node.Token, "decorator '%s' must be a function, %s given", node.Name, decorator.Type())
 	}
+}
+
+// Finds the actual name of the decorated function.
+//
+// Given this:
+// @deco1()
+// @deco2()
+// f hello() {}
+//
+// After we evaluate the decorators, we need to
+// re-assign the original function "hello", like this:
+//
+// hello = deco1(deco2(hello))
+//
+// This function traverses the decorators and finds the
+// name of the function we have to re-assign.
+func getDecoratedName(decorated ast.Expression) (string, bool) {
+	switch d := decorated.(type) {
+	case *ast.FunctionLiteral:
+		return d.Name, true
+	case *ast.Decorator:
+		return getDecoratedName(d.Decorated)
+	}
+
+	return "", false
 }
 
 // support index assignment expressions: a[0] = 1, h["a"] = 1

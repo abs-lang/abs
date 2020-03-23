@@ -304,7 +304,7 @@ $ cat ~/.absrc
 source("~/abs/lib/library.abs")
 
 $ abs
-Hello user, welcome to the ABS (1.11.3) programming language!
+Hello user, welcome to the ABS (1.11.4) programming language!
 Type 'quit' when you are done, 'help' if you get lost!
 ⧐ adder(1, 2)
 3
