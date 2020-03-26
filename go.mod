@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/c-bata/go-prompt v0.2.4-0.20190826134812-0f95e1d1de2e
+	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect

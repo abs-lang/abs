@@ -588,6 +588,36 @@ func TestClamp(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestCamel(t *testing.T) {
+	tests := []Tests{
+		{`"long cool woman in a black dress".camel()`, "longCoolWomanInABlackDress"},
+		{`"  long cool woman in a black dress   ".camel()`, "longCoolWomanInABlackDress"},
+		{`"  long cool woman in a_black dress   ".camel()`, "longCoolWomanInABlackDress"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestSnake(t *testing.T) {
+	tests := []Tests{
+		{`"long cool woman in a black dress".snake()`, "long_cool_woman_in_a_black_dress"},
+		{`"  long cool woman in a black dress   ".snake()`, "long_cool_woman_in_a_black_dress"},
+		{`"  long cool woman in a_black dress   ".snake()`, "long_cool_woman_in_a_black_dress"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestKebab(t *testing.T) {
+	tests := []Tests{
+		{`"long cool woman in a black dress".kebab()`, "long-cool-woman-in-a-black-dress"},
+		{`"  long cool woman in a black dress   ".kebab()`, "long-cool-woman-in-a-black-dress"},
+		{`"  long cool woman in a_black dress   ".kebab()`, "long-cool-woman-in-a-black-dress"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
