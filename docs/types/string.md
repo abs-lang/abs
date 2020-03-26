@@ -476,6 +476,31 @@ back as many characters as the value of `start`:
 "string".slice(-3, 0) # "ing"
 ```
 
+### camel()
+
+Converts the string to camelCase:
+
+```bash
+"a short sentence".camel() # aShortSentence
+```
+
+### snake()
+
+Converts the string to snake_case:
+
+```bash
+"a short sentence".snake() # a_short_sentence
+```
+
+
+### kebab()
+
+Converts the string to kebab-case:
+
+```bash
+"a short sentence".snake() # a-short-sentence
+```
+
 ## Next
 
 That's about it for this section!

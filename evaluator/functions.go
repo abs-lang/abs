@@ -25,6 +25,7 @@ import (
 	"github.com/abs-lang/abs/parser"
 	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
+	"github.com/iancoleman/strcase"
 )
 
 var scanner *bufio.Scanner
@@ -65,6 +66,21 @@ func getFns() map[string]*object.Builtin {
 		"pwd": &object.Builtin{
 			Types: []string{},
 			Fn:    pwdFn,
+		},
+		// camel("string")
+		"camel": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    camelFn,
+		},
+		// snake("string")
+		"snake": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    snakeFn,
+		},
+		// kebab("string")
+		"kebab": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    kebabFn,
 		},
 		// cd() or cd(path)
 		"cd": &object.Builtin{
@@ -595,6 +611,30 @@ func pwdFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 		return newError(tok, err.Error())
 	}
 	return &object.String{Token: tok, Value: dir}
+}
+
+// camel("some string")
+func camelFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return applyStringCase("camel", strcase.ToLowerCamel, tok, env, args...)
+}
+
+// snake("some string")
+func snakeFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return applyStringCase("snake", strcase.ToSnake, tok, env, args...)
+}
+
+// kebab("some string")
+func kebabFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return applyStringCase("kebab", strcase.ToKebab, tok, env, args...)
+}
+
+func applyStringCase(fnName string, fn func(string) string, tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, fnName, args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	return &object.String{Token: tok, Value: fn(args[0].(*object.String).Value)}
 }
 
 // cd() or cd(path) returns expanded path and path.ok
