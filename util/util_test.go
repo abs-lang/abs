@@ -109,3 +109,24 @@ func TestInterpolateStringVars(t *testing.T) {
 		}
 	}
 }
+
+func TestMapify(t *testing.T) {
+	elements := []object.Object{}
+	first := &object.String{Value: "x"}
+	second := &object.Number{Value: 10}
+	elements = append(elements, first, second)
+
+	m := Mapify(elements)
+
+	if len(m) != 2 {
+		t.Fatalf("expected len '%d', got '%d'", 2, len(m))
+	}
+
+	if m["STRING:x"] != first {
+		t.Fatalf("string element not found")
+	}
+
+	if m["NUMBER:10"] != second {
+		t.Fatalf("number element not found")
+	}
+}

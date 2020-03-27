@@ -57,11 +57,23 @@ type Object interface {
 	Json() string
 }
 
+// GenerateEqualityString is used to compare
+// 2 objects, for example from different arrays.
+//
+// This function will generate a string that can
+// be used to compare the 2, including their type
+// and their string representation. Only using their
+// string representation wouldn't work as "1" would
+// be the same as 1.
+func GenerateEqualityString(o Object) string {
+	return fmt.Sprintf("%s:%s", o.Type(), o.Inspect())
+}
+
 // Equal compares 2 objects
 // and makes sure they represent
 // the same value.
 func Equal(obj1 Object, obj2 Object) bool {
-	return obj1.Type() == obj2.Type() && obj1.Inspect() == obj2.Inspect()
+	return GenerateEqualityString(obj1) == GenerateEqualityString(obj2)
 }
 
 type Iterable interface {
