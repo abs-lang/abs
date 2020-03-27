@@ -203,6 +203,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    intersectFn,
 		},
+		// diff(array:[1, 2, 3], array:[1, 2, 3])
+		"diff": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    diffFn,
+		},
 		// map(array:[1, 2, 3], function:f(x) { x + 1 })
 		"map": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -1202,6 +1207,46 @@ func intersectFn(tok token.Token, env *object.Environment, args ...object.Object
 	}
 
 	return &object.Array{Elements: intersection}
+}
+
+// intersect(array:[1, 2, 3], array:[1, 2, 3])
+func diffFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "diff", args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	left := args[0].(*object.Array).Elements
+	right := args[1].(*object.Array).Elements
+	foundLeft := map[string]object.Object{}
+	foundRight := map[string]object.Object{}
+	difference := []object.Object{}
+
+	for _, o := range left {
+		foundLeft[string(o.Type())+"__"+o.Inspect()] = o
+	}
+
+	for _, o := range right {
+		foundRight[string(o.Type())+"__"+o.Inspect()] = o
+	}
+
+	for _, o := range left {
+		_, ok := foundRight[string(o.Type())+"__"+o.Inspect()]
+
+		if !ok {
+			difference = append(difference, o)
+		}
+	}
+
+	for _, o := range right {
+		_, ok := foundLeft[string(o.Type())+"__"+o.Inspect()]
+
+		if !ok {
+			difference = append(difference, o)
+		}
+	}
+
+	return &object.Array{Elements: difference}
 }
 
 // map(array:[1, 2, 3], function:f(x) { x + 1 })

@@ -634,6 +634,17 @@ func TestIntersect(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestDiff(t *testing.T) {
+	tests := []Tests{
+		{`[1,2,3].diff([])`, []int{1, 2, 3}},
+		{`[1,2,3].diff([3])`, []int{1, 2}},
+		{`[1,2,3].diff([3, 1])`, []int{2}},
+		{`[1,2,3].diff([1,2,3,4])`, []int{4}},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
