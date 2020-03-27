@@ -136,6 +136,11 @@ func TestFind(t *testing.T) {
 	tests := []Tests{
 		{`find([1,2,3,3], f(x) {x == 3})`, 3},
 		{`find([1,2], f(x) {x == "some"})`, nil},
+		{`find([{}, {}], f(x) {x.y == 1})`, nil},
+		{`x = find([{}, {"y": 1, "z": 10}, {}], f(x) {x.y == 1}); x.z`, 10},
+		{`x = find([{}, {"y": 1, "z": 10}, {}], {"y": 1}); x.z`, 10},
+		{`x = find([{}, {"y": {}, "z": 10}, {}], {"y": {}}); x.z`, 10},
+		{`find([{}, {"y": "1", "z": 10}, {}], {"y": 1})`, nil},
 	}
 
 	testBuiltinFunction(tests, t)
