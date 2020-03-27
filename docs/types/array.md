@@ -183,6 +183,13 @@ Returns the first element that returns `true` when applied to the function `f`:
 ["hello", 0, 1, 2].find(f(x){type(x) == "NUMBER"}) # 0
 ```
 
+A shorthand syntax supports passing a hash and comparing
+elements to the given hash:
+
+```bash
+[null, {"key": "val", "test": 123}].find({"key": "val"}) # {"key": "val", "test": 123}
+```
+
 ### len()
 
 Returns the length of the array:
