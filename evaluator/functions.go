@@ -208,6 +208,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    diffFn,
 		},
+		// union(array:[1, 2, 3], array:[1, 2, 3])
+		"union": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    unionFn,
+		},
 		// diff_symmetric(array:[1, 2, 3], array:[1, 2, 3])
 		"diff_symmetric": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -1200,11 +1205,11 @@ func intersectFn(tok token.Token, env *object.Environment, args ...object.Object
 	intersection := []object.Object{}
 
 	for _, o := range right {
-		found[string(o.Type())+"__"+o.Inspect()] = o
+		found[object.GenerateEqualityString(o)] = o
 	}
 
 	for _, o := range left {
-		element, ok := found[string(o.Type())+"__"+o.Inspect()]
+		element, ok := found[object.GenerateEqualityString(o)]
 
 		if ok {
 			intersection = append(intersection, element)
@@ -1215,8 +1220,8 @@ func intersectFn(tok token.Token, env *object.Environment, args ...object.Object
 }
 
 // diff(array:[1, 2, 3], array:[1, 2, 3])
-func diff(symmetric bool, tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "diff", args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
+func diff(symmetric bool, fnName string, tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, fnName, args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
 	if err != nil {
 		return err
 	}
@@ -1227,11 +1232,11 @@ func diff(symmetric bool, tok token.Token, env *object.Environment, args ...obje
 	difference := []object.Object{}
 
 	for _, o := range right {
-		foundRight[string(o.Type())+"__"+o.Inspect()] = o
+		foundRight[object.GenerateEqualityString(o)] = o
 	}
 
 	for _, o := range left {
-		_, ok := foundRight[string(o.Type())+"__"+o.Inspect()]
+		_, ok := foundRight[object.GenerateEqualityString(o)]
 
 		if !ok {
 			difference = append(difference, o)
@@ -1241,19 +1246,48 @@ func diff(symmetric bool, tok token.Token, env *object.Environment, args ...obje
 	if symmetric {
 		// If the did is symmetric, we simply re-run this function with the arrays swapped
 		// so diff_sym(a, b) = diff(a, b) + diff(b, a)
-		difference = append(difference, diff(false, tok, env, args[1], args[0]).(*object.Array).Elements...)
+		difference = append(difference, diff(false, fnName, tok, env, args[1], args[0]).(*object.Array).Elements...)
 	}
 
 	return &object.Array{Elements: difference}
 }
 
 func diffFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	return diff(false, tok, env, args...)
+	return diff(false, "diff", tok, env, args...)
 }
 
 // diff_symmetric(array:[1, 2, 3], array:[1, 2, 3])
 func diffSymmetricFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	return diff(true, tok, env, args...)
+	return diff(true, "diff_symmetric", tok, env, args...)
+}
+
+// union(array:[1, 2, 3], array:[1, 2, 3])
+func unionFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "union", args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	left := args[0].(*object.Array).Elements
+	right := args[1].(*object.Array).Elements
+
+	union := []object.Object{}
+
+	for _, v := range left {
+		union = append(union, v)
+	}
+
+	m := util.Mapify(left)
+
+	for _, v := range right {
+		_, found := m[object.GenerateEqualityString(v)]
+
+		if !found {
+			union = append(union, v)
+		}
+	}
+
+	return &object.Array{Elements: union}
 }
 
 // map(array:[1, 2, 3], function:f(x) { x + 1 })
@@ -1410,7 +1444,7 @@ func uniqueFn(tok token.Token, env *object.Environment, args ...object.Object) o
 	existingElements := map[string]bool{}
 
 	for _, v := range arr.Elements {
-		key := fmt.Sprintf("%s_%s", v.Type(), v.Inspect())
+		key := object.GenerateEqualityString(v)
 
 		if _, ok := existingElements[key]; !ok {
 			existingElements[key] = true

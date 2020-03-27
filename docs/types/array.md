@@ -402,6 +402,18 @@ between 2 arrays (elements that are only on either of the 2):
 [1, 2, 3].diff([1, 2, 3, 4]) # [4]
 ```
 
+### union(array)
+
+Computes the [union](https://en.wikipedia.org/wiki/Union_(set_theory))
+between 2 arrays:
+
+```bash
+[1, 2, 3].union([1, 2, 3, 4]) # [1, 2, 3, 4]
+[1, 2, 3].union([3]) # [1, 2, 3]
+[].union([3, 1]) # [3, 1]
+[1, 2].union([3, 4]) # [1, 2, 3, 4]
+```
+
 ## Next
 
 That's about it for this section!
