@@ -639,7 +639,18 @@ func TestDiff(t *testing.T) {
 		{`[1,2,3].diff([])`, []int{1, 2, 3}},
 		{`[1,2,3].diff([3])`, []int{1, 2}},
 		{`[1,2,3].diff([3, 1])`, []int{2}},
-		{`[1,2,3].diff([1,2,3,4])`, []int{4}},
+		{`[1,2,3].diff([1,2,3,4])`, []int{}},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestDiffSymmetric(t *testing.T) {
+	tests := []Tests{
+		{`[1,2,3].diff_symmetric([])`, []int{1, 2, 3}},
+		{`[1,2,3].diff_symmetric([3])`, []int{1, 2}},
+		{`[1,2,3].diff_symmetric([3, 1])`, []int{2}},
+		{`[1,2,3].diff_symmetric([1,2,3,4])`, []int{4}},
 	}
 
 	testBuiltinFunction(tests, t)

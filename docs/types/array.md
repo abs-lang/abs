@@ -378,8 +378,22 @@ Computes the intersection between 2 arrays:
 
 ### diff(array)
 
-Computes the difference between 2 arrays
-(elements that are only on either of the 2):
+Computes the difference between 2 arrays,
+returning elements that are only on the first array:
+
+```bash
+[1, 2, 3].diff([]) # [1, 2, 3]
+[1, 2, 3].diff([3]) # [1, 2]
+[1, 2, 3].diff([3, 1]) # [2]
+[1, 2, 3].diff([1, 2, 3, 4]) # []
+```
+
+For symmetric difference see [diff_symmetric(...)](#diff_symmetricarray)
+
+### diff_symmetric(array)
+
+Computes the [symmetric difference](https://en.wikipedia.org/wiki/Symmetric_difference)
+between 2 arrays (elements that are only on either of the 2):
 
 ```bash
 [1, 2, 3].diff([]) # [1, 2, 3]
