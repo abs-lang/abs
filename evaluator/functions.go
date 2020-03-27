@@ -1243,18 +1243,46 @@ func everyFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 
 // find(array:[1, 2, 3], function:f(x) { x == 2 })
 func findFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "find", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+	err := validateArgs(tok, "find", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ, object.HASH_OBJ}})
 	if err != nil {
 		return err
 	}
 
 	arr := args[0].(*object.Array)
 
-	for _, v := range arr.Elements {
-		r := applyFunction(tok, args[1], env, []object.Object{v})
+	switch predicate := args[1].(type) {
+	case *object.Hash:
+		for _, v := range arr.Elements {
+			v, ok := v.(*object.Hash)
 
-		if isTruthy(r) {
-			return v
+			if !ok {
+				continue
+			}
+
+			match := true
+			for k, pair := range predicate.Pairs {
+				toCompare, ok := v.GetPair(k.Value)
+				if !ok {
+					match = false
+					continue
+				}
+
+				if !object.Equal(pair.Value, toCompare.Value) {
+					match = false
+				}
+			}
+
+			if match {
+				return v
+			}
+		}
+	default:
+		for _, v := range arr.Elements {
+			r := applyFunction(tok, predicate, env, []object.Object{v})
+
+			if isTruthy(r) {
+				return v
+			}
 		}
 	}
 

@@ -57,6 +57,13 @@ type Object interface {
 	Json() string
 }
 
+// Equal compares 2 objects
+// and makes sure they represent
+// the same value.
+func Equal(obj1 Object, obj2 Object) bool {
+	return obj1.Type() == obj2.Type() && obj1.Inspect() == obj2.Inspect()
+}
+
 type Iterable interface {
 	Next() (Object, Object)
 	Reset()
