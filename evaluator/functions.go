@@ -198,6 +198,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    sortFn,
 		},
+		// intersect(array:[1, 2, 3], array:[1, 2, 3])
+		"intersect": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    intersectFn,
+		},
 		// map(array:[1, 2, 3], function:f(x) { x + 1 })
 		"map": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -1170,6 +1175,33 @@ func sortFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	default:
 		return newError(tok, "cannot sort an array with given elements elements (%s)", arr.Inspect())
 	}
+}
+
+// intersect(array:[1, 2, 3], array:[1, 2, 3])
+func intersectFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "intersect", args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	left := args[0].(*object.Array).Elements
+	right := args[1].(*object.Array).Elements
+	found := map[string]object.Object{}
+	intersection := []object.Object{}
+
+	for _, o := range right {
+		found[string(o.Type())+"__"+o.Inspect()] = o
+	}
+
+	for _, o := range left {
+		element, ok := found[string(o.Type())+"__"+o.Inspect()]
+
+		if ok {
+			intersection = append(intersection, element)
+		}
+	}
+
+	return &object.Array{Elements: intersection}
 }
 
 // map(array:[1, 2, 3], function:f(x) { x + 1 })
