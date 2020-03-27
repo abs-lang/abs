@@ -376,6 +376,18 @@ Computes the intersection between 2 arrays:
 [1, 2, 3].intersect([1, 2, 3, 4]) # [1, 2, 3]
 ```
 
+### diff(array)
+
+Computes the difference between 2 arrays
+(elements that are only on either of the 2):
+
+```bash
+[1, 2, 3].diff([]) # [1, 2, 3]
+[1, 2, 3].diff([3]) # [1, 2]
+[1, 2, 3].diff([3, 1]) # [2]
+[1, 2, 3].diff([1, 2, 3, 4]) # [4]
+```
+
 ## Next
 
 That's about it for this section!
