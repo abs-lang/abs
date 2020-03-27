@@ -365,6 +365,17 @@ Returns an array with unique values:
 [1, 1, 1, 2].unique() # [1, 2]
 ```
 
+### intersect(array)
+
+Computes the intersection between 2 arrays:
+
+```bash
+[1, 2, 3].intersect([]) # []
+[1, 2, 3].intersect([3]) # [3]
+[1, 2, 3].intersect([3, 1]) # [1, 3]
+[1, 2, 3].intersect([1, 2, 3, 4]) # [1, 2, 3]
+```
+
 ## Next
 
 That's about it for this section!
