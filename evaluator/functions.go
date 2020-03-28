@@ -233,15 +233,20 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    diffSymmetricFn,
 		},
-		// flattem(array:[1, 2, 3])
+		// flatten(array:[1, 2, 3])
 		"flatten": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    flattenFn,
 		},
-		// flattem(array:[1, 2, 3])
+		// flatten(array:[1, 2, 3])
 		"flatten_deep": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    flattenDeepFn,
+		},
+		// partition(array:[1, 2, 3])
+		"partition": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    partitionFn,
 		},
 		// map(array:[1, 2, 3], function:f(x) { x + 1 })
 		"map": &object.Builtin{
@@ -1407,7 +1412,7 @@ func flattenDeepFn(tok token.Token, env *object.Environment, args ...object.Obje
 }
 
 func flatten(fnName string, deep bool, tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "flatten", args, 1, [][]string{{object.ARRAY_OBJ}})
+	err := validateArgs(tok, fnName, args, 1, [][]string{{object.ARRAY_OBJ}})
 	if err != nil {
 		return err
 	}
@@ -1431,6 +1436,49 @@ func flatten(fnName string, deep bool, tok token.Token, env *object.Environment,
 	}
 
 	return &object.Array{Elements: elements}
+}
+
+func partitionFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "partition", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	partitions := map[string][]object.Object{}
+	elements := args[0].(*object.Array).Elements
+	// This will allows us to preserve the order
+	// of partitions based on the order of elements.
+	//
+	// When we run the partitioning function, we store
+	// it's results in a map of result{list_of_values...}.
+	// When we loop over that map, Go doesn't guarantee
+	// order of results (https://nathanleclaire.com/blog/2014/04/27/a-surprising-feature-of-golang-that-colored-me-impressed/)
+	// but we want to, so
+	// we use the partitionOrder list to extract values
+	// from the map based on the order they were
+	// inserted in.
+	partitionOrder := []string{}
+	scanned := map[string]bool{}
+
+	for _, v := range elements {
+		res := applyFunction(tok, args[1], env, []object.Object{v})
+		eqs := object.GenerateEqualityString(res)
+
+		partitions[eqs] = append(partitions[eqs], v)
+
+		if _, ok := scanned[eqs]; !ok {
+			partitionOrder = append(partitionOrder, eqs)
+			scanned[eqs] = true
+		}
+	}
+
+	result := &object.Array{Elements: []object.Object{}}
+	for _, eqs := range partitionOrder {
+		partition := partitions[eqs]
+		result.Elements = append(result.Elements, &object.Array{Elements: partition})
+	}
+
+	return result
 }
 
 // map(array:[1, 2, 3], function:f(x) { x + 1 })
