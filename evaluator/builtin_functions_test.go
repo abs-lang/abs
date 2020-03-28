@@ -715,6 +715,16 @@ func TestMin(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestReduce(t *testing.T) {
+	tests := []Tests{
+		{`[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 0)`, 10},
+		{`[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 10)`, 20},
+		{`[1, 2, 3, 4].reduce(f(value, element) { return value + element })`, "wrong number of arguments to reduce(...)"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
