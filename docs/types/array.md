@@ -459,6 +459,21 @@ Reduces the array to a value by iterating through its elements and applying `fn`
 [1, 2, 3, 4].reduce(f(value, element) { return value + element }, 10) # 20
 ```
 
+
+### partition(fn)
+
+Partitions the array by applying `fn` to all of its elements
+and using the result of the function invocation as the key to partition by:
+
+```py
+f odd(n) {
+  return !!(n % 2)
+}
+
+[0, 1, 2, 3, 4, 5].partition(odd) # [[0, 2, 4], [1, 3, 5]]
+[1, "1", {}].partition(str) # [[1, "1"], [{}]]
+```
+
 ## Next
 
 That's about it for this section!
