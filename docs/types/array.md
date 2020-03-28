@@ -414,6 +414,15 @@ between 2 arrays:
 [1, 2].union([3, 4]) # [1, 2, 3, 4]
 ```
 
+### flatten()
+
+Flattens an array a single level deep:
+
+```bash
+[[1, 2], 3, [4]].flatten([1, 2, 3, 4]) # [1, 2, 3, 4]
+[[1, 2, 3, 4]].flatten([1, 2, 3, 4]) # [1, 2, 3, 4]
+```
+
 ## Next
 
 That's about it for this section!
