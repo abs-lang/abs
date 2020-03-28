@@ -450,6 +450,15 @@ Finds the lowest number in an array:
 [0, 5, -10, 100].min() # -10
 ```
 
+### reduce(fn, accumulator)
+
+Reduces the array to a value by iterating through its elements and applying `fn` to them:
+
+```py
+[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 0) # 10
+[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 10) # 20
+```
+
 ## Next
 
 That's about it for this section!

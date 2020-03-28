@@ -203,6 +203,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    minFn,
 		},
+		// reduce(array:[1, 2, 3], f(){}, accumulator)
+		"reduce": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    reduceFn,
+		},
 		// sort(array:[1, 2, 3])
 		"sort": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -434,7 +439,6 @@ func getFns() map[string]*object.Builtin {
 /*
 Here be the actual Builtin Functions
 */
-
 // Utility function that validates arguments passed to builtin functions.
 func validateArgs(tok token.Token, name string, args []object.Object, size int, types [][]string) object.Object {
 	if len(args) == 0 || len(args) > size || len(args) < size {
@@ -442,7 +446,7 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 	}
 
 	for i, t := range types {
-		if !util.Contains(t, string(args[i].Type())) {
+		if !util.Contains(t, string(args[i].Type())) && !util.Contains(t, object.ANY_OBJ) {
 			return newError(tok, "argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
 		}
 	}
@@ -1226,6 +1230,22 @@ func minFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	}
 
 	return &object.Number{Token: tok, Value: min}
+}
+
+// reduce(array:[1, 2, 3], f(){}, accumulator)
+func reduceFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "reduce", args, 3, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ}, {object.ANY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	accumulator := args[2]
+
+	for _, v := range args[0].(*object.Array).Elements {
+		accumulator = applyFunction(tok, args[1].(*object.Function), env, []object.Object{accumulator, v})
+	}
+
+	return accumulator
 }
 
 // sort(array:[1, 2, 3])
