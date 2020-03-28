@@ -441,6 +441,15 @@ Finds the highest number in an array:
 [0, 5, -10, 100].max() # 100
 ```
 
+### min()
+
+Finds the lowest number in an array:
+
+```py
+[].min() # NULL
+[0, 5, -10, 100].min() # -10
+```
+
 ## Next
 
 That's about it for this section!
