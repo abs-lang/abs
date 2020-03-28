@@ -27,6 +27,8 @@ const (
 
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 
+	// ANY_OBJ represents any ABS type
+	ANY_OBJ      = "ANY"
 	FUNCTION_OBJ = "FUNCTION"
 	BUILTIN_OBJ  = "BUILTIN"
 
