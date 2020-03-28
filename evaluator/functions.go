@@ -218,6 +218,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    diffSymmetricFn,
 		},
+		// flattem(array:[1, 2, 3])
+		"flatten": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    flattenFn,
+		},
 		// map(array:[1, 2, 3], function:f(x) { x + 1 })
 		"map": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -1288,6 +1293,30 @@ func unionFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 	}
 
 	return &object.Array{Elements: union}
+}
+
+// flatten(array:[1, 2, 3])
+func flattenFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "flatten", args, 1, [][]string{{object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	originalElements := args[0].(*object.Array).Elements
+	elements := []object.Object{}
+
+	for _, v := range originalElements {
+		switch e := v.(type) {
+		case *object.Array:
+			for _, x := range e.Elements {
+				elements = append(elements, x)
+			}
+		default:
+			elements = append(elements, e)
+		}
+	}
+
+	return &object.Array{Elements: elements}
 }
 
 // map(array:[1, 2, 3], function:f(x) { x + 1 })
