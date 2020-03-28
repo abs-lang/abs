@@ -432,6 +432,15 @@ Flattens an array recursively until no member is an array:
 [[1, [2, 3], 4]].flatten_deep() # [1, 2, 3, 4]
 ```
 
+### max()
+
+Finds the highest number in an array:
+
+```py
+[].max() # NULL
+[0, 5, -10, 100].max() # 100
+```
+
 ## Next
 
 That's about it for this section!
