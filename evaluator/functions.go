@@ -198,6 +198,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    maxFn,
 		},
+		// min(array:[1, 2, 3])
+		"min": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    minFn,
+		},
 		// sort(array:[1, 2, 3])
 		"sort": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -1188,6 +1193,39 @@ func maxFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	}
 
 	return &object.Number{Token: tok, Value: max}
+}
+
+// min(array:[1, 2, 3])
+func minFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "min", args, 1, [][]string{{object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	arr := args[0].(*object.Array)
+	if arr.Empty() {
+		return object.NULL
+	}
+
+	if !arr.Homogeneous() {
+		return newError(tok, "min(...) can only be called on an homogeneous array, got %s", arr.Inspect())
+	}
+
+	if arr.Elements[0].Type() != object.NUMBER_OBJ {
+		return newError(tok, "min(...) can only be called on arrays of numbers, got %s", arr.Inspect())
+	}
+
+	min := arr.Elements[0].(*object.Number).Value
+
+	for _, v := range arr.Elements[1:] {
+		elem := v.(*object.Number)
+
+		if elem.Value < min {
+			min = elem.Value
+		}
+	}
+
+	return &object.Number{Token: tok, Value: min}
 }
 
 // sort(array:[1, 2, 3])

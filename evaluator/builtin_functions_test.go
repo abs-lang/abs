@@ -696,7 +696,20 @@ func TestMax(t *testing.T) {
 		{`[].max()`, nil},
 		{`[-10].max()`, -10},
 		{`[-10, 0, 100, 9].max()`, 100},
+		{`[-10, 0, 100, 9, 100.1].max()`, 100.1},
 		{`[-10, {}, 100, 9].max()`, "max(...) can only be called on an homogeneous array, got [-10, {}, 100, 9]"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestMin(t *testing.T) {
+	tests := []Tests{
+		{`[].min()`, nil},
+		{`[-10].min()`, -10},
+		{`[-10, 0, 100, 9].min()`, -10},
+		{`[-10, 0, 100, 9, -10.5].min()`, -10.5},
+		{`[-10, {}, 100, 9].min()`, "min(...) can only be called on an homogeneous array, got [-10, {}, 100, 9]"},
 	}
 
 	testBuiltinFunction(tests, t)
