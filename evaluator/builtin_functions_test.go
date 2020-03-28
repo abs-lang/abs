@@ -725,6 +725,17 @@ func TestReduce(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestPartition(t *testing.T) {
+	tests := []Tests{
+		{`[1, 1, 2, 2, 0].partition(f(x) { return x == 0 })[0]`, []int{1, 1, 2, 2}},
+		{`[1, 1, 2, 2, 0].partition(f(x) { return x == 0 })[1]`, []int{0}},
+		{`[1, "1"].partition(str)[0][0]`, 1},
+		{`[1, "1"].partition(str)[0][1]`, "1"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
