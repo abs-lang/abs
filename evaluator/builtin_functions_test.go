@@ -678,6 +678,19 @@ func TestFlatten(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestFlattenDeep(t *testing.T) {
+	tests := []Tests{
+		{`[1, 2, 3].flatten_deep()`, []int{1, 2, 3}},
+		{`[1, 2, [3]].flatten_deep()`, []int{1, 2, 3}},
+		{`[1, 2, [3, 4]].flatten_deep()`, []int{1, 2, 3, 4}},
+		{`[[1, 2], [3, 4]].flatten_deep()`, []int{1, 2, 3, 4}},
+		{`[[1, [2]], [3, 4]].flatten_deep()`, []int{1, 2, 3, 4}},
+		{`[[[1, [2]], [3, 4]]].flatten_deep()`, []int{1, 2, 3, 4}},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
