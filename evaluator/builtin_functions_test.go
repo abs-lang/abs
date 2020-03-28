@@ -691,6 +691,17 @@ func TestFlattenDeep(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestMax(t *testing.T) {
+	tests := []Tests{
+		{`[].max()`, nil},
+		{`[-10].max()`, -10},
+		{`[-10, 0, 100, 9].max()`, 100},
+		{`[-10, {}, 100, 9].max()`, "max(...) can only be called on an homogeneous array, got [-10, {}, 100, 9]"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
