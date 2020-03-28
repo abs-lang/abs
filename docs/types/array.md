@@ -423,6 +423,15 @@ Flattens an array a single level deep:
 [[1, 2, 3, 4]].flatten() # [1, 2, 3, 4]
 ```
 
+### flatten_deep()
+
+Flattens an array recursively until no member is an array:
+
+```py
+[[[1, 2], [[[[3]]]], [4]]].flatten_deep() # [1, 2, 3, 4]
+[[1, [2, 3], 4]].flatten_deep() # [1, 2, 3, 4]
+```
+
 ## Next
 
 That's about it for this section!
