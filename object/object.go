@@ -27,6 +27,8 @@ const (
 
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 
+	// ANY_OBJ represents any ABS type
+	ANY_OBJ      = "ANY"
 	FUNCTION_OBJ = "FUNCTION"
 	BUILTIN_OBJ  = "BUILTIN"
 
@@ -57,6 +59,25 @@ type Object interface {
 	Json() string
 }
 
+// GenerateEqualityString is used to compare
+// 2 objects, for example from different arrays.
+//
+// This function will generate a string that can
+// be used to compare the 2, including their type
+// and their string representation. Only using their
+// string representation wouldn't work as "1" would
+// be the same as 1.
+func GenerateEqualityString(o Object) string {
+	return fmt.Sprintf("%s:%s", o.Type(), o.Inspect())
+}
+
+// Equal compares 2 objects
+// and makes sure they represent
+// the same value.
+func Equal(obj1 Object, obj2 Object) bool {
+	return GenerateEqualityString(obj1) == GenerateEqualityString(obj2)
+}
+
 type Iterable interface {
 	Next() (Object, Object)
 	Reset()
@@ -74,10 +95,13 @@ func (n *Number) Type() ObjectType { return NUMBER_OBJ }
 // If it's a float, let's remove as many zeroes
 // as possible (1.10000 becomes 1.1).
 func (n *Number) Inspect() string {
-	if n.Value == float64(int64(n.Value)) {
+	if n.IsInt() {
 		return fmt.Sprintf("%d", int64(n.Value))
 	}
 	return strconv.FormatFloat(n.Value, 'f', -1, 64)
+}
+func (n *Number) IsInt() bool {
+	return n.Value == float64(int64(n.Value))
 }
 func (n *Number) Json() string       { return n.Inspect() }
 func (n *Number) ZeroValue() float64 { return float64(0) }

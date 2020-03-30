@@ -214,10 +214,6 @@ ERROR: type mismatch: NULL + NUMBER
 	[78:8]	h["g"] += 1
 ```
 
-## Roadmap
-
-We're currently working on [1.8](https://github.com/abs-lang/abs/milestone/15).
-
 ## Next
 
 That's about it for this section!

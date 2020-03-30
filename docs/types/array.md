@@ -141,9 +141,19 @@ Checks whether `e` is present in the array. `e` can only be
 a string or number and the array needs to be a homogeneous array
 of strings or numbers:
 
-``` bash
+``` py
 [1, 2, 3].contains(3) # true
 [1, 2, 3].contains(4) # false
+```
+
+### chunk(size)
+
+Splits the array into chunks of the given size:
+
+```py
+[1, 2, 3].chunk(2) # [[1, 2], [3]]
+[1, 2, 3].chunk(10) # [[1,2,3]]
+[1, 2, 3].chunk(1.2) # argument to chunk must be a positive integer, got '1.2'
 ```
 
 ### every(f)
@@ -151,7 +161,7 @@ of strings or numbers:
 Returns true when all elements in the array
 return `true` when applied to the function `f`:
 
-``` bash
+``` py
 [0, 1, 2].every(f(x){type(x) == "NUMBER"}) # true
 [0, 1, 2].every(f(x){x == 0}) # false
 ```
@@ -161,7 +171,7 @@ return `true` when applied to the function `f`:
 Returns a new array with only the elements that returned
 `true` when applied to the function `f`:
 
-``` bash
+``` py
 ["hello", 0, 1, 2].filter(f(x){type(x) == "NUMBER"}) # [0, 1, 2]
 ```
 
@@ -169,15 +179,22 @@ Returns a new array with only the elements that returned
 
 Returns the first element that returns `true` when applied to the function `f`:
 
-``` bash
+``` py
 ["hello", 0, 1, 2].find(f(x){type(x) == "NUMBER"}) # 0
+```
+
+A shorthand syntax supports passing a hash and comparing
+elements to the given hash:
+
+```py
+[null, {"key": "val", "test": 123}].find({"key": "val"}) # {"key": "val", "test": 123}
 ```
 
 ### len()
 
 Returns the length of the array:
 
-``` bash
+``` py
 [1, 2].len() # 2
 ```
 
@@ -185,7 +202,7 @@ Returns the length of the array:
 
 Joins the elements of the array by `separator`, defaulting to an empty string:
 
-``` bash
+``` py
 [1, 2, 3].join("_") # "1_2_3"
 [1, 2, 3].join()    # "123"
 ```
@@ -194,7 +211,7 @@ Joins the elements of the array by `separator`, defaulting to an empty string:
 
 Returns an array of the keys in the original array:
 
-``` bash
+``` py
 (1..2).keys() # [0, 1]
 ```
 
@@ -202,7 +219,7 @@ Returns an array of the keys in the original array:
 
 Modifies the array by applying the function `f` to all its elements:
 
-``` bash
+``` py
 [0, 1, 2].map(f(x){x+1}) # [1, 2, 3]
 ```
 
@@ -210,7 +227,7 @@ Modifies the array by applying the function `f` to all its elements:
 
 Pops the last element from the array, returning it:
 
-``` bash
+``` py
 a = [1, 2, 3]
 a.shift() # 3
 a # [1, 2]
@@ -220,13 +237,13 @@ a # [1, 2]
 
 Pushes an element at the end of the array:
 
-``` bash
+``` py
 [1, 2].push(3) # [1, 2, 3]
 ```
 
 This is equivalent to summing 2 arrays:
 
-``` bash
+``` py
 [1, 2] + [3] # [1, 2, 3]
 ```
 
@@ -234,7 +251,7 @@ This is equivalent to summing 2 arrays:
 
 Reverses the order of the elements in the array:
 
-``` bash
+``` py
 [1, 2].reverse() # [2, 1]
 ```
 
@@ -242,7 +259,7 @@ Reverses the order of the elements in the array:
 
 Removes the first elements from the array, and returns it:
 
-``` bash
+``` py
 a = [1, 2, 3]
 a.shift() # 1
 a # [2, 3]
@@ -252,7 +269,7 @@ a # [2, 3]
 
 Returns a portion of the array, from `start` to `end`:
 
-``` bash
+``` py
 (1..10).slice(0, 3) # [1, 2, 3]"
 ```
 
@@ -268,7 +285,7 @@ back as many characters as the value of `start`:
 Returns true when at least one of the elements in the array
 returns `true` when applied to the function `f`:
 
-``` bash
+``` py
 [0, 1, 2].map(f(x){x == 1}) # true
 [0, 1, 2].map(f(x){x == 4}) # false
 ```
@@ -278,7 +295,7 @@ returns `true` when applied to the function `f`:
 Sorts the array. Only supported on arrays of only numbers
 or only strings:
 
-``` bash
+```py
 [3, 1, 2].sort() # [1, 2, 3]
 ["b", "a", "c"].sort() # ["a", "b", "c"]
 ```
@@ -287,7 +304,7 @@ or only strings:
 
 Returns the string representation of the array:
 
-``` bash
+```py
 [1, 2].str() # "[1, 2]"
 ```
 
@@ -295,7 +312,7 @@ Returns the string representation of the array:
 
 Sums the elements of the array. Only supported on arrays of numbers:
 
-``` bash
+```py
 [1, 1, 1].sum() # 3
 ```
 
@@ -344,8 +361,117 @@ James	Harden	null	null
 
 Returns an array with unique values:
 
-``` bash
+```py
 [1, 1, 1, 2].unique() # [1, 2]
+```
+
+### intersect(array)
+
+Computes the intersection between 2 arrays:
+
+```py
+[1, 2, 3].intersect([]) # []
+[1, 2, 3].intersect([3]) # [3]
+[1, 2, 3].intersect([3, 1]) # [1, 3]
+[1, 2, 3].intersect([1, 2, 3, 4]) # [1, 2, 3]
+```
+
+### diff(array)
+
+Computes the difference between 2 arrays,
+returning elements that are only on the first array:
+
+```py
+[1, 2, 3].diff([]) # [1, 2, 3]
+[1, 2, 3].diff([3]) # [1, 2]
+[1, 2, 3].diff([3, 1]) # [2]
+[1, 2, 3].diff([1, 2, 3, 4]) # []
+```
+
+For symmetric difference see [diff_symmetric(...)](#diff_symmetricarray)
+
+### diff_symmetric(array)
+
+Computes the [symmetric difference](https://en.wikipedia.org/wiki/Symmetric_difference)
+between 2 arrays (elements that are only on either of the 2):
+
+```py
+[1, 2, 3].diff([]) # [1, 2, 3]
+[1, 2, 3].diff([3]) # [1, 2]
+[1, 2, 3].diff([3, 1]) # [2]
+[1, 2, 3].diff([1, 2, 3, 4]) # [4]
+```
+
+### union(array)
+
+Computes the [union](https://en.wikipedia.org/wiki/Union_(set_theory))
+between 2 arrays:
+
+```py
+[1, 2, 3].union([1, 2, 3, 4]) # [1, 2, 3, 4]
+[1, 2, 3].union([3]) # [1, 2, 3]
+[].union([3, 1]) # [3, 1]
+[1, 2].union([3, 4]) # [1, 2, 3, 4]
+```
+
+### flatten()
+
+Flattens an array a single level deep:
+
+```py
+[[1, 2], 3, [4]].flatten() # [1, 2, 3, 4]
+[[1, 2, 3, 4]].flatten() # [1, 2, 3, 4]
+```
+
+### flatten_deep()
+
+Flattens an array recursively until no member is an array:
+
+```py
+[[[1, 2], [[[[3]]]], [4]]].flatten_deep() # [1, 2, 3, 4]
+[[1, [2, 3], 4]].flatten_deep() # [1, 2, 3, 4]
+```
+
+### max()
+
+Finds the highest number in an array:
+
+```py
+[].max() # NULL
+[0, 5, -10, 100].max() # 100
+```
+
+### min()
+
+Finds the lowest number in an array:
+
+```py
+[].min() # NULL
+[0, 5, -10, 100].min() # -10
+```
+
+### reduce(fn, accumulator)
+
+Reduces the array to a value by iterating through its elements and applying `fn` to them:
+
+```py
+[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 0) # 10
+[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 10) # 20
+```
+
+
+### partition(fn)
+
+Partitions the array by applying `fn` to all of its elements
+and using the result of the function invocation as the key to partition by:
+
+```py
+f odd(n) {
+  return !!(n % 2)
+}
+
+[0, 1, 2, 3, 4, 5].partition(odd) # [[0, 2, 4], [1, 3, 5]]
+[1, "1", {}].partition(str) # [[1, "1"], [{}]]
 ```
 
 ## Next

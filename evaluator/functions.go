@@ -25,6 +25,7 @@ import (
 	"github.com/abs-lang/abs/parser"
 	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
+	"github.com/iancoleman/strcase"
 )
 
 var scanner *bufio.Scanner
@@ -66,10 +67,30 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{},
 			Fn:    pwdFn,
 		},
+		// camel("string")
+		"camel": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    camelFn,
+		},
+		// snake("string")
+		"snake": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    snakeFn,
+		},
+		// kebab("string")
+		"kebab": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    kebabFn,
+		},
 		// cd() or cd(path)
 		"cd": &object.Builtin{
 			Types: []string{},
 			Fn:    cdFn,
+		},
+		// clamp(num, min, max)
+		"clamp": &object.Builtin{
+			Types: []string{object.NUMBER_OBJ},
+			Fn:    clampFn,
 		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
@@ -141,6 +162,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.FUNCTION_OBJ, object.BUILTIN_OBJ},
 			Fn:    callFn,
 		},
+		// chnk([...], int:2)
+		"chunk": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    chunkFn,
+		},
 		// split(string:"hello")
 		"split": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -167,10 +193,60 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    sumFn,
 		},
+		// max(array:[1, 2, 3])
+		"max": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    maxFn,
+		},
+		// min(array:[1, 2, 3])
+		"min": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    minFn,
+		},
+		// reduce(array:[1, 2, 3], f(){}, accumulator)
+		"reduce": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    reduceFn,
+		},
 		// sort(array:[1, 2, 3])
 		"sort": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    sortFn,
+		},
+		// intersect(array:[1, 2, 3], array:[1, 2, 3])
+		"intersect": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    intersectFn,
+		},
+		// diff(array:[1, 2, 3], array:[1, 2, 3])
+		"diff": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    diffFn,
+		},
+		// union(array:[1, 2, 3], array:[1, 2, 3])
+		"union": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    unionFn,
+		},
+		// diff_symmetric(array:[1, 2, 3], array:[1, 2, 3])
+		"diff_symmetric": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    diffSymmetricFn,
+		},
+		// flatten(array:[1, 2, 3])
+		"flatten": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    flattenFn,
+		},
+		// flatten(array:[1, 2, 3])
+		"flatten_deep": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    flattenDeepFn,
+		},
+		// partition(array:[1, 2, 3])
+		"partition": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    partitionFn,
 		},
 		// map(array:[1, 2, 3], function:f(x) { x + 1 })
 		"map": &object.Builtin{
@@ -216,6 +292,11 @@ func getFns() map[string]*object.Builtin {
 		"any": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    anyFn,
+		},
+		// between(number, min, max)
+		"between": &object.Builtin{
+			Types: []string{object.NUMBER_OBJ},
+			Fn:    betweenFn,
 		},
 		// prefix("abc", "a")
 		"prefix": &object.Builtin{
@@ -363,7 +444,6 @@ func getFns() map[string]*object.Builtin {
 /*
 Here be the actual Builtin Functions
 */
-
 // Utility function that validates arguments passed to builtin functions.
 func validateArgs(tok token.Token, name string, args []object.Object, size int, types [][]string) object.Object {
 	if len(args) == 0 || len(args) > size || len(args) < size {
@@ -371,7 +451,7 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 	}
 
 	for i, t := range types {
-		if !util.Contains(t, string(args[i].Type())) {
+		if !util.Contains(t, string(args[i].Type())) && !util.Contains(t, object.ANY_OBJ) {
 			return newError(tok, "argument %d to %s(...) is not supported (got: %s, allowed: %s)", i, name, args[i].Inspect(), strings.Join(t, ", "))
 		}
 	}
@@ -582,6 +662,30 @@ func pwdFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	return &object.String{Token: tok, Value: dir}
 }
 
+// camel("some string")
+func camelFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return applyStringCase("camel", strcase.ToLowerCamel, tok, env, args...)
+}
+
+// snake("some string")
+func snakeFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return applyStringCase("snake", strcase.ToSnake, tok, env, args...)
+}
+
+// kebab("some string")
+func kebabFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return applyStringCase("kebab", strcase.ToKebab, tok, env, args...)
+}
+
+func applyStringCase(fnName string, fn func(string) string, tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, fnName, args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	return &object.String{Token: tok, Value: fn(args[0].(*object.String).Value)}
+}
+
 // cd() or cd(path) returns expanded path and path.ok
 func cdFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	user, ok := user.Current()
@@ -606,6 +710,34 @@ func cdFn(tok token.Token, env *object.Environment, args ...object.Object) objec
 	// this will also test true/false for cd("path/to/somewhere") && `ls`
 	dir, _ := os.Getwd()
 	return &object.String{Token: tok, Value: dir, Ok: &object.Boolean{Token: tok, Value: true}}
+}
+
+// clamp(n, min, max)
+func clampFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "clamp", args, 3, [][]string{{object.NUMBER_OBJ}, {object.NUMBER_OBJ}, {object.NUMBER_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	n := args[0].(*object.Number)
+	min := args[1].(*object.Number)
+	max := args[2].(*object.Number)
+
+	if min.Value >= max.Value {
+		return newError(tok, "arguments to clamp(min, max) must satisfy min < max (%s < %s given)", min.Inspect(), max.Inspect())
+	}
+
+	val := n.Value
+
+	if min.Value > n.Value {
+		val = min.Value
+	}
+
+	if max.Value < n.Value {
+		val = max.Value
+	}
+
+	return &object.Number{Value: val}
 }
 
 // echo(arg:"hello")
@@ -849,6 +981,36 @@ func callFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	return applyFunction(tok, args[0], env, args[1].(*object.Array).Elements)
 }
 
+// chunk([...], integer:2)
+func chunkFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "chunk", args, 2, [][]string{{object.ARRAY_OBJ}, {object.NUMBER_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	number := args[1].(*object.Number)
+	size := int(number.Value)
+
+	if size < 1 || !number.IsInt() {
+		return newError(tok, "argument to chunk must be a positive integer, got '%s'", number.Inspect())
+	}
+
+	var chunks []object.Object
+	elements := args[0].(*object.Array).Elements
+
+	for i := 0; i < len(elements); i += size {
+		end := i + size
+
+		if end > len(elements) {
+			end = len(elements)
+		}
+
+		chunks = append(chunks, &object.Array{Elements: elements[i:end]})
+	}
+
+	return &object.Array{Elements: chunks}
+}
+
 // split(string:"hello world!", sep:" ")
 func splitFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err, spec := validateVarArgs(tok, "split", args, [][][]string{
@@ -1009,6 +1171,88 @@ func sumFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	return &object.Number{Token: tok, Value: sum}
 }
 
+// max(array:[1, 2, 3])
+func maxFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "max", args, 1, [][]string{{object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	arr := args[0].(*object.Array)
+	if arr.Empty() {
+		return object.NULL
+	}
+
+	if !arr.Homogeneous() {
+		return newError(tok, "max(...) can only be called on an homogeneous array, got %s", arr.Inspect())
+	}
+
+	if arr.Elements[0].Type() != object.NUMBER_OBJ {
+		return newError(tok, "max(...) can only be called on arrays of numbers, got %s", arr.Inspect())
+	}
+
+	max := arr.Elements[0].(*object.Number).Value
+
+	for _, v := range arr.Elements[1:] {
+		elem := v.(*object.Number)
+
+		if elem.Value > max {
+			max = elem.Value
+		}
+	}
+
+	return &object.Number{Token: tok, Value: max}
+}
+
+// min(array:[1, 2, 3])
+func minFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "min", args, 1, [][]string{{object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	arr := args[0].(*object.Array)
+	if arr.Empty() {
+		return object.NULL
+	}
+
+	if !arr.Homogeneous() {
+		return newError(tok, "min(...) can only be called on an homogeneous array, got %s", arr.Inspect())
+	}
+
+	if arr.Elements[0].Type() != object.NUMBER_OBJ {
+		return newError(tok, "min(...) can only be called on arrays of numbers, got %s", arr.Inspect())
+	}
+
+	min := arr.Elements[0].(*object.Number).Value
+
+	for _, v := range arr.Elements[1:] {
+		elem := v.(*object.Number)
+
+		if elem.Value < min {
+			min = elem.Value
+		}
+	}
+
+	return &object.Number{Token: tok, Value: min}
+}
+
+// reduce(array:[1, 2, 3], f(){}, accumulator)
+func reduceFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "reduce", args, 3, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ}, {object.ANY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	accumulator := args[2]
+
+	for _, v := range args[0].(*object.Array).Elements {
+		accumulator = applyFunction(tok, args[1].(*object.Function), env, []object.Object{accumulator, v})
+	}
+
+	return accumulator
+}
+
 // sort(array:[1, 2, 3])
 func sortFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "sort", args, 1, [][]string{{object.ARRAY_OBJ}})
@@ -1057,6 +1301,184 @@ func sortFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	default:
 		return newError(tok, "cannot sort an array with given elements elements (%s)", arr.Inspect())
 	}
+}
+
+// intersect(array:[1, 2, 3], array:[1, 2, 3])
+func intersectFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "intersect", args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	left := args[0].(*object.Array).Elements
+	right := args[1].(*object.Array).Elements
+	found := map[string]object.Object{}
+	intersection := []object.Object{}
+
+	for _, o := range right {
+		found[object.GenerateEqualityString(o)] = o
+	}
+
+	for _, o := range left {
+		element, ok := found[object.GenerateEqualityString(o)]
+
+		if ok {
+			intersection = append(intersection, element)
+		}
+	}
+
+	return &object.Array{Elements: intersection}
+}
+
+// diff(array:[1, 2, 3], array:[1, 2, 3])
+func diff(symmetric bool, fnName string, tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, fnName, args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	left := args[0].(*object.Array).Elements
+	right := args[1].(*object.Array).Elements
+	foundRight := map[string]object.Object{}
+	difference := []object.Object{}
+
+	for _, o := range right {
+		foundRight[object.GenerateEqualityString(o)] = o
+	}
+
+	for _, o := range left {
+		_, ok := foundRight[object.GenerateEqualityString(o)]
+
+		if !ok {
+			difference = append(difference, o)
+		}
+	}
+
+	if symmetric {
+		// If the did is symmetric, we simply re-run this function with the arrays swapped
+		// so diff_sym(a, b) = diff(a, b) + diff(b, a)
+		difference = append(difference, diff(false, fnName, tok, env, args[1], args[0]).(*object.Array).Elements...)
+	}
+
+	return &object.Array{Elements: difference}
+}
+
+func diffFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return diff(false, "diff", tok, env, args...)
+}
+
+// diff_symmetric(array:[1, 2, 3], array:[1, 2, 3])
+func diffSymmetricFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return diff(true, "diff_symmetric", tok, env, args...)
+}
+
+// union(array:[1, 2, 3], array:[1, 2, 3])
+func unionFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "union", args, 2, [][]string{{object.ARRAY_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	left := args[0].(*object.Array).Elements
+	right := args[1].(*object.Array).Elements
+
+	union := []object.Object{}
+
+	for _, v := range left {
+		union = append(union, v)
+	}
+
+	m := util.Mapify(left)
+
+	for _, v := range right {
+		_, found := m[object.GenerateEqualityString(v)]
+
+		if !found {
+			union = append(union, v)
+		}
+	}
+
+	return &object.Array{Elements: union}
+}
+
+// flatten(array:[1, 2, 3])
+func flattenFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return flatten("flatten", false, tok, env, args...)
+}
+
+// flatten_deep(array:[1, 2, 3])
+func flattenDeepFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return flatten("flatten_deep", true, tok, env, args...)
+}
+
+func flatten(fnName string, deep bool, tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, fnName, args, 1, [][]string{{object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	originalElements := args[0].(*object.Array).Elements
+	elements := []object.Object{}
+
+	for _, v := range originalElements {
+		switch e := v.(type) {
+		case *object.Array:
+			if deep {
+				elements = append(elements, flattenDeepFn(tok, env, e).(*object.Array).Elements...)
+			} else {
+				for _, x := range e.Elements {
+					elements = append(elements, x)
+				}
+			}
+		default:
+			elements = append(elements, e)
+		}
+	}
+
+	return &object.Array{Elements: elements}
+}
+
+func partitionFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "partition", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	partitions := map[string][]object.Object{}
+	elements := args[0].(*object.Array).Elements
+	// This will allows us to preserve the order
+	// of partitions based on the order of elements.
+	//
+	// When we run the partitioning function, we store
+	// it's results in a map of result{list_of_values...}.
+	// When we loop over that map, Go doesn't guarantee
+	// order of results (https://nathanleclaire.com/blog/2014/04/27/a-surprising-feature-of-golang-that-colored-me-impressed/)
+	// but we want to, so
+	// we use the partitionOrder list to extract values
+	// from the map based on the order they were
+	// inserted in.
+	partitionOrder := []string{}
+	scanned := map[string]bool{}
+
+	for _, v := range elements {
+		res := applyFunction(tok, args[1], env, []object.Object{v})
+		eqs := object.GenerateEqualityString(res)
+
+		partitions[eqs] = append(partitions[eqs], v)
+
+		if _, ok := scanned[eqs]; !ok {
+			partitionOrder = append(partitionOrder, eqs)
+			scanned[eqs] = true
+		}
+	}
+
+	result := &object.Array{Elements: []object.Object{}}
+	for _, eqs := range partitionOrder {
+		partition := partitions[eqs]
+		result.Elements = append(result.Elements, &object.Array{Elements: partition})
+	}
+
+	return result
 }
 
 // map(array:[1, 2, 3], function:f(x) { x + 1 })
@@ -1130,18 +1552,46 @@ func everyFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 
 // find(array:[1, 2, 3], function:f(x) { x == 2 })
 func findFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "find", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
+	err := validateArgs(tok, "find", args, 2, [][]string{{object.ARRAY_OBJ}, {object.FUNCTION_OBJ, object.BUILTIN_OBJ, object.HASH_OBJ}})
 	if err != nil {
 		return err
 	}
 
 	arr := args[0].(*object.Array)
 
-	for _, v := range arr.Elements {
-		r := applyFunction(tok, args[1], env, []object.Object{v})
+	switch predicate := args[1].(type) {
+	case *object.Hash:
+		for _, v := range arr.Elements {
+			v, ok := v.(*object.Hash)
 
-		if isTruthy(r) {
-			return v
+			if !ok {
+				continue
+			}
+
+			match := true
+			for k, pair := range predicate.Pairs {
+				toCompare, ok := v.GetPair(k.Value)
+				if !ok {
+					match = false
+					continue
+				}
+
+				if !object.Equal(pair.Value, toCompare.Value) {
+					match = false
+				}
+			}
+
+			if match {
+				return v
+			}
+		}
+	default:
+		for _, v := range arr.Elements {
+			r := applyFunction(tok, predicate, env, []object.Object{v})
+
+			if isTruthy(r) {
+				return v
+			}
 		}
 	}
 
@@ -1175,7 +1625,7 @@ func filterFn(tok token.Token, env *object.Environment, args ...object.Object) o
 
 // unique(array:[1, 2, 3])
 func uniqueFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "filter", args, 1, [][]string{{object.ARRAY_OBJ}})
+	err := validateArgs(tok, "unique", args, 1, [][]string{{object.ARRAY_OBJ}})
 	if err != nil {
 		return err
 	}
@@ -1185,7 +1635,7 @@ func uniqueFn(tok token.Token, env *object.Environment, args ...object.Object) o
 	existingElements := map[string]bool{}
 
 	for _, v := range arr.Elements {
-		key := fmt.Sprintf("%s_%s", v.Type(), v.Inspect())
+		key := object.GenerateEqualityString(v)
 
 		if _, ok := existingElements[key]; !ok {
 			existingElements[key] = true
@@ -1261,6 +1711,24 @@ func anyFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	}
 
 	return &object.Boolean{Token: tok, Value: strings.ContainsAny(args[0].(*object.String).Value, args[1].(*object.String).Value)}
+}
+
+// between(10, 0, 100)
+func betweenFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "between", args, 3, [][]string{{object.NUMBER_OBJ}, {object.NUMBER_OBJ}, {object.NUMBER_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	n := args[0].(*object.Number)
+	min := args[1].(*object.Number)
+	max := args[2].(*object.Number)
+
+	if min.Value >= max.Value {
+		return newError(tok, "arguments to between(min, max) must satisfy min < max (%s < %s given)", min.Inspect(), max.Inspect())
+	}
+
+	return &object.Boolean{Token: tok, Value: ((min.Value <= n.Value) && (n.Value <= max.Value))}
 }
 
 // prefix("abc", "a")

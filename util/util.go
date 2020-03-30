@@ -155,3 +155,19 @@ func appendIndexFile(path string) string {
 
 	return path
 }
+
+// Mapify converts a list of objects to a map.
+// This is useful when you want to test whether
+// elements of a list are present in another list:
+// You can mapify the first one and check whether
+// elements of the second one would occupy the same
+// key in the map.
+func Mapify(list []object.Object) map[string]object.Object {
+	m := make(map[string]object.Object)
+
+	for _, v := range list {
+		m[object.GenerateEqualityString(v)] = v
+	}
+
+	return m
+}
