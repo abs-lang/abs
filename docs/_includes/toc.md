@@ -27,6 +27,12 @@
 * [Builtin functions](/types/builtin-function)
 * [Decorators](/types/decorator)
 
+## Standard library
+
+* [Introduction](/stdlib/intro)
+* [@runtime](/stdlib/runtime)
+* [@cli](/stdlib/cli)
+
 ## Miscellaneous
 
 * [Installing 3rd party libraries](/misc/3pl)

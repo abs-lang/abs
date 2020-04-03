@@ -325,46 +325,44 @@ func evalDecorator(node *ast.Decorator, env *object.Environment) object.Object {
 // has many more implications and it's 2.55 AM so
 // let's call it for today...
 func doEvalDecorator(node *ast.Decorator, env *object.Environment) (string, object.Object, object.Object) {
-	decorator, ok := env.Get(node.Name)
+	var decorator object.Object
 
-	if !ok {
-		return "", nil, newError(node.Token, "function '%s' is not defined (used as decorator)", node.Name)
+	evaluated := Eval(node.Expression, env)
+	switch evaluated.(type) {
+	case *object.Function:
+		decorator = evaluated
+	case *object.Error:
+		return "", nil, evaluated
+	default:
+		return "", nil, newError(node.Token, "decorator '%s' is not a function", evaluated.Inspect())
 	}
 
-	switch d := decorator.(type) {
-	case *object.Function:
-		name, ok := getDecoratedName(node.Decorated)
+	name, ok := getDecoratedName(node.Decorated)
 
-		if !ok {
-			return "", nil, newError(node.Token, "error while processing decorator: unable to find the name of the function you're trying to decorate")
+	if !ok {
+		return "", nil, newError(node.Token, "error while processing decorator: unable to find the name of the function you're trying to decorate")
+	}
+
+	switch decorated := node.Decorated.(type) {
+	case *ast.FunctionLiteral:
+		// Here we have a single decorator
+		fn := &object.Function{Token: decorated.Token, Parameters: decorated.Parameters, Env: env, Body: decorated.Body, Name: name, Node: decorated}
+		return name, applyFunction(decorated.Token, decorator, env, []object.Object{fn}), nil
+	case *ast.Decorator:
+		// Here we have a decorator of another decorator
+		// decoratorObj, _ := env.Get(node.Name)
+		// decorator := decoratorObj.(*object.Function)
+
+		// First eval the later decorator(s).
+		fnName, fn, err := doEvalDecorator(decorated, env)
+
+		if isError(err) {
+			return "", nil, err
 		}
 
-		switch decorated := node.Decorated.(type) {
-		case *ast.FunctionLiteral:
-			// Here we have a single decorator
-			return name, Eval(&ast.CallExpression{
-				Function:  d.Node,
-				Arguments: append([]ast.Expression{decorated}, node.Arguments...),
-			}, env), nil
-		case *ast.Decorator:
-			// Here we have a decorator of another decorator
-			decoratorObj, _ := env.Get(node.Name)
-			decorator := decoratorObj.(*object.Function)
-
-			// First eval the later decorator(s).
-			fnName, fn, err := doEvalDecorator(node.Decorated.(*ast.Decorator), env)
-
-			if isError(err) {
-				return "", nil, err
-			}
-
-			args := evalExpressions(node.Arguments, env)
-			return fnName, applyFunction(node.Token, decorator, env, append([]object.Object{fn}, args...)), nil
-		default:
-			return "", nil, newError(node.Token, "a decorator must decorate a named function or another decorator")
-		}
+		return fnName, applyFunction(node.Token, decorator, env, append([]object.Object{fn})), nil
 	default:
-		return "", nil, newError(node.Token, "decorator '%s' must be a function, %s given", node.Name, decorator.Type())
+		return "", nil, newError(node.Token, "a decorator must decorate a named function or another decorator")
 	}
 }
 

@@ -26,6 +26,7 @@ import (
 	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
 	"github.com/iancoleman/strcase"
+	"github.com/markbates/pkger"
 )
 
 var scanner *bufio.Scanner
@@ -646,7 +647,7 @@ func flagFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	// it means no value was assigned to it,
 	// so let's default to true
 	if found {
-		return &object.Boolean{Token: tok, Value: true}
+		return object.TRUE
 	}
 
 	// else a flag that's not found is NULL
@@ -1082,7 +1083,7 @@ func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env = object.NewEnvironment(env.Writer, env.Dir)
+	env = object.NewEnvironment(env.Writer, env.Dir, env.Version)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -2207,9 +2208,13 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		packageAliasesLoaded = true
 	}
 
-	a := util.UnaliasPath(args[0].Inspect(), packageAliases)
-	file := filepath.Join(env.Dir, a)
-	e := object.NewEnvironment(env.Writer, filepath.Dir(file))
+	file := util.UnaliasPath(args[0].Inspect(), packageAliases)
+
+	if !strings.HasPrefix(file, "@") {
+		file = filepath.Join(env.Dir, file)
+	}
+
+	e := object.NewEnvironment(env.Writer, filepath.Dir(file), env.Version)
 	return doSource(tok, e, file, args...)
 }
 
@@ -2237,8 +2242,27 @@ func doSource(tok token.Token, env *object.Environment, fileName string, args ..
 	// mark this source level
 	sourceLevel++
 
-	// load the source file
-	code, error := ioutil.ReadFile(fileName)
+	var code []byte
+	var error error
+
+	// Manage std library requires starting with
+	// a '@' eg. require('@runtime')
+	if strings.HasPrefix(fileName, "@") {
+		f, err := pkger.Open("/stdlib/" + fileName[1:])
+
+		if err == nil {
+			code, error = ioutil.ReadAll(f)
+			if error == nil {
+				defer f.Close()
+			}
+		} else {
+			error = err
+		}
+	} else {
+		// load the source file
+		code, error = ioutil.ReadFile(fileName)
+	}
+
 	if error != nil {
 		// reset the source level
 		sourceLevel = 0

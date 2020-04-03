@@ -1,0 +1,15 @@
+#!/usr/bin/env abs
+cli = require('@cli')
+
+@cli.cmd("ip", "finds our IP address", {})
+f ip_address(arguments, flags) {
+    return `curl icanhazip.com`
+}
+
+@cli.cmd("date", "Is it Friday already?", {"format": ""})
+f date(arguments, flags) {
+    format = flags.format
+    return `date ${format}`
+}
+
+cli.run()

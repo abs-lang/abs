@@ -50,12 +50,12 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK:      PRODUCT,
 	token.EXPONENT:      PRODUCT,
 	token.MODULO:        PRODUCT,
-	token.COMP_PLUS:     SUM,
-	token.COMP_MINUS:    SUM,
-	token.COMP_SLASH:    PRODUCT,
-	token.COMP_ASTERISK: PRODUCT,
-	token.COMP_EXPONENT: PRODUCT,
-	token.COMP_MODULO:   PRODUCT,
+	token.COMP_PLUS:     EQUALS,
+	token.COMP_MINUS:    EQUALS,
+	token.COMP_SLASH:    EQUALS,
+	token.COMP_ASTERISK: EQUALS,
+	token.COMP_EXPONENT: EQUALS,
+	token.COMP_MODULO:   EQUALS,
 	token.RANGE:         RANGE,
 	token.LPAREN:        CALL,
 	token.LBRACKET:      INDEX,
@@ -830,21 +830,9 @@ func (p *Parser) parseDecorator() ast.Expression {
 		}
 	})()
 
-	if p.peekTokenIs(token.IDENT) {
-		p.nextToken()
-		dc.Name = p.curToken.Literal
-	}
-
-	// This is a decorator without arguments
-	// @func
-	if !p.peekTokenIs(token.LPAREN) {
-		return dc
-	}
-
-	// This is a decorator with arguments
-	// @func(x, y, z)
 	p.nextToken()
-	dc.Arguments = p.parseExpressionList(token.RPAREN)
+	exp := p.parseExpressionStatement()
+	dc.Expression = exp.Expression
 
 	return dc
 }

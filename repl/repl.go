@@ -38,7 +38,7 @@ var (
 
 func init() {
 	d, _ := os.Getwd()
-	env = object.NewEnvironment(os.Stdout, d)
+	env = object.NewEnvironment(os.Stdout, d, "")
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
@@ -207,6 +207,11 @@ func BeginRepl(args []string, version string) {
 		// and things like relative require() calls work.
 		env.Dir = filepath.Dir(args[1])
 	}
+
+	// TODO this should be removed and injected in the environment
+	// when the module is initialized
+	env.Version = version
+	env.Set("ABS_VERSION", &object.String{Value: version})
 
 	// get abs init file
 	// user may test ABS_INTERACTIVE to decide what code to run

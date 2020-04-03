@@ -1,0 +1,69 @@
+# CLI app
+cli = {}
+
+# Commands registered within this CLI app
+cli.commands = {}
+
+# Function used to register a command
+cli.cmd = f(name, description, flags) {
+    return f(fn) {
+        cli.commands[name] = {};
+        cli.commands[name].cmd = f() {
+            # Create flags with default values
+            for k, _ in flags {
+                v = flag(k)
+
+                if v {
+                    flags[k] = v
+                }
+            }
+            
+            # Call the original cmd
+            result = fn.call([args()[3:], flags])
+
+            # If there's a result we print it out
+            if result {
+                echo(result)
+            }
+        }
+
+        cli.commands[name].description = description
+    }
+}
+
+# Run the CLI app
+cli.run = f() {
+    # ABS sees "abs script.abs xyz"
+    # so the command is the 3rd argument
+    cmd = arg(2)
+
+    # Not passing a command? Let's print the help
+    if !cmd {
+        return cli.commands['help'].cmd()
+    }
+
+    if !cli.commands[cmd] {
+        exit(99, "command '${cmd}' not found")
+    }
+
+    return cli.commands[cmd].cmd()
+}
+
+# Add a default help command that can be
+# overridden by the caller
+@cli.cmd("help", "print this help message", {})
+f help() {
+    echo("Available commands:\n")
+
+    for cmd in cli.commands.keys().sort() {
+        s = "  * ${cmd}"
+
+        if cli.commands[cmd].description {
+            s += " - " + cli.commands[cmd].description
+        }
+
+        echo(s)
+    }
+}
+
+return cli
