@@ -639,6 +639,7 @@ func TestAssignStatements(t *testing.T) {
 		expected interface{}
 	}{
 		{"a = 5; a;", 5},
+		{`a = {"b": {"c": {"d": ""}}}; a.b['c'].e = 123; a.b.c.d = 123; a.b.c.d`, 123},
 		{"a = 5 * 5; a;", 25},
 		{"a = 5; b = a; b;", 5},
 		{"a = 5; b = a; c = a + b + 5; c;", 15},
