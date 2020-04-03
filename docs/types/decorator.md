@@ -1,7 +1,8 @@
 # Decorator
 
 Decorators are a feature built on top of
-ABS' functions -- they're not a type *per se*.
+ABS' functions -- they're not a type *per se*
+but they do have their own *syntactic sugar*.
 
 A decorator is a function that "wraps" another
 function, allowing you to enhance the original
@@ -12,25 +13,59 @@ An example could be a decorator that logs how
 long a function takes to execute, or delays
 execution altogether.
 
-## Declaring decorators
+## Simple decorators
 
 A decorator is a plain-old function that
-accepts `1 + N` arguments, where `1` is the
-function being wrapped, and returns a new
-function that wraps the original one:
+accepts the original function and returns a new
+function that wraps the original one with its
+own behaviour. After defining it, you can
+"decorate" other functions through the convenient
+`@` syntax:
 
 ```py
-f log_if_slow(original_fn, treshold_ms) {
+f uppercase(fn) {
     return f() {
-        start = `date +%s%3N`.int()
-        res = original_fn(...)
-        end = `date +%s%3N`.int()
+        return fn(...).upper()
+    }
+}
 
-        if end - start > treshold_ms {
-            echo("mmm, we were pretty slow...")
+@uppercase
+f stringer(x) {
+    return x.str()
+}
+
+stringer({}) # "{}"
+stringer(12) # "12"
+stringer("hello") # "HELLO"
+```
+
+As you see, `stringer`'s behaviour has been altered:
+it will now output uppercase strings.
+
+## Decorators with arguments
+
+As we've just seen, a decorator simply needs to
+be a function that accepts the original
+function and returns a new one, "enhancing"
+the original behavior. If you wish to
+configure decorators with arguments, it
+is as simple as adding another level
+of "wrapping":
+
+```py
+f log_if_slow(treshold_ms) {
+    return f(original_fn) {
+        return f() {
+            start = `date +%s%3N`.int()
+            res = original_fn(...)
+            end = `date +%s%3N`.int()
+
+            if end - start > treshold_ms {
+                echo("mmm, we were pretty slow...")
+            }
+
+            return res
         }
-
-        return res
     }
 }
 ```
@@ -40,8 +75,6 @@ that returns a new function that executes the
 decorated one (`original_fn`) and returns its
 result, while logging if it takes longer than
 a few milliseconds.
-
-## Using decorators
 
 Now that we've declared our decorator, it's time
 to use it, through the `@` notation:
@@ -54,7 +87,7 @@ f return_random_number_after_sleeping(seconds) {
 }
 ```
 
-and we can test our decorator has takn the stage:
+and we can test our decorator has taken the stage:
 
 ```console
 ⧐  return_random_number_after_sleeping(0)
@@ -64,10 +97,11 @@ mmm, we were pretty slow...
 371
 ```
 
-Decorators are heavily inspired by [Python](https://www.python.org/dev/peps/pep-0318/).
+Decorators are heavily inspired by [Python](https://www.python.org/dev/peps/pep-0318/) -- if you wish to understand
+how they work more in depth we'd recommend reading this [primer on Python decorators](https://realpython.com/primer-on-python-decorators).
 
 ## Next
 
 That's about it for this section!
 
-You can now head over to read a little bit about [how to install 3rd party libraries](/misc/3pl).
+You can now head over to read a little bit about [ABS' standard library](/stdlib/intro).

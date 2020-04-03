@@ -11,6 +11,9 @@ import (
 	"github.com/abs-lang/abs/parser"
 )
 
+// Version of the ABS interpreter
+var Version = "dev"
+
 // This function takes ABS code
 // and evaluates it, using a buffer
 // to store it's output.
@@ -23,7 +26,7 @@ func runCode(this js.Value, i []js.Value) interface{} {
 	var buf bytes.Buffer
 	// the first argument to our function
 	code := i[0].String()
-	env := object.NewEnvironment(&buf, "")
+	env := object.NewEnvironment(&buf, "", Version)
 	lex := lexer.New(code)
 	p := parser.New(lex)
 
