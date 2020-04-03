@@ -530,6 +530,7 @@ func (p *Parser) parseDottedExpression(object ast.Expression) ast.Expression {
 		exp := &ast.PropertyExpression{Token: t, Object: object}
 		exp.Property = p.parseIdentifier()
 		p.prevPropertyExpression = exp
+		p.prevIndexExpression = nil
 		return exp
 	}
 }
@@ -950,6 +951,7 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	}
 	// support assignment to index expression: a[0] = 1
 	p.prevIndexExpression = exp
+	p.prevPropertyExpression = nil
 
 	return exp
 }
