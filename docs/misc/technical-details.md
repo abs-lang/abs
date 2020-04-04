@@ -218,4 +218,4 @@ ERROR: type mismatch: NULL + NUMBER
 
 That's about it for this section!
 
-You can now head over to read ABS' [credits](/misc/credits).
+You can now head over to read how to [upgrade from ABS 1 to 2](/misc/upgrade-from-abs-1-to-2).
