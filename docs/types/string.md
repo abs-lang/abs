@@ -318,20 +318,6 @@ Parses the string as JSON, returning a [hash](/types/hash):
 {x: 10, y: 20}
 ```
 
-### contains(str)
-
-> This function is deprecated and might be removed in future versions.
->
-> Use the "in" operator instead: `"str" in "string"`
-
-
-Checks whether `str` is present in the string:
-
-``` bash
-"string".contains("ing") # true
-"string".contains("ong") # false
-```
-
 ### str()
 
 Identity:
@@ -455,25 +441,6 @@ Returns the last index at which `str` is found:
 
 ``` bash
 "string string".last_index("g") # 13
-```
-
-### slice(start, end)
-
-> This function is deprecated and might be removed in future versions.
->
-> Use the index notation instead: `"string"[0:3]`
-
-Returns a portion of the string, from `start` to `end`:
-
-``` bash
-"string".slice(0, 3) # "str"
-```
-
-If `start` is negative, it slices from the end of the string,
-back as many characters as the value of `start`:
-
-``` bash
-"string".slice(-3, 0) # "ing"
 ```
 
 ### camel()
