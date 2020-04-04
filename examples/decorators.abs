@@ -16,11 +16,13 @@ f timer(fn) {
 }
 
 # A decorator that sleeps before a function
-f sleeper(fn, duration) {
-    return f() {
-        `sleep $duration`
-        echo("Yawn, I slept for $duration second")
-        fn(...)
+f sleeper(duration) {
+    return f(fn) {
+        return f() {
+            `sleep $duration`
+            echo("Yawn, I slept for $duration second")
+            fn(...)
+        }
     }
 }
 

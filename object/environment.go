@@ -10,7 +10,7 @@ import (
 // new environment has access to identifiers stored
 // in the outer one.
 func NewEnclosedEnvironment(outer *Environment, args []Object) *Environment {
-	env := NewEnvironment(outer.Writer, outer.Dir)
+	env := NewEnvironment(outer.Writer, outer.Dir, outer.Version)
 	env.outer = outer
 	env.CurrentArgs = args
 	return env
@@ -20,9 +20,14 @@ func NewEnclosedEnvironment(outer *Environment, args []Object) *Environment {
 // ABS in, specifying a writer for the output of the
 // program and the base dir (which is used to require
 // other scripts)
-func NewEnvironment(w io.Writer, dir string) *Environment {
+func NewEnvironment(w io.Writer, dir string, version string) *Environment {
 	s := make(map[string]Object)
-	return &Environment{store: s, outer: nil, Writer: w, Dir: dir}
+	// e.Version and ABS_VERSION are duplicate, we should
+	// find a better way to manage it
+	e := &Environment{store: s, outer: nil, Writer: w, Dir: dir, Version: version}
+	e.Set("ABS_VERSION", &String{Value: e.Version})
+
+	return e
 }
 
 // Environment represent the environment associated
@@ -54,6 +59,8 @@ type Environment struct {
 	// wihout having to specify its full absolute path
 	// eg. require("/tmp/B")
 	Dir string
+	// Version of the ABS runtime
+	Version string
 }
 
 // Get returns an identifier stored within the environment

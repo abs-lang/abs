@@ -1,0 +1,4 @@
+return {
+    "name": "abs",
+    "version": ABS_VERSION
+}

@@ -27,6 +27,12 @@
 * [Builtin functions](/types/builtin-function)
 * [Decorators](/types/decorator)
 
+## Standard library
+
+* [Introduction](/stdlib/intro)
+* [@runtime](/stdlib/runtime)
+* [@cli](/stdlib/cli)
+
 ## Miscellaneous
 
 * [Installing 3rd party libraries](/misc/3pl)
@@ -34,4 +40,5 @@
 * [Configuring the REPL](/misc/configuring-the-repl)
 * [Runtime](/misc/runtime)
 * [A few technical details...](/misc/technical-details)
+* [Upgrading from ABS 1 to 2](/misc/upgrade-from-abs-1-to-2)
 * [Credits](/misc/credits)

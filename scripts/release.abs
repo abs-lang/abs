@@ -60,6 +60,15 @@ if selection != "y" {
     exit(2)
 }
 
+`go-bindata -o evaluator/stdlib.go -pkg evaluator stdlib/...`
+
+tests = `make test`
+echo(tests)
+
+if !tests.ok {
+    exit(1, "Tests failing")
+}
+
 for platform in platforms {
     goos, goarch = platform.split("/")
     output_name = "builds/abs-$goos-$goarch"

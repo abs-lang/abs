@@ -278,11 +278,6 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    uniqueFn,
 		},
-		// contains("str", "tr")
-		"contains": &object.Builtin{
-			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
-			Fn:    containsFn,
-		},
 		// str(1)
 		"str": &object.Builtin{
 			Types: []string{},
@@ -361,11 +356,6 @@ func getFns() map[string]*object.Builtin {
 		"last_index": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    lastIndexFn,
-		},
-		// slice("abcc", 0, -1)
-		"slice": &object.Builtin{
-			Types: []string{object.STRING_OBJ, object.ARRAY_OBJ},
-			Fn:    sliceFn,
 		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
@@ -646,7 +636,7 @@ func flagFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	// it means no value was assigned to it,
 	// so let's default to true
 	if found {
-		return &object.Boolean{Token: tok, Value: true}
+		return object.TRUE
 	}
 
 	// else a flag that's not found is NULL
@@ -1082,7 +1072,7 @@ func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env = object.NewEnvironment(env.Writer, env.Dir)
+	env = object.NewEnvironment(env.Writer, env.Dir, env.Version)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -1646,53 +1636,6 @@ func uniqueFn(tok token.Token, env *object.Environment, args ...object.Object) o
 	return &object.Array{Elements: result}
 }
 
-// contains("str", "tr")
-func containsFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "contains", args, 2, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.STRING_OBJ, object.NUMBER_OBJ}})
-	if err != nil {
-		return err
-	}
-
-	switch arg := args[0].(type) {
-	case *object.String:
-		needle, ok := args[1].(*object.String)
-
-		if ok {
-			return &object.Boolean{Token: tok, Value: strings.Contains(arg.Value, needle.Value)}
-		}
-	case *object.Array:
-		var found bool
-
-		switch needle := args[1].(type) {
-		case *object.String:
-			for _, v := range arg.Elements {
-				if v.Inspect() == needle.Value && v.Type() == object.STRING_OBJ {
-					found = true
-					break // Let's get outta here!
-				}
-			}
-
-			return &object.Boolean{Token: tok, Value: found}
-		case *object.Number:
-			for _, v := range arg.Elements {
-				// Quite ghetto but also the easiest way out
-				// Instead of doing type checking on the argument,
-				// we received back its string representation.
-				// If they match, we then check that its type was
-				// integer.
-				if v.Inspect() == strconv.Itoa(int(needle.Value)) && v.Type() == object.NUMBER_OBJ {
-					found = true
-					break // Let's get outta here!
-				}
-			}
-
-			return &object.Boolean{Token: tok, Value: found}
-		}
-	}
-
-	return &object.Boolean{Token: tok, Value: false}
-}
-
 // str(1)
 func strFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "str", args, 1, [][]string{})
@@ -1916,31 +1859,6 @@ func lastIndexFn(tok token.Token, env *object.Environment, args ...object.Object
 	}
 
 	return &object.Number{Token: tok, Value: float64(i)}
-}
-
-// slice("abcc", 0, -1)
-func sliceFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "slice", args, 3, [][]string{{object.STRING_OBJ, object.ARRAY_OBJ}, {object.NUMBER_OBJ}, {object.NUMBER_OBJ}})
-	if err != nil {
-		return err
-	}
-
-	start := int(args[1].(*object.Number).Value)
-	end := int(args[2].(*object.Number).Value)
-
-	switch arg := args[0].(type) {
-	case *object.String:
-		s := arg.Value
-		start, end := sliceStartAndEnd(len(s), start, end)
-
-		return &object.String{Token: tok, Value: s[start:end]}
-	case *object.Array:
-		start, end := sliceStartAndEnd(len(arg.Elements), start, end)
-
-		return &object.Array{Elements: arg.Elements[start:end]}
-	}
-
-	return NULL
 }
 
 // Clamps start and end arguments to the slice
@@ -2207,9 +2125,13 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		packageAliasesLoaded = true
 	}
 
-	a := util.UnaliasPath(args[0].Inspect(), packageAliases)
-	file := filepath.Join(env.Dir, a)
-	e := object.NewEnvironment(env.Writer, filepath.Dir(file))
+	file := util.UnaliasPath(args[0].Inspect(), packageAliases)
+
+	if !strings.HasPrefix(file, "@") {
+		file = filepath.Join(env.Dir, file)
+	}
+
+	e := object.NewEnvironment(env.Writer, filepath.Dir(file), env.Version)
 	return doSource(tok, e, file, args...)
 }
 
@@ -2237,8 +2159,18 @@ func doSource(tok token.Token, env *object.Environment, fileName string, args ..
 	// mark this source level
 	sourceLevel++
 
-	// load the source file
-	code, error := ioutil.ReadFile(fileName)
+	var code []byte
+	var error error
+
+	// Manage std library requires starting with
+	// a '@' eg. require('@runtime')
+	if strings.HasPrefix(fileName, "@") {
+		code, error = Asset("stdlib/" + fileName[1:])
+	} else {
+		// load the source file
+		code, error = ioutil.ReadFile(fileName)
+	}
+
 	if error != nil {
 		// reset the source level
 		sourceLevel = 0

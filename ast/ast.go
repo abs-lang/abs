@@ -435,30 +435,15 @@ func (fl *FunctionLiteral) String() string {
 }
 
 type Decorator struct {
-	Token     token.Token // @
-	Name      string
-	Arguments []Expression
-	Decorated Expression
+	Token      token.Token // @
+	Expression Expression
+	Decorated  Expression
 }
 
 func (dc *Decorator) expressionNode()      {}
 func (dc *Decorator) TokenLiteral() string { return dc.Token.Literal }
 func (dc *Decorator) String() string {
-	var out bytes.Buffer
-
-	args := []string{}
-	for _, a := range dc.Arguments {
-		args = append(args, a.String())
-	}
-
-	out.WriteString(dc.TokenLiteral())
-	out.WriteString(dc.Name)
-	out.WriteString("(")
-	out.WriteString(strings.Join(args, ", "))
-	out.WriteString(") ")
-	out.WriteString(dc.Decorated.String())
-
-	return out.String()
+	return dc.Expression.String()
 }
 
 type CurrentArgsLiteral struct {
@@ -558,7 +543,18 @@ func (ie *IndexExpression) String() string {
 	out.WriteString("[")
 
 	if ie.IsRange {
-		out.WriteString(ie.Index.String() + ":" + ie.End.String())
+		start := ""
+
+		if ie.Index != nil {
+			start = ie.Index.String()
+		}
+
+		end := ""
+
+		if ie.End != nil {
+			end = ie.End.String()
+		}
+		out.WriteString(start + ":" + end)
 	} else {
 		out.WriteString(ie.Index.String())
 	}

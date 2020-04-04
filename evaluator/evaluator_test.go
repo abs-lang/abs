@@ -109,6 +109,26 @@ func TestEvalNumberExpression(t *testing.T) {
 		{"a = 5; a *= 2; a", 10},
 		{"a = 5; a **= 2; a", 25},
 		{"a = 5; a %= 3; a", 2},
+		{"a = 0; a += 1 + 1; a", 2},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testNumberObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestCompoundExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"a = 0; a += 1 + 1; a", 2},
+		{"a = 0; a -= 1 + 1; a", -2},
+		{"a = 1; a *= 2 + 1; a", 3},
+		{"a = 2; a /= 1 + 1; a", 1},
+		{"a = 2; a **= 1 + 1; a", 4},
+		{"a = 19; a %= 4 + 1; a", 4},
 	}
 
 	for _, tt := range tests {
@@ -737,16 +757,19 @@ func TestDecorators(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{"@decorator f hello() {}", "function 'decorator' is not defined (used as decorator)"},
-		{"a = 1; @a f hello(){}", "decorator 'a' must be a function, NUMBER given"},
+		{"@decorator f hello() {}", "identifier not found"},
+		{"a = 1; @a f hello(){}", "decorator '1' is not a function"},
 		{"f decorator(fn) { return f () { return fn() * 2 } }; @decorator f test() { return 1 }; test()", 2},
+		{"f decorator(x) { return f (fn) { return f() {fn() * x} } }; @decorator(10) f test() { return 1 }; test()", 10},
 		{"f decorator(fn) { return f () { return fn(...) * 2 } }; @decorator f test(x) { return x }; test(1)", 2},
-		{"f decorator(fn, multiplier) { return f () { return fn() * multiplier } }; @decorator(4) f test() { return 1 }; test()", 4},
-		{"f decorator(fn, multiplier) { return f () { return fn(...) * multiplier } }; @decorator(1000) f test(x) { return x }; test(1)", 1000},
-		{"f decorator(fn, multiplier) { return f () { return fn(...) * multiplier } }; @decorator(2) @decorator(2) f test(x) { return x }; test(1)", 4},
-		{"f decorator(fn, multiplier) { return f () { return fn(...) * multiplier } }; @decorator(2) @decorator(2) @decorator(2) f test(x) { return x }; test(1)", 8},
-		{"f multiply(fn, multiplier) { return f () { return fn(...) * multiplier } }; f divide(fn, div) { return f () { return fn(...) / div } }; @multiply(10) @divide(5)  f test(x) { return x }; test(1)", 2},
-		{"f decorator(fn) { return f () { return fn(...) } }; @decorator() @decorator_not_existing() f test(x) { return x }; test(1)", "function 'decorator_not_existing' is not defined (used as decorator)"},
+		{"f decorator(multiplier) { return f (fn) { return f() {return fn() * multiplier} } }; @decorator(4) f test() { return 1 }; test()", 4},
+		{"f decorator(multiplier) { return f (fn) { return f() { fn(...) * multiplier } } }; @decorator(1000) f test(x) { return x }; test(10)", 10000},
+		{"f decorator(fn) { return f () { return fn() * 2 } }; @decorator @decorator f test() { return 1 }; test()", 4},
+		{"f decorator1(x) { return f (fn) { return f() { fn(...) * x } } }; f decorator2(x) { return f (fn) { return f() { fn(...) * x } } }; @decorator1(2) @decorator2(10) f test(x) { return x }; test(10)", 200},
+		{"f decorator(multiplier) { return f (fn) { return f() { fn(...) * multiplier } } }; @decorator(2) @decorator(2) f test(x) { return x }; test(1)", 4},
+		{"f decorator(multiplier) { return f (fn) { return f() { fn(...) * multiplier } } }; @decorator(2) @decorator(2) @decorator(2) f test(x) { return x }; test(1)", 8},
+		{"f multiply(multiplier) { return f (fn) { return f() { fn(...) * multiplier } } }; f divide(div) { return f (fn) { return f() {fn(...) / div} } }; @multiply(10) @divide(5)  f test(x) { return x }; test(1)", 2},
+		{"f decorator(fn) { return f () { return fn(...) } }; @decorator @decorator_not_existing() f test(x) { return x }; test(1)", "identifier not found: decorator_not_existing"},
 	}
 
 	for _, tt := range tests {
@@ -1529,7 +1552,7 @@ func TestStringIndexExpressions(t *testing.T) {
 }
 
 func testEval(input string) object.Object {
-	env := object.NewEnvironment(os.Stdout, "")
+	env := object.NewEnvironment(os.Stdout, "", "test_version")
 	lex := lexer.New(input)
 	p := parser.New(lex)
 	program := p.ParseProgram()

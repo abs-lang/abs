@@ -1152,17 +1152,16 @@ func TestCurrentArgsParsing(t *testing.T) {
 func TestDecoratorParsing(t *testing.T) {
 	tests := []struct {
 		input     string
-		args      []string
-		name      string
+		inspect   string
 		decorated string
 		err       string
 	}{
 		{input: "@decorator", err: "a decorator should decorate a named function"},
 		{input: "@decorator('x', 'y')", err: "a decorator should decorate a named function"},
-		{input: "@decorator f hello(){}", name: "decorator", args: []string{}, decorated: "hello"},
-		{input: "@decorator('x', 'y') f hello(){}", name: "decorator", args: []string{"x", "y"}, decorated: "hello"},
+		{input: "@decorator f hello(){}", inspect: "decorator", decorated: "hello"},
+		{input: "@decorator('x', 'y') f hello(){}", inspect: "decorator(x, y)", decorated: "hello"},
 		{input: "@decorator('x', 'y') f (){}", err: "a decorator should decorate a named function"},
-		{input: "@decorator('x', 'y') @decorator('x', 'y') f hello(){}", name: "decorator", args: []string{"x", "y"}, decorated: "hello"},
+		{input: "@decorator('x', 'y') @decorator('x', 'y') f hello(){}", inspect: "decorator(x, y)", decorated: "hello"},
 		{input: "@decorator('x', 'y') @decorator('x', 'y')", err: "a decorator should decorate a named function"},
 	}
 
@@ -1189,24 +1188,14 @@ func TestDecoratorParsing(t *testing.T) {
 		stmt := program.Statements[0].(*ast.ExpressionStatement)
 		decorator := stmt.Expression.(*ast.Decorator)
 
-		if len(decorator.Arguments) != len(tt.args) {
-			t.Errorf("length arguments wrong. want %d, got=%d\n", len(tt.args), len(decorator.Arguments))
-		}
-
-		if tt.name != decorator.Name {
-			t.Errorf("name parameter wrong. want %s, got=%s\n", tt.name, decorator.Name)
+		if tt.inspect != decorator.String() {
+			t.Errorf("inspection wrong. want %s, got=%s\n", tt.inspect, decorator.String())
 		}
 
 		switch decorated := decorator.Decorated.(type) {
 		case *ast.FunctionLiteral:
 			if decorated.Name == "" {
 				t.Errorf("a decorator should have a decorated function")
-			}
-
-			for i, arg := range tt.args {
-				if arg != decorator.Arguments[i].String() {
-					t.Errorf("wrong argument. want %s, got=%s\n", arg, decorator.Arguments[i])
-				}
 			}
 		case *ast.Decorator:
 			// Here we have a double decorator:
@@ -1217,23 +1206,9 @@ func TestDecoratorParsing(t *testing.T) {
 			// 2 decorators must be identical, as here we're
 			// just testing decorators can decorate either functions
 			// or other decorators
-			if len(decorator.Arguments) != len(tt.args) {
-				t.Errorf("length arguments wrong. want %d, got=%d\n", len(tt.args), len(decorator.Arguments))
-			}
-
-			if tt.name != decorator.Name {
-				t.Errorf("name parameter wrong. want %s, got=%s\n", tt.name, decorator.Name)
-			}
-
 			realDecorated := decorated.Decorated.(*ast.FunctionLiteral)
 			if realDecorated.Name == "" {
 				t.Errorf("a decorator should have a realDecorated function")
-			}
-
-			for i, arg := range tt.args {
-				if arg != decorator.Arguments[i].String() {
-					t.Errorf("wrong argument. want %s, got=%s\n", arg, decorator.Arguments[i])
-				}
 			}
 		default:
 			t.Errorf("unhandled type %T", decorated)
