@@ -60,7 +60,7 @@ if selection != "y" {
     exit(2)
 }
 
-`pkger -include /stdlib -o evaluator/`
+`go-bindata -o evaluator/stdlib.go -pkg evaluator stdlib/...`
 
 tests = `make test`
 echo(tests)

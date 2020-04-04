@@ -26,7 +26,6 @@ import (
 	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
 	"github.com/iancoleman/strcase"
-	"github.com/markbates/pkger"
 )
 
 var scanner *bufio.Scanner
@@ -2248,16 +2247,7 @@ func doSource(tok token.Token, env *object.Environment, fileName string, args ..
 	// Manage std library requires starting with
 	// a '@' eg. require('@runtime')
 	if strings.HasPrefix(fileName, "@") {
-		f, err := pkger.Open("/stdlib/" + fileName[1:])
-
-		if err == nil {
-			code, error = ioutil.ReadAll(f)
-			if error == nil {
-				defer f.Close()
-			}
-		} else {
-			error = err
-		}
+		code, error = Asset("stdlib/" + fileName[1:])
 	} else {
 		// load the source file
 		code, error = ioutil.ReadFile(fileName)
