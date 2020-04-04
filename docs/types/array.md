@@ -131,21 +131,6 @@ called on homogeneous arrays of numbers.
 
 ## Supported functions
 
-### contains(e)
-
-> This function is deprecated and might be removed in future versions.
->
-> Use the "in" operator instead: 3 in [1, 2, 3]
-
-Checks whether `e` is present in the array. `e` can only be
-a string or number and the array needs to be a homogeneous array
-of strings or numbers:
-
-``` py
-[1, 2, 3].contains(3) # true
-[1, 2, 3].contains(4) # false
-```
-
 ### chunk(size)
 
 Splits the array into chunks of the given size:
@@ -263,21 +248,6 @@ Removes the first elements from the array, and returns it:
 a = [1, 2, 3]
 a.shift() # 1
 a # [2, 3]
-```
-
-### slice(start, end)
-
-Returns a portion of the array, from `start` to `end`:
-
-``` py
-(1..10).slice(0, 3) # [1, 2, 3]"
-```
-
-If `start` is negative, it slices from the end of the string,
-back as many characters as the value of `start`:
-
-``` bash
-(1..10).slice(-3, 0) # [8, 9, 10]"
 ```
 
 ### some(f)

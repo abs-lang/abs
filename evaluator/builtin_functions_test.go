@@ -65,35 +65,6 @@ func TestIsNumber(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
-func TestSlice(t *testing.T) {
-	tests := []Tests{
-		{`[1,2,3].slice(0, 0)`, []int{1, 2, 3}},
-		{`[1,2,3].slice(1, 0)`, []int{2, 3}},
-		{`[1,2,3].slice(1, 2)`, []int{2}},
-		{`[1,2,3].slice(0, 6)`, []int{1, 2, 3}},
-		{`[1,2,3].slice(10, 10)`, []int{}},
-		{`[1,2,3].slice(10, 20)`, []int{}},
-		{`[1,2,3].slice(-1, 0)`, []int{3}},
-		{`[1,2,3].slice(-20, 0)`, []int{1, 2, 3}},
-		{`[1,2,3].slice(-20, 2)`, []int{1, 2}},
-		{`[1,2,3].slice(-1, 3)`, []int{3}},
-		{`[1,2,3].slice(-1, 1)`, []int{3}},
-		{`"abc".slice(0, 0)`, "abc"},
-		{`"abc".slice(1, 0)`, "bc"},
-		{`"abc".slice(1, 2)`, "b"},
-		{`"abc".slice(0, 6)`, "abc"},
-		{`"abc".slice(10, 10)`, ""},
-		{`"abc".slice(10, 20)`, ""},
-		{`"abc".slice(-1, 0)`, "c"},
-		{`"abc".slice(-20, 0)`, "abc"},
-		{`"abc".slice(-20, 2)`, "ab"},
-		{`"abc".slice(-1, 3)`, "c"},
-		{`"abc".slice(-1, 1)`, "c"},
-	}
-
-	testBuiltinFunction(tests, t)
-}
-
 func TestType(t *testing.T) {
 	tests := []Tests{
 		{`type("SOME")`, "STRING"},
@@ -534,7 +505,7 @@ func TestEval(t *testing.T) {
 
 func TestMisc(t *testing.T) {
 	tests := []Tests{
-		{`pwd().split("").reverse().slice(0, 33).reverse().join("").replace("\\", "/", -1).suffix("/evaluator")`, true}, // Little trick to get travis to run this test, as the base path is not /go/src/
+		{`pwd().split("").reverse()[0:33].reverse().join("").replace("\\", "/", -1).suffix("/evaluator")`, true}, // Little trick to get travis to run this test, as the base path is not /go/src/
 		{`cwd = cd(); cwd == pwd()`, true},
 		{`cwd = cd("path/to/nowhere"); cwd == pwd()`, false},
 		{`lines("a
