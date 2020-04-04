@@ -258,6 +258,8 @@ func TestStr(t *testing.T) {
 		{`1.str()`, "1"},
 		{`[1].str()`, "[1]"},
 		{`{"a": 10}.str()`, `{"a": 10}`},
+		{`f() {a[3:]}.str()`, `f() {(a[3:])}`},
+		{`f() {a[:3]}.str()`, `f() {(a[0:3])}`},
 	}
 
 	testBuiltinFunction(tests, t)

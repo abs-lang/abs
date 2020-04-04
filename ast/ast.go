@@ -543,7 +543,18 @@ func (ie *IndexExpression) String() string {
 	out.WriteString("[")
 
 	if ie.IsRange {
-		out.WriteString(ie.Index.String() + ":" + ie.End.String())
+		start := ""
+
+		if ie.Index != nil {
+			start = ie.Index.String()
+		}
+
+		end := ""
+
+		if ie.End != nil {
+			end = ie.End.String()
+		}
+		out.WriteString(start + ":" + end)
 	} else {
 		out.WriteString(ie.Index.String())
 	}
