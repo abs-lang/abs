@@ -661,9 +661,16 @@ func evalNumberInfixExpression(
 	case "..":
 		a := make([]object.Object, 0)
 
-		for i := leftVal; i <= rightVal; i++ {
-			a = append(a, &object.Number{Token: tok, Value: float64(i)})
+		if leftVal <= rightVal {
+			for i := leftVal; i <= rightVal; i++ {
+				a = append(a, &object.Number{Token: tok, Value: float64(i)})
+			}
+		} else {
+			for i := leftVal; i >= rightVal; i-- {
+				a = append(a, &object.Number{Token: tok, Value: float64(i)})
+			}
 		}
+
 		return &object.Array{Token: tok, Elements: a}
 	default:
 		return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
