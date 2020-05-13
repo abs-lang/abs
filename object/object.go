@@ -152,7 +152,7 @@ type ContinueError struct {
 type Function struct {
 	Token      token.Token
 	Name       string
-	Parameters []*ast.Identifier
+	Parameters []*ast.Parameter
 	Body       *ast.BlockStatement
 	Env        *Environment
 	Node       *ast.FunctionLiteral

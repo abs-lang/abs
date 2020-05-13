@@ -171,6 +171,25 @@ func (i *Identifier) expressionNode()      {}
 func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 func (i *Identifier) String() string       { return i.Value }
 
+// Parameter is a function parameter
+// fn(x, y = 2)
+type Parameter struct {
+	*Identifier
+	Default Expression
+}
+
+func (p *Parameter) expressionNode()      {}
+func (p *Parameter) TokenLiteral() string { return p.Token.Literal }
+func (p *Parameter) String() string {
+	s := p.Value
+
+	if p.Default != nil {
+		s += " = " + p.Default.String()
+	}
+
+	return s
+}
+
 type Boolean struct {
 	Token token.Token
 	Value bool
@@ -411,7 +430,7 @@ func (ce *CommandExpression) String() string {
 type FunctionLiteral struct {
 	Token      token.Token // The 'fn' token
 	Name       string      // identifier for this function
-	Parameters []*Identifier
+	Parameters []*Parameter
 	Body       *BlockStatement
 }
 
