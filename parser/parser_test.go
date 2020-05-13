@@ -976,7 +976,7 @@ func TestForElseExpression(t *testing.T) {
 }
 
 func TestFunctionLiteralParsing(t *testing.T) {
-	input := `f(x, y) { x + y; }`
+	input := `f(x, y = 2) { x + y; }`
 
 	l := lexer.New(input)
 	p := New(l)
@@ -1005,8 +1005,8 @@ func TestFunctionLiteralParsing(t *testing.T) {
 			len(function.Parameters))
 	}
 
-	testLiteralExpression(t, function.Parameters[0], "x")
-	testLiteralExpression(t, function.Parameters[1], "y")
+	testParameter(t, function.Parameters[0], "x")
+	testParameter(t, function.Parameters[1], "y = 2")
 
 	if len(function.Body.Statements) != 1 {
 		t.Fatalf("function.Body.Statements has not 1 statements. got=%d\n",
@@ -1085,6 +1085,9 @@ func TestFunctionParameterParsing(t *testing.T) {
 		name           string
 	}{
 		{input: "f() {};", expectedParams: []string{}},
+		{input: "f(x, y = 2) {};", expectedParams: []string{"x", "y = 2"}},
+		{input: "f(x, y = 2, z = 3) {};", expectedParams: []string{"x", "y = 2", "z = 3"}},
+		{input: "f(x = 1, y = 2, z = 3) {};", expectedParams: []string{"x = 1", "y = 2", "z = 3"}},
 		{input: "f(x) {};", expectedParams: []string{"x"}},
 		{input: "f(x, y, z) {};", expectedParams: []string{"x", "y", "z"}},
 		{input: "f hello() {};", expectedParams: []string{}, name: "hello"},
@@ -1108,7 +1111,35 @@ func TestFunctionParameterParsing(t *testing.T) {
 		}
 
 		for i, ident := range tt.expectedParams {
-			testLiteralExpression(t, function.Parameters[i], ident)
+			testParameter(t, function.Parameters[i], ident)
+		}
+	}
+}
+
+func TestFunctionParameterParsingOptionalParametersMustComeAfterAllMandatoryOnes(t *testing.T) {
+	tests := []struct {
+		input string
+		err   string
+	}{
+		{input: "f(x, y = 2, z) {};", err: "found mandatory parameter after optional one"},
+		{input: "f(x = 2, y) {};", err: "found mandatory parameter after optional one"},
+		{input: "f(x = 1, y = 1, z = 1, a) {};", err: "found mandatory parameter after optional one"},
+		{input: "f(x, y, z = 1, a) {};", err: "found mandatory parameter after optional one"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		p.ParseProgram()
+
+		if len(p.Errors()) == 0 {
+			t.Errorf("no parsing error detected")
+			t.FailNow()
+		}
+
+		parseError := p.Errors()[len(p.Errors())-1]
+		if !strings.HasPrefix(parseError, tt.err) {
+			t.Errorf("wrong parser error detected: want '%s', got '%s'", tt.err, parseError)
 		}
 	}
 }
@@ -1908,6 +1939,22 @@ func testIdentifier(t *testing.T, exp ast.Expression, value string) bool {
 
 	if ident.TokenLiteral() != value {
 		t.Errorf("ident.TokenLiteral not %s. got=%s", value,
+			ident.TokenLiteral())
+		return false
+	}
+
+	return true
+}
+
+func testParameter(t *testing.T, exp ast.Expression, value string) bool {
+	ident, ok := exp.(*ast.Parameter)
+	if !ok {
+		t.Errorf("exp not *ast.Parameter. got=%T", exp)
+		return false
+	}
+
+	if ident.String() != value {
+		t.Errorf("Parameter.TokenLiteral not %s. got=%s", value,
 			ident.TokenLiteral())
 		return false
 	}

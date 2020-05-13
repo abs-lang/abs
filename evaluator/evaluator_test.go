@@ -460,7 +460,7 @@ func TestForElseExpressions(t *testing.T) {
 		expected interface{}
 	}{
 		{"a = 0; b = 1; for v in [] { x = a } else { x = b }; x", 1},
-		{"a = 100; x = 0; for i in  1..-1 { x = i } else { x = a }; x", 100},
+		{"a = 100; x = 0; for i in  'abcd'.split('').filter(is_number) { x = i } else { x = a }; x", 100},
 		{"v = 100; for k, v in [] { v = 0 } else {}; v", 100},
 		{"for k, v in [] {} else { x = v }; x", "identifier not found: v"},
 		{"a = 0; for k, v in [] { x = a } else { x = b }; x", "identifier not found: b"},
@@ -731,7 +731,12 @@ func TestFunctionApplication(t *testing.T) {
 		{"add = f(x, y) { x + y; }; add(5, 5);", 10},
 		{"add = f(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
 		{"f(x) { x; }(5)", 5},
-		{"f(x) { x; }()", "Wrong number of arguments passed to f(x) {x}. Want [x], got []"},
+		{"f(x) { x; }()", "argument x to function f(x) {x} is missing, and doesn't have a default value"},
+		{"f(x = 2) { x; }()", 2},
+		{"f(x, y = 2) { x + y; }()", "argument x to function f(x, y = 2) {(x + y)} is missing, and doesn't have a default value"},
+		{"f test(x, y = 2) { x + y; }()", "argument x to function f test(x, y = 2) {(x + y)} is missing, and doesn't have a default value"},
+		{"f(x, y = 2) { x + y; }(1)", 3},
+		{"f(x, y = 2) { x + y; }(1, 1)", 2},
 	}
 
 	for _, tt := range tests {
@@ -958,10 +963,11 @@ func TestRangesOperators(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`1..0`, []int{}},
+		{`1..0`, []int{1, 0}},
 		{`-1..0`, []int{-1, 0}},
 		{`1..1`, []int{1}},
 		{`1..2`, []int{1, 2}},
+		{`2..1`, []int{2, 1}},
 		{`len("a")..len("aa")`, []int{1, 2}},
 	}
 	for _, tt := range tests {

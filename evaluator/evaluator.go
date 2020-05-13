@@ -661,9 +661,16 @@ func evalNumberInfixExpression(
 	case "..":
 		a := make([]object.Object, 0)
 
-		for i := leftVal; i <= rightVal; i++ {
-			a = append(a, &object.Number{Token: tok, Value: float64(i)})
+		if leftVal <= rightVal {
+			for i := leftVal; i <= rightVal; i++ {
+				a = append(a, &object.Number{Token: tok, Value: float64(i)})
+			}
+		} else {
+			for i := leftVal; i >= rightVal; i-- {
+				a = append(a, &object.Number{Token: tok, Value: float64(i)})
+			}
 		}
+
 		return &object.Array{Token: tok, Elements: a}
 	default:
 		return newError(tok, "unknown operator: %s %s %s", left.Type(), operator, right.Type())
@@ -1210,12 +1217,21 @@ func extendFunctionEnv(
 ) (*object.Environment, *object.Error) {
 	env := object.NewEnclosedEnvironment(fn.Env, args)
 
-	if len(args) < len(fn.Parameters) {
-		return nil, newError(fn.Token, "Wrong number of arguments passed to %s. Want %s, got %s", fn.Inspect(), fn.Parameters, args)
-	}
-
 	for paramIdx, param := range fn.Parameters {
-		env.Set(param.Value, args[paramIdx])
+		argumentPassed := len(args) > paramIdx
+
+		if !argumentPassed && param.Default == nil {
+			return nil, newError(fn.Token, "argument %s to function %s is missing, and doesn't have a default value", param.Value, fn.Inspect())
+		}
+
+		var arg object.Object
+		if argumentPassed {
+			arg = args[paramIdx]
+		} else {
+			arg = Eval(param.Default, env)
+		}
+
+		env.Set(param.Value, arg)
 	}
 
 	return env, nil
