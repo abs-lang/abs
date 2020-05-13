@@ -842,32 +842,81 @@ func (p *Parser) parseCurrentArgsLiteral() ast.Expression {
 	return &ast.CurrentArgsLiteral{Token: p.curToken}
 }
 
-// f(x, y)
-func (p *Parser) parseFunctionParameters() []*ast.Identifier {
-	identifiers := []*ast.Identifier{}
+// f(x, y = 2)
+func (p *Parser) parseFunctionParameters() []*ast.Parameter {
+	parameters := []*ast.Parameter{}
 
 	if p.peekTokenIs(token.RPAREN) {
 		p.nextToken()
-		return identifiers
+		return parameters
 	}
 
 	p.nextToken()
 
-	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-	identifiers = append(identifiers, ident)
+	param, foundOptionalParameter := p.parseFunctionParameter()
+	parameters = append(parameters, param)
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
-		ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-		identifiers = append(identifiers, ident)
+
+		param, optional := p.parseFunctionParameter()
+
+		if foundOptionalParameter && !optional {
+			p.reportError("found mandatory parameter after optional one", p.curToken)
+		}
+
+		if optional {
+			foundOptionalParameter = true
+		}
+
+		parameters = append(parameters, param)
 	}
 
 	if !p.expectPeek(token.RPAREN) {
 		return nil
 	}
 
-	return identifiers
+	return parameters
+}
+
+// parse a single function parameter
+// x
+// x = 2
+func (p *Parser) parseFunctionParameter() (param *ast.Parameter, optional bool) {
+	// first, parse the identifier
+	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	// if we find a comma or the closing parenthesis, then this
+	// parameter is done eg. fn(x, y, z)
+	if p.peekTokenIs(token.COMMA) || p.peekTokenIs(token.RPAREN) {
+		return &ast.Parameter{Identifier: ident, Default: nil}, false
+	}
+
+	// else, we are in front of an optional parameter
+	// fn(x = 2)
+	// if the next token is not an assignment, though, there's
+	// a major problem
+	if !p.peekTokenIs(token.ASSIGN) {
+		p.reportError("invalid parameter format", p.curToken)
+		return &ast.Parameter{Identifier: ident, Default: nil}, false
+	}
+
+	// skip to the =
+	p.nextToken()
+	// skip to the default value of the parameter
+	p.nextToken()
+	// parse this default value as an expression
+	// this allows for funny stuff like:
+	// fn(x = 1)
+	// fn(x = "")
+	// fn(x = null)
+	// fn(x = {})
+	// fn(x = [1, 2, 3, 4])
+	// fn(x = [1, 2, 3, 4].filter(f(x) {x > 2}) <--- very funny but ¯\_(ツ)_/¯
+	exp := p.parseExpression(LOWEST)
+
+	return &ast.Parameter{Identifier: ident, Default: exp}, true
 }
 
 // function()

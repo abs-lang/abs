@@ -731,7 +731,12 @@ func TestFunctionApplication(t *testing.T) {
 		{"add = f(x, y) { x + y; }; add(5, 5);", 10},
 		{"add = f(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
 		{"f(x) { x; }(5)", 5},
-		{"f(x) { x; }()", "Wrong number of arguments passed to f(x) {x}. Want [x], got []"},
+		{"f(x) { x; }()", "argument x to function f(x) {x} is missing, and doesn't have a default value"},
+		{"f(x = 2) { x; }()", 2},
+		{"f(x, y = 2) { x + y; }()", "argument x to function f(x, y = 2) {(x + y)} is missing, and doesn't have a default value"},
+		{"f test(x, y = 2) { x + y; }()", "argument x to function f test(x, y = 2) {(x + y)} is missing, and doesn't have a default value"},
+		{"f(x, y = 2) { x + y; }(1)", 3},
+		{"f(x, y = 2) { x + y; }(1, 1)", 2},
 	}
 
 	for _, tt := range tests {
