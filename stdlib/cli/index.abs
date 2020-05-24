@@ -5,7 +5,7 @@ cli = {}
 cli.commands = {}
 
 # Function used to register a command
-cli.cmd = f(name, description, flags) {
+cli.cmd = f(name, description, flags = {}) {
     return f(fn) {
         cli.commands[name] = {};
         cli.commands[name].cmd = f() {
@@ -47,6 +47,15 @@ cli.run = f() {
     }
 
     return cli.commands[cmd].cmd()
+}
+
+cli.repl = f() {
+    echo("$")
+    for cmd in stdin {
+        if cli.commands[cmd] {
+            cli.commands[cmd].cmd()
+        }   
+    }
 }
 
 # Add a default help command that can be

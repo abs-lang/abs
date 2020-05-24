@@ -45,6 +45,17 @@ The application will, by default, have an `help` command
 that lists all available commands and is called if no command
 is provided.
 
+### @cli.repl()
+
+Runs the CLI application in interactive mode:
+
+```py
+cli.repl()
+```
+
+The application will, by default, have an `help` command
+that lists all available commands.
+
 ## Example CLI app
 
 Here is an example app with 3 commands:
@@ -98,6 +109,72 @@ Sat Apr  4 18:06:35 +04 2020
 
 $ ./cli date --format +%s
 1586009212
+```
+
+## Example REPL app
+
+Here is an example app with 4 commands:
+
+* the default `help`
+* `count`, which prints a counter
+* `incr`, which increments a counter by 1
+* `incr_by`, which increments a counter by a number specified by the user
+
+```py
+#!/usr/bin/env abs
+cli = require('@cli')
+
+res = {"count": 0}
+
+@cli.cmd("count", "prints a counter", {})
+f counter(arguments, flags) {
+    echo(res.count)
+}
+
+@cli.cmd("incr", "Increment our counter", {})
+f incr(arguments, flags) {
+    res.count += 1
+    return "ok"
+}
+
+@cli.cmd("incr_by", "Increment our counter", {})
+f incr_by(arguments, flags) {
+    echo("Increment by how much?")
+    n = stdin().number()
+    res.count += n
+    return "ok"
+}
+
+cli.repl()
+```
+
+You can save this script as `./cli` and make it executable
+with `chmod +x ./cli`. Then you will be able to use the CLI
+app:
+
+```
+$ ./cli 
+help
+Available commands:
+
+  * count - prints a counter
+  * help - print this help message
+  * incr - Increment our counter
+  * incr_by - Increment our counter
+count
+0
+incr
+ok
+incr
+ok
+count
+2
+incr_by
+Increment by how much?
+-10
+ok
+count
+-8
 ```
 
 ## Next
