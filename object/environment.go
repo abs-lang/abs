@@ -72,6 +72,11 @@ func (e *Environment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 
+func (e *Environment) GetHere(name string) (Object, bool) {
+	obj, ok := e.store[name]
+	return obj, ok
+}
+
 // GetKeys returns the list of all identifiers
 // stored in this environment
 func (e *Environment) GetKeys() []string {
@@ -86,8 +91,20 @@ func (e *Environment) GetKeys() []string {
 }
 
 // Set sets an identifier in the environment
+func (e *Environment) SetOuter(name string, val Object) Object {
+	_, found := e.GetHere(name)
+
+	if found {
+		e.store[name] = val
+	} else {
+		e.outer.store[name] = val
+	}
+
+	return val
+}
 func (e *Environment) Set(name string, val Object) Object {
 	e.store[name] = val
+
 	return val
 }
 

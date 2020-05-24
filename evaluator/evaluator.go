@@ -266,7 +266,9 @@ func evalCompoundAssignment(node *ast.CompoundAssignment, env *object.Environmen
 	}
 	// multi-character operators like "+=" and "**=" are reduced to "+" or "**" for evalInfixExpression()
 	op := node.Operator
+	var multi bool
 	if len(op) >= 2 {
+		multi = true
 		op = op[:len(op)-1]
 	}
 	// get the result of the infix operation
@@ -276,6 +278,10 @@ func evalCompoundAssignment(node *ast.CompoundAssignment, env *object.Environmen
 	}
 	switch nodeLeft := node.Left.(type) {
 	case *ast.Identifier:
+		if multi {
+			env.SetOuter(nodeLeft.String(), expr)
+			return NULL
+		}
 		env.Set(nodeLeft.String(), expr)
 		return NULL
 	case *ast.IndexExpression:
