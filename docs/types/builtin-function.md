@@ -349,6 +349,14 @@ This will limit the source inclusion depth to 15 levels for this
 `source()` statement and will also apply to future `source()`
 statements until changed.
 
+### unix_ms()
+
+Returns the current unix epoch time, in milliseconds:
+
+``` bash
+unix_ms() # 1594049453157
+```
+
 ## Next
 
 That's about it for this section!

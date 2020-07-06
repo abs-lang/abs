@@ -29,6 +29,15 @@ func TestMap(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestUnixMs(t *testing.T) {
+	tests := []Tests{
+		{`x = unix_ms(); sleep(300); (unix_ms() - x) > 305`, false},
+		{`x = unix_ms(); sleep(300); (unix_ms() - x) > 295`, true},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func TestSum(t *testing.T) {
 	tests := []Tests{
 		{`[1, null].sum()`, "sum(...) can only be called on an homogeneous array, got [1, null]"},
