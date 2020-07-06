@@ -25,7 +25,7 @@ ABS is a programming language that works best when you're scripting on
 your terminal. It tries to combine the elegance of languages
 such as Python, or Ruby, to the convenience of Bash.
 
-``` bash
+``` js
 tz = `cat /etc/timezone`;
 continent, city = tz.split("/")
 

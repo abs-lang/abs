@@ -32,6 +32,7 @@
 * [Introduction](/stdlib/intro)
 * [@runtime](/stdlib/runtime)
 * [@cli](/stdlib/cli)
+* [@util](/stdlib/util)
 
 ## Miscellaneous
 
