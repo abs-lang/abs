@@ -30,9 +30,11 @@ func TestMap(t *testing.T) {
 }
 
 func TestUnixMs(t *testing.T) {
+	// Being generous with deadlines as some of the automated
+	// tests run on really shitty machines and might take longer...
 	tests := []Tests{
-		{`x = unix_ms(); sleep(300); (unix_ms() - x) > 305`, false},
-		{`x = unix_ms(); sleep(300); (unix_ms() - x) > 295`, true},
+		{`x = unix_ms(); sleep(300); (unix_ms() - x) < 350`, true},
+		{`x = unix_ms(); sleep(300); (unix_ms() - x) > 250`, true},
 	}
 
 	testBuiltinFunction(tests, t)
