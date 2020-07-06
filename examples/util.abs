@@ -1,0 +1,15 @@
+memo = require('@util').memoize
+
+@memo(60)
+f long_task(x, y) {
+    sleep(1000)
+    return "done"
+}
+
+echo(long_task(1, 1))
+echo(long_task(1, 1))
+echo(long_task(1, 1))
+echo(long_task(1, 1))
+echo(long_task(1, 1))
+echo(long_task(1, 1))
+echo(long_task(1, 2))

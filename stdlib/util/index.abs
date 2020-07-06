@@ -1,0 +1,38 @@
+memo_map = {}
+
+# Decorator to memoize
+# the result of a function.
+f memoize(ttl) {
+    # We want to store time to the millisecond,
+    # allowing for TTLs to be < 1s (eg 0.250).
+    ttl = ttl * 1000
+
+    return f(fn) {
+        return f() {
+            serialized_args = ....str()
+            cached = memo_map[serialized_args]
+            now = unix_ms()
+
+            if cached {
+                if cached.ts + ttl - now > 0 {
+                    return cached.result
+                }
+
+                memo_map.pop(serialized_args)
+            }
+
+            res = fn.call(...)
+
+            memo_map[serialized_args] = {
+                "ts": now,
+                "result": res
+            }
+            
+            return res
+        }
+    }
+}
+
+return {
+    "memoize": memoize
+}

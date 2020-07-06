@@ -428,6 +428,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    tsvFn,
 		},
+		// unix_ms() -- returns the current unix epoch, in milliseconds
+		"unix_ms": &object.Builtin{
+			Types: []string{},
+			Fn:    unixMsFn,
+		},
 	}
 }
 
@@ -577,6 +582,11 @@ func exitFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	arg := args[0].(*object.Number)
 	os.Exit(int(arg.Value))
 	return arg
+}
+
+// unix_ms()
+func unixMsFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	return &object.Number{Value: float64(time.Now().UnixNano() / 1000000)}
 }
 
 // flag("my-flag")
