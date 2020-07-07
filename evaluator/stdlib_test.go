@@ -24,9 +24,11 @@ func TestUtil(t *testing.T) {
 	tests := []tests{
 		{`memo = require('@util').memoize; @memo(1) f test() { return 1 }; test()`, 1},
 		{`memo = require('@util').memoize; @memo(1) f test(n) { return 1 + n }; test(10)`, 11},
+		{`memo = require('@util').memoize; @memo(1) f test(n, m) { return n + m }; test(10, 5)`, 15},
 		{`memo = require('@util').memoize; x = {"y": 0}; @memo(0) f test() { x.y += 1 }; test(); x.y`, 1},
 		{`memo = require('@util').memoize; x = {"y": 0}; @memo(0) f test() { x.y += 1 }; test(); test(); test(); x.y`, 3},
 		{`memo = require('@util').memoize; x = {"y": 0}; @memo(10) f test() { x.y += 1 }; test(); test(); test(); x.y`, 1},
+		{`memo = require('@util').memoize; x = {"y": 0}; @memo(10) f test() { x.y += 1 }; @memo(10) f test2() { x.y += 1 }; test(); test(); test2(); x.y`, 2},
 		{`memo = require('@util').memoize; x = {"y": 0}; @memo(0.250) f test() { x.y += 1 }; test(); test(); test(); x.y`, 1},
 		{`memo = require('@util').memoize; x = {"y": 0}; @memo(0.250) f test() { x.y += 1 }; test(); test(); sleep(251); test(); x.y`, 2},
 	}

@@ -1,11 +1,10 @@
-memo_map = {}
-
 # Decorator to memoize
 # the result of a function.
 f memoize(ttl) {
     # We want to store time to the millisecond,
     # allowing for TTLs to be < 1s (eg 0.250).
     ttl = ttl * 1000
+    memo_map = {}
 
     return f(fn) {
         return f() {
