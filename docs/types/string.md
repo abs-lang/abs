@@ -57,7 +57,7 @@ string:
 "string"[1:] // "tring"
 ```
 
-If `end` is negative, it will be converted to `length of string - end`:
+If `end` is negative, it will be converted to `length of string - (-end)`:
 
 ``` bash
 "string"[0:-1] // "strin"
@@ -239,11 +239,12 @@ Use this function when `"...".number()` might return an error.
 ### int()
 
 Converts a string to a number, and then rounds it
-**down** to the closest integer.
+towards zero to the closest integer.
 The string must represent a number.
 
 ``` bash
 "99.5".int() # 99
+"-99.5".int() # -99
 "a".int() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
 ```
 
@@ -273,6 +274,7 @@ The string must represent a number.
 
 ``` bash
 "10.3".ceil() # 11
+"-10.3".ceil() # -10
 "a".ceil() # ERROR: ceil(...) can only be called on strings which represent numbers, 'a' given
 ```
 
@@ -285,12 +287,13 @@ The string must represent a number.
 
 ``` bash
 "10.9".floor() # 10
+"-10.9".floor() # -11
 "a".floor() # ERROR: floor(...) can only be called on strings which represent numbers, 'a' given
 ```
 
 ### split(separator)
 
-Splits a string by separator, defaulting to a single space:
+Splits a string by `separator`, defaulting to a single space:
 
 ``` bash
 "1.2.3.4".split(".") # ["1", "2", "3", "4"]
@@ -337,7 +340,7 @@ Checks whether any of the characters in `str` are present in the string:
 
 ### prefix(str)
 
-Checks whether the string has the given prefix:
+Checks whether the string starts with `str`:
 
 ``` bash
 "string".prefix("str") # true
@@ -346,7 +349,7 @@ Checks whether the string has the given prefix:
 
 ### suffix(str)
 
-Checks whether the string has the given suffix:
+Checks whether the string ends with `str`:
 
 ``` bash
 "string".suffix("ing") # true
@@ -355,27 +358,29 @@ Checks whether the string has the given suffix:
 
 ### repeat(i)
 
-Creates a new string, repeating the original one `i` times:
+Creates a new string by repeating the original one `i` times:
 
 ``` bash
 "string".repeat(2) # "stringstring"
 ```
 
-### replace(x, y [, n])
+### replace(str1, str2 [, n])
 
-Replaces occurrences of `x` with `y`, `n` times.
-If `n` is omitted, or negative, it will replace all occurrencies:
+Replaces the first `n` occurrences of `str1` in the string with `str2`.
+If `n` is omitted or negative, it will replace all occurrences:
 
 ``` bash
 "string".replace("i", "o", -1) # "strong"
 "aaaa".replace("a", "x") # "xxxx"
 "aaaa".replace("a", "x", 2) # "xxaa"
+"A man, a plan, a canal, Panama!".replace("a ", "ur-") # "A man, ur-plan, ur-canal, Panama!"
 ```
 
-You can also replace an array of characters:
+You can also replace an array of strings:
 
 ``` bash
 "string".replace(["i", "g"], "o") # "strono"
+"A man, a plan, a canal, Panama!".replace(["a ", "l"], "ur-") # "A man, ur-pur-an, ur-canaur-, Panama!"
 ```
 
 ### reverse()
@@ -385,6 +390,7 @@ source.
 
 ``` bash
 "hello world".reverse() # "dlrow olleh"
+"世界".reverse() # "界世"
 ```
 
 ### title()
@@ -425,14 +431,16 @@ Removes `str` from the beginning and end of the string:
 
 ``` bash
 "string".trim_by("g") # "strin"
+"stringest".trim_by("st") # "ringe"
 ```
 
 ### index(str)
 
-Returns the index at which `str` is found:
+Returns the first index at which `str` is found:
 
 ``` bash
 "string".index("t") # 1
+"string".index("ri") # 2
 ```
 
 ### last_index(str)
@@ -441,6 +449,7 @@ Returns the last index at which `str` is found:
 
 ``` bash
 "string string".last_index("g") # 13
+"string string".last_index("ri") # 9
 ```
 
 ### camel()
