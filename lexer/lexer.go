@@ -107,6 +107,13 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Position = l.position
 			tok.Literal = "-="
 			l.readChar()
+		} else if isDigit(l.peekChar()) {
+			tok.Position = l.position
+			l.readChar()
+			literal, kind := l.readNumber()
+			tok.Type = kind
+			tok.Literal = "-" + literal
+			return tok
 		} else {
 			tok = l.newToken(token.MINUS)
 		}
