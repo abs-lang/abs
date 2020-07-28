@@ -8,26 +8,30 @@ Numbers are very straightforward data structures:
 ```
 
 Most mathematical operators are designed to work
-with them
+with them:
 
 ``` bash
 (2 ** 5.5 / 1 / 3 + 19) % 5 # 4.08494466531301
 ```
 
-Note that numbers have what we call a "zero value":
+Note that numbers have what we call a "zero value",
 a value that evaluates to `false` when casted to boolean:
 
 ``` bash
 !!0 # false
+!!0.0 # false
+!!1 # true
+!!-3.75 # true
 ```
 
 You can use [bitwise operators](/syntax/operators) on numbers, but bear in
-mind that they will be implicitely converted to integers:
+mind that they will be implicitly converted to integers:
 
 ``` bash
 1 ^ 1 # 0
 1 ^ 0 # 1
 1 ^ 0.9 # 1, as 0.9 is converted to 0
+14 ^ 7 # 9 -- 1110 XOR 0111 == 1001
 ```
 
 You can write numbers in the exponential notation:
@@ -51,8 +55,8 @@ on a number (`10_`, `10_00`, `10.00_00_00`) except at its start:
 _100000000 # ERROR: identifier not found: _
 ```
 
-Note there is no limit to the amount of consecutive
-underscores that can be used (eg. `10__________0`).
+Note there is no limit to the number of consecutive
+underscores that can be used (eg. `10__________0 == 100`).
 
 ## Supported functions
 
@@ -66,17 +70,16 @@ Identity:
 
 ### int()
 
-Rounds **down** the number to the closest integer:
+Rounds the number towards zero to the closest integer:
 
 ``` bash
 10.3.int() # 10
+-10.3.int() # -10
 ```
 
-### round(precision?)
+### round([precision])
 
-Rounds the number with the given precision.
-The precision argument is optional, and set to `0`
-by default:
+Rounds the number with the given `precision` (default 0):
 
 ``` bash
 10.3.round() # 10
@@ -100,6 +103,7 @@ Rounds the number up to the closest integer:
 
 ``` bash
 10.3.ceil() # 11
+-10.3.ceil() # -10
 ```
 
 ### clamp(min, max)
@@ -119,6 +123,7 @@ Rounds the number down to the closest integer:
 
 ``` bash
 10.9.floor() # 10
+-10.9.floor() # -11
 ```
 
 ### str()
