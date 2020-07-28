@@ -1,6 +1,6 @@
 # Array
 
-Arrays represent a list of elements
+Arrays represent lists of elements
 of any other type:
 
 ``` bash
@@ -15,17 +15,17 @@ for x in [1, 2] {
 }
 ```
 
-You can access elements of the array with the index
+You can access elements of the array with `[]` index
 notation:
 
 ``` bash
 array[3]
 ```
 
-Accessing an index that does not exist returns `null`.
+Accessing an array element that does not exist returns `null`.
 
-You can also access the Nth last element of an array by
-using a negative index:
+You can also access the Nth last element of an array
+with a negative index:
 
 ``` bash
 ["a", "b", "c", "d"][-2] # "c"
@@ -49,7 +49,7 @@ array[:2] # [0, 1, 2]
 array[7:] # [7, 8, 9]
 ```
 
-If `end` is negative, it will be converted to `length of array - end`:
+If `end` is negative, it will be converted to `length of array - (-end)`:
 
 ``` bash
 array[:-3] # [0, 1, 2, 3, 4, 5, 6]
@@ -133,7 +133,7 @@ called on homogeneous arrays of numbers.
 
 ### chunk(size)
 
-Splits the array into chunks of the given size:
+Splits the array into chunks of the given `size`:
 
 ```py
 [1, 2, 3].chunk(2) # [[1, 2], [3]]
@@ -183,9 +183,9 @@ Returns the length of the array:
 [1, 2].len() # 2
 ```
 
-### join(separator)
+### join([separator])
 
-Joins the elements of the array by `separator`, defaulting to an empty string:
+Joins the elements of the array with the string `separator` (default "", the empty string):
 
 ``` py
 [1, 2, 3].join("_") # "1_2_3"
@@ -210,17 +210,17 @@ Modifies the array by applying the function `f` to all its elements:
 
 ### pop()
 
-Pops the last element from the array, returning it:
+Removes and returns the last element from the array:
 
 ``` py
 a = [1, 2, 3]
-a.shift() # 3
+a.pop() # 3
 a # [1, 2]
 ```
 
-### push()
+### push(x)
 
-Pushes an element at the end of the array:
+Inserts `x` at the end of the array:
 
 ``` py
 [1, 2].push(3) # [1, 2, 3]
@@ -240,9 +240,9 @@ Reverses the order of the elements in the array:
 [1, 2].reverse() # [2, 1]
 ```
 
-### shift(start, end)
+### shift()
 
-Removes the first elements from the array, and returns it:
+Removes the first element from the array, and returns it:
 
 ``` py
 a = [1, 2, 3]
@@ -262,12 +262,15 @@ returns `true` when applied to the function `f`:
 
 ### sort()
 
-Sorts the array. Only supported on arrays of only numbers
-or only strings:
+Sorts the array. Only supported on homogeneous arrays of numbers
+or strings:
 
 ```py
 [3, 1, 2].sort() # [1, 2, 3]
 ["b", "a", "c"].sort() # ["a", "b", "c"]
+[42, "hut", 37].sort()
+ERROR: argument to 'sort' must be an homogeneous array (elements of the same type), got [42, "hut", 37]
+	[1:16]	[42, "hut", 37].sort()
 ```
 
 ### str()
@@ -280,15 +283,15 @@ Returns the string representation of the array:
 
 ### sum()
 
-Sums the elements of the array. Only supported on arrays of numbers:
+Sums the elements of the array. Only supported on homogeneous arrays of numbers:
 
 ```py
 [1, 1, 1].sum() # 3
 ```
 
-### tsv([separator], [header])
+### tsv([separator[, header]])
 
-Formats the array into TSV:
+Formats the array as a TSV (Tab-Separated Values):
 
 ``` bash
 [["LeBron", "James"], ["James", "Harden"]].tsv()
@@ -296,7 +299,7 @@ LeBron	James
 James	Harden
 ```
 
-You can also specify the separator to be used if you
+You can also specify the `separator` to be used if you
 prefer not to use tabs:
 
 ``` bash
@@ -305,8 +308,8 @@ LeBron,James
 James,Harden
 ```
 
-The input array needs to be an array of arrays or hashes. If
-you use hashes, their keys will be used as heading of the TSV:
+The input must be an array of arrays or hashes. If
+you use hashes, their keys will be used as the first row of the TSV:
 
 ```bash
 [{"name": "Lebron", "last": "James", "jersey": 23}, {"name": "James", "last": "Harden"}].tsv()
@@ -315,24 +318,30 @@ jersey	last	name
 null	Harden	James
 ```
 
-The heading will, by default, be a combination of all keys present in the hashes,
-sorted alphabetically. If a key is missing in an hash, `null` will be used as value.
-If you wish to specify the output format, you can pass a list of keys to be used
-as header:
+The first row will, by default, be a combination of all keys present in the hashes,
+sorted alphabetically. If a key is missing in a hash, `null` will be used as its value.
+
+`header` is an optional array of output keys, whose values are output in the specified order:
 
 ```bash
 [{"name": "Lebron", "last": "James", "jersey": 23}, {"name": "James", "last": "Harden"}].tsv("\t", ["name", "last", "jersey", "additional_key"])
 name	last	jersey	additional_key
 Lebron	James	23	null
 James	Harden	null	null
+
+[{"name": "Lebron", "last": "James", "jersey": 23}, {"name": "James", "last": "Harden"}].tsv(",", ["last", "jersey"])
+last,jersey
+James,23
+Harden,null
 ```
 
 ### unique()
 
-Returns an array with unique values:
+Returns the array with duplicate values removed. The values need not be sorted:
 
 ```py
 [1, 1, 1, 2].unique() # [1, 2]
+[2, 1, 2, 3].unique() # [2, 1, 3]
 ```
 
 ### intersect(array)
@@ -349,7 +358,7 @@ Computes the intersection between 2 arrays:
 ### diff(array)
 
 Computes the difference between 2 arrays,
-returning elements that are only on the first array:
+returning elements that are only in the first array:
 
 ```py
 [1, 2, 3].diff([]) # [1, 2, 3]
@@ -363,7 +372,7 @@ For symmetric difference see [diff_symmetric(...)](#diff_symmetricarray)
 ### diff_symmetric(array)
 
 Computes the [symmetric difference](https://en.wikipedia.org/wiki/Symmetric_difference)
-between 2 arrays (elements that are only on either of the 2):
+between 2 arrays, returning elements that are only in one of the arrays:
 
 ```py
 [1, 2, 3].diff([]) # [1, 2, 3]
@@ -386,16 +395,17 @@ between 2 arrays:
 
 ### flatten()
 
-Flattens an array a single level deep:
+Concatenates the lowest "layer" of elements in a nested array:
 
 ```py
 [[1, 2], 3, [4]].flatten() # [1, 2, 3, 4]
 [[1, 2, 3, 4]].flatten() # [1, 2, 3, 4]
+[[[1, 2], [3, 4], 5, 6], 7, 8].flatten() # [[1, 2], [3, 4], 5, 6, 7, 8]
 ```
 
 ### flatten_deep()
 
-Flattens an array recursively until no member is an array:
+Recursively flattens an array until no element is an array:
 
 ```py
 [[[1, 2], [[[[3]]]], [4]]].flatten_deep() # [1, 2, 3, 4]
@@ -420,9 +430,9 @@ Finds the lowest number in an array:
 [0, 5, -10, 100].min() # -10
 ```
 
-### reduce(fn, accumulator)
+### reduce(f, accumulator)
 
-Reduces the array to a value by iterating through its elements and applying `fn` to them:
+Reduces the array to a value by iterating through its elements and applying the two-argument function `f(value, element)` to them, with `accumulator` as the initial `value`:
 
 ```py
 [1, 2, 3, 4].reduce(f(value, element) { return value + element }, 0) # 10
@@ -430,18 +440,21 @@ Reduces the array to a value by iterating through its elements and applying `fn`
 ```
 
 
-### partition(fn)
+### partition(f)
 
-Partitions the array by applying `fn` to all of its elements
-and using the result of the function invocation as the key to partition by:
+Partitions the array by applying `f(element)` to all of its elements,
+then grouping the elements into an array of arrays based on the results:
 
 ```py
 f odd(n) {
   return !!(n % 2)
 }
-
+f div2(n) {
+  return int(n / 2)
+}
 [0, 1, 2, 3, 4, 5].partition(odd) # [[0, 2, 4], [1, 3, 5]]
-[1, "1", {}].partition(str) # [[1, "1"], [{}]]
+[5, 4, 3, 2, 1, 0].partition(div2) # [[5, 4], [3, 2], [1, 0]]
+["1", {}, 0, "0", 1].partition(str) # [["1", 1], [{}], [0, "0"]]
 ```
 
 ## Next
