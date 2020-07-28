@@ -469,7 +469,6 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	}
 
 	p.nextToken()
-
 	expression.Right = p.parseExpression(PREFIX)
 
 	return expression

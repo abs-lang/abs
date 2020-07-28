@@ -171,7 +171,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 		value    interface{}
 	}{
 		{"!5;", "!", 5},
-		{"-15;", "-", 15},
+		{"- 15;", "-", 15},
 		{"!foobar;", "!", "foobar"},
 		{"-foobar;", "-", "foobar"},
 		{"!true;", "!", true},
@@ -310,6 +310,10 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		},
 		{
 			"3 + 4; -5 * 5",
+			"(3 + 4)(-5 * 5)",
+		},
+		{
+			"3 + 4; - 5 * 5",
 			"(3 + 4)((-5) * 5)",
 		},
 		{
