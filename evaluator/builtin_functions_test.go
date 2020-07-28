@@ -553,6 +553,8 @@ func TestBetween(t *testing.T) {
 		{`1.between(0, 0.9)`, false},
 		{`1.between(1, 0)`, "arguments to between(min, max) must satisfy min < max (1 < 0 given)"},
 		{`1.between(1, 2)`, true},
+		{`-1.between(-10, 0)`, true},
+		{`-1.between(-10, -2)`, false},
 	}
 
 	testBuiltinFunction(tests, t)
