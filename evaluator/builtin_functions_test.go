@@ -33,8 +33,8 @@ func TestUnixMs(t *testing.T) {
 	// Being generous with deadlines as some of the automated
 	// tests run on really shitty machines and might take longer...
 	tests := []Tests{
-		{`x = unix_ms(); sleep(300); (unix_ms() - x) < 350`, true},
-		{`x = unix_ms(); sleep(300); (unix_ms() - x) > 250`, true},
+		{`x = unix_ms(); sleep(300); (unix_ms() - x) < 500`, true},
+		{`x = unix_ms(); sleep(300); (unix_ms() - x) > 100`, true},
 	}
 
 	testBuiltinFunction(tests, t)
