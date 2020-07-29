@@ -8,9 +8,9 @@ h.key # "val"
 h["key"] # "val"
 ```
 
-Note that the `hash.key` hash property form is the preferred one, as it's more coincise and mimics other programming languages.
+Note that the `hash.key` hash property form is the preferred one, as it's more concise and mimics other programming languages.
 
-Accessing a key that does not exist returns null.
+Hash keys must be strings, but hash values can be of any type. Accessing a key that does not exist returns `null`.
 
 An individual hash element may be assigned to via its `hash["key"]`
 index or its property `hash.key`. This includes compound operators 
@@ -90,6 +90,21 @@ h.z = {"xx": 11, "yy": 21}
 h # {a: 1, b: 2, c: {x: 10, y: 20}, z: {xx: 11, yy: 21}}
 ```
 
+Nested hashes can be accessed by chaining keys, though it's best to use `?.` to "drill down" through keys that may not exist:
+```
+h = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
+h.c.y # 20
+h["c"].x # 10
+h.z["yy"] #21
+h.z.zz # null
+
+h.x.pp
+# ERROR: invalid property 'pp' on type NULL
+# 	[1:4]	h.x.pp
+
+h.x?.pp # null
+```
+
 ## Supported functions
 
 ### str()
@@ -104,45 +119,48 @@ str(h)  # "{k: v}"
 
 ### keys()
 
-Returns an array of keys to the hash. 
-
-Note well that only the first level keys are returned.
+Returns an array of keys in the hash. Only the first-level keys in a nested hash are returned:
 
 ``` bash
 h = {"a": 1, "b": 2, "c": 3}
 h.keys() # [a, b, c]
 keys(h) # [a, b, c]
+
+nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
+nh.keys() # ["z", "a", "b", "c"]
 ```
 
 ### values()
 
-Returns an array of values in the hash. 
-
-Note well that only the first level values are returned.
+Returns an array of values in the hash.  Only the first-level values in a nested hash are returned:
 
 ``` bash
 h = {"a": 1, "b": 2, "c": 3}
 h.values()  # [1, 2, 3]
 values(h)   # [1, 2, 3]
+
+nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
+nh.values() # [1, 2, {"x": 10, "y": 20}, {"xx": 11, "yy": 21}]
 ```
 
 ### items()
 
-Returns an array of [key, value] tuples for each item in the hash.
-
-Note well that only the first level items are returned.
+Returns an array of [key, value] tuples for each item in the hash.  Only the first-level items in a nested hash are returned:
 
 ``` bash
 h = {"a": 1, "b": 2, "c": 3}
 h.items()   # [[a, 1], [b, 2], [c, 3]]
 items(h)    # [[a, 1], [b, 2], [c, 3]]
+
+nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
+nh.items() # [["a", 1], ["b", 2], ["c", {"x": 10, "y": 20}], ["z", {"xx": 11, "yy": 21}]]
 ```
 
 ### pop(k)
 
-Removes and returns the matching `{"key": value}` item from the hash. If the key does not exist `hash.pop("key")` returns `null`.
+Removes and returns the item matching key `k` from the hash. If `k` is not found, `hash.pop(k)` returns `null`.
 
-Note well that only the first level items can be popped.
+Only the first-level items can be popped.
 
 ``` bash
 h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}
@@ -150,18 +168,25 @@ h = {"a": 1, "b": 2, "c": {"x": 10, "y":20}}
 h.pop("a")  # {a: 1}
 h   # {b: 2, c: {x: 10, y: 20}}
 
-pop(h, "c")  # {c: {x: 10, y: 20}}
+h.pop(c.x)
+ERROR: identifier not found: c
+	[1:7]	h.pop(c.x)
+
+h.pop(c["x"])
+ERROR: identifier not found: c
+	[1:7]	h.pop(c["x"])
+
+h.pop("c")  # {c: {x: 10, y: 20}}
 h   # {b: 2}
 
-pop(h, "d") # null
+h.pop("d") # null
 h   # {b: 2}
 
 ```
 
 ## User-defined functions
 
-A useful property of being able to assign keys of any type to an hash
-results in the ability to define objects with custom functions, such as:
+Since hash values can be of any type, we can create objects with custom functions, such as:
 
 ``` bash
 hash = {"greeter": f(name) { return "Hello $name!" }}
