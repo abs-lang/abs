@@ -107,14 +107,17 @@ h.x?.pp # null
 
 ## Supported functions
 
-### str()
+### items()
 
-Returns the string representation of the hash:
+Returns an array of [key, value] tuples for each item in the hash.  Only the first-level items in a nested hash are returned:
 
 ``` bash
-h = {"k": "v"}
-h.str() # "{k: v}"
-str(h)  # "{k: v}"
+h = {"a": 1, "b": 2, "c": 3}
+h.items()   # [[a, 1], [b, 2], [c, 3]]
+items(h)    # [[a, 1], [b, 2], [c, 3]]
+
+nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
+nh.items() # [["a", 1], ["b", 2], ["c", {"x": 10, "y": 20}], ["z", {"xx": 11, "yy": 21}]]
 ```
 
 ### keys()
@@ -128,32 +131,6 @@ keys(h) # [a, b, c]
 
 nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
 nh.keys() # ["z", "a", "b", "c"]
-```
-
-### values()
-
-Returns an array of values in the hash.  Only the first-level values in a nested hash are returned:
-
-``` bash
-h = {"a": 1, "b": 2, "c": 3}
-h.values()  # [1, 2, 3]
-values(h)   # [1, 2, 3]
-
-nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
-nh.values() # [1, 2, {"x": 10, "y": 20}, {"xx": 11, "yy": 21}]
-```
-
-### items()
-
-Returns an array of [key, value] tuples for each item in the hash.  Only the first-level items in a nested hash are returned:
-
-``` bash
-h = {"a": 1, "b": 2, "c": 3}
-h.items()   # [[a, 1], [b, 2], [c, 3]]
-items(h)    # [[a, 1], [b, 2], [c, 3]]
-
-nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
-nh.items() # [["a", 1], ["b", 2], ["c", {"x": 10, "y": 20}], ["z", {"xx": 11, "yy": 21}]]
 ```
 
 ### pop(k)
@@ -182,6 +159,29 @@ h   # {b: 2}
 h.pop("d") # null
 h   # {b: 2}
 
+```
+
+### str()
+
+Returns the string representation of the hash:
+
+``` bash
+h = {"k": "v"}
+h.str() # "{k: v}"
+str(h)  # "{k: v}"
+```
+
+### values()
+
+Returns an array of values in the hash.  Only the first-level values in a nested hash are returned:
+
+``` bash
+h = {"a": 1, "b": 2, "c": 3}
+h.values()  # [1, 2, 3]
+values(h)   # [1, 2, 3]
+
+nh = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
+nh.values() # [1, 2, {"x": 10, "y": 20}, {"xx": 11, "yy": 21}]
 ```
 
 ## User-defined functions

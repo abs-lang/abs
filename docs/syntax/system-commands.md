@@ -94,7 +94,7 @@ file = "cpuinfo"
 x = $(cat /proc/$file)
 echo(x) # processor: 0\nvendor_id: GenuineIntel...
 ```
-or interpolation within an `exec(command`)
+or interpolation within an `exec(command)`
 ```bash
 cmd = args(2)
 filename = args(3)
