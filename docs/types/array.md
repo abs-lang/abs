@@ -141,6 +141,32 @@ Splits the array into chunks of the given `size`:
 [1, 2, 3].chunk(1.2) # argument to chunk must be a positive integer, got '1.2'
 ```
 
+### diff(array)
+
+Computes the difference between 2 arrays,
+returning elements that are only in the first array:
+
+```py
+[1, 2, 3].diff([]) # [1, 2, 3]
+[1, 2, 3].diff([3]) # [1, 2]
+[1, 2, 3].diff([3, 1]) # [2]
+[1, 2, 3].diff([1, 2, 3, 4]) # []
+```
+
+For symmetric difference see [diff_symmetric(...)](#diff_symmetricarray)
+
+### diff_symmetric(array)
+
+Computes the [symmetric difference](https://en.wikipedia.org/wiki/Symmetric_difference)
+between 2 arrays, returning elements that are only in one of the arrays:
+
+```py
+[1, 2, 3].diff_symmetric([]) # [1, 2, 3]
+[1, 2, 3].diff_symmetric([3]) # [1, 2]
+[1, 2, 3].diff_symmetric([3, 1]) # [2]
+[1, 2, 3].diff_symmetric([1, 2, 3, 4]) # [4]
+```
+
 ### every(f)
 
 Returns true when all elements in the array
@@ -175,12 +201,34 @@ elements to the given hash:
 [null, {"key": "val", "test": 123}].find({"key": "val"}) # {"key": "val", "test": 123}
 ```
 
-### len()
+### flatten()
 
-Returns the length of the array:
+Concatenates the lowest "layer" of elements in a nested array:
 
-``` py
-[1, 2].len() # 2
+```py
+[[1, 2], 3, [4]].flatten() # [1, 2, 3, 4]
+[[1, 2, 3, 4]].flatten() # [1, 2, 3, 4]
+[[[1, 2], [3, 4], 5, 6], 7, 8].flatten() # [[1, 2], [3, 4], 5, 6, 7, 8]
+```
+
+### flatten_deep()
+
+Recursively flattens an array until no element is an array:
+
+```py
+[[[1, 2], [[[[3]]]], [4]]].flatten_deep() # [1, 2, 3, 4]
+[[1, [2, 3], 4]].flatten_deep() # [1, 2, 3, 4]
+```
+
+### intersect(array)
+
+Computes the intersection between 2 arrays:
+
+```py
+[1, 2, 3].intersect([]) # []
+[1, 2, 3].intersect([3]) # [3]
+[1, 2, 3].intersect([3, 1]) # [1, 3]
+[1, 2, 3].intersect([1, 2, 3, 4]) # [1, 2, 3]
 ```
 
 ### join([separator])
@@ -200,12 +248,55 @@ Returns an array of the keys in the original array:
 (1..2).keys() # [0, 1]
 ```
 
+### len()
+
+Returns the length of the array:
+
+``` py
+[1, 2].len() # 2
+```
+
 ### map(f)
 
 Modifies the array by applying the function `f` to all its elements:
 
 ``` py
 [0, 1, 2].map(f(x){x+1}) # [1, 2, 3]
+```
+
+### max()
+
+Finds the highest number in an array:
+
+```py
+[].max() # NULL
+[0, 5, -10, 100].max() # 100
+```
+
+### min()
+
+Finds the lowest number in an array:
+
+```py
+[].min() # NULL
+[0, 5, -10, 100].min() # -10
+```
+
+### partition(f)
+
+Partitions the array by applying `f(element)` to all of its elements,
+then grouping the elements into an array of arrays based on the results:
+
+```py
+f odd(n) {
+  return !!(n % 2)
+}
+f div2(n) {
+  return int(n / 2)
+}
+[0, 1, 2, 3, 4, 5].partition(odd) # [[0, 2, 4], [1, 3, 5]]
+[5, 4, 3, 2, 1, 0].partition(div2) # [[5, 4], [3, 2], [1, 0]]
+["1", {}, 0, "0", 1].partition(str) # [["1", 1], [{}], [0, "0"]]
 ```
 
 ### pop()
@@ -230,6 +321,15 @@ This is equivalent to summing 2 arrays:
 
 ``` py
 [1, 2] + [3] # [1, 2, 3]
+```
+
+### reduce(f, accumulator)
+
+Reduces the array to a value by iterating through its elements and applying the two-argument function `f(value, element)` to them, with `accumulator` as the initial `value`:
+
+```py
+[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 0) # 10
+[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 10) # 20
 ```
 
 ### reverse()
@@ -335,52 +435,6 @@ James,23
 Harden,null
 ```
 
-### unique()
-
-Returns the array with duplicate values removed. The values need not be sorted:
-
-```py
-[1, 1, 1, 2].unique() # [1, 2]
-[2, 1, 2, 3].unique() # [2, 1, 3]
-```
-
-### intersect(array)
-
-Computes the intersection between 2 arrays:
-
-```py
-[1, 2, 3].intersect([]) # []
-[1, 2, 3].intersect([3]) # [3]
-[1, 2, 3].intersect([3, 1]) # [1, 3]
-[1, 2, 3].intersect([1, 2, 3, 4]) # [1, 2, 3]
-```
-
-### diff(array)
-
-Computes the difference between 2 arrays,
-returning elements that are only in the first array:
-
-```py
-[1, 2, 3].diff([]) # [1, 2, 3]
-[1, 2, 3].diff([3]) # [1, 2]
-[1, 2, 3].diff([3, 1]) # [2]
-[1, 2, 3].diff([1, 2, 3, 4]) # []
-```
-
-For symmetric difference see [diff_symmetric(...)](#diff_symmetricarray)
-
-### diff_symmetric(array)
-
-Computes the [symmetric difference](https://en.wikipedia.org/wiki/Symmetric_difference)
-between 2 arrays, returning elements that are only in one of the arrays:
-
-```py
-[1, 2, 3].diff([]) # [1, 2, 3]
-[1, 2, 3].diff([3]) # [1, 2]
-[1, 2, 3].diff([3, 1]) # [2]
-[1, 2, 3].diff([1, 2, 3, 4]) # [4]
-```
-
 ### union(array)
 
 Computes the [union](https://en.wikipedia.org/wiki/Union_(set_theory))
@@ -393,68 +447,13 @@ between 2 arrays:
 [1, 2].union([3, 4]) # [1, 2, 3, 4]
 ```
 
-### flatten()
+### unique()
 
-Concatenates the lowest "layer" of elements in a nested array:
-
-```py
-[[1, 2], 3, [4]].flatten() # [1, 2, 3, 4]
-[[1, 2, 3, 4]].flatten() # [1, 2, 3, 4]
-[[[1, 2], [3, 4], 5, 6], 7, 8].flatten() # [[1, 2], [3, 4], 5, 6, 7, 8]
-```
-
-### flatten_deep()
-
-Recursively flattens an array until no element is an array:
+Returns the array with duplicate values removed. The values need not be sorted:
 
 ```py
-[[[1, 2], [[[[3]]]], [4]]].flatten_deep() # [1, 2, 3, 4]
-[[1, [2, 3], 4]].flatten_deep() # [1, 2, 3, 4]
-```
-
-### max()
-
-Finds the highest number in an array:
-
-```py
-[].max() # NULL
-[0, 5, -10, 100].max() # 100
-```
-
-### min()
-
-Finds the lowest number in an array:
-
-```py
-[].min() # NULL
-[0, 5, -10, 100].min() # -10
-```
-
-### reduce(f, accumulator)
-
-Reduces the array to a value by iterating through its elements and applying the two-argument function `f(value, element)` to them, with `accumulator` as the initial `value`:
-
-```py
-[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 0) # 10
-[1, 2, 3, 4].reduce(f(value, element) { return value + element }, 10) # 20
-```
-
-
-### partition(f)
-
-Partitions the array by applying `f(element)` to all of its elements,
-then grouping the elements into an array of arrays based on the results:
-
-```py
-f odd(n) {
-  return !!(n % 2)
-}
-f div2(n) {
-  return int(n / 2)
-}
-[0, 1, 2, 3, 4, 5].partition(odd) # [[0, 2, 4], [1, 3, 5]]
-[5, 4, 3, 2, 1, 0].partition(div2) # [[5, 4], [3, 2], [1, 0]]
-["1", {}, 0, "0", 1].partition(str) # [["1", 1], [{}], [0, "0"]]
+[1, 1, 1, 2].unique() # [1, 2]
+[2, 1, 2, 3].unique() # [2, 1, 3]
 ```
 
 ## Next

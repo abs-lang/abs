@@ -8,7 +8,7 @@ type(1) # NUMBER
 type([]) # ARRAY
 ```
 
-We'll reveal you a secret now: all string, array, number & hash functions
+We'll reveal to you a secret now: all string, array, number & hash functions
 are actually "generic", but the syntax you see makes you think those are
 specific to the string, number, etc object.
 
@@ -31,91 +31,6 @@ strange to see something such as `99.exit()`.
 
 ## Generic builtin functions
 
-### echo(var)
-
-Prints the given variable:
-
-``` bash
-echo("hello world")
-```
-
-You can use use placeholders in your strings:
-
-``` bash
-echo("hello %s", "world")
-```
-
-### stdin()
-
-Reads from the `stdin`:
-
-``` bash
-echo("What do you like?")
-echo("Oh, you like %s!", stdin()) # This line will block until user enters some text
-```
-
-Worth to note that you can read
-the `stdin` indefinitely with:
-
-``` bash
-# Will read all input to the
-# stdin and output it back
-for input in stdin {
-    echo(input)
-}
-
-# Or from the REPL:
-
-⧐  for input in stdin { echo((input.int() / 2).str() + "...try again:")  }
-10
-5...try again:
-5
-2.5...try again:
-
-...
-```
-
-### exit(code [, message])
-
-Exits the script with status `code`:
-
-``` bash
-exit(99)
-```
-
-You can specify a message that's going to be outputted right
-before exiting:
-
-``` bash
-⧐  exit(99, "Got problems...")
-Got problems...%
-```
-
-### rand(max)
-
-Returns a random integer number between 0 and `max`:
-
-``` bash
-rand(10) # 7
-```
-
-### env(str)
-
-Returns the `str` environment variable:
-
-``` bash
-env("PATH") # "/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-```
-
-### eval(str)
-
-Evaluates the `str` as ABS code:
-
-``` bash
-eval("1 + 1") # 2
-eval('object = {"x": 10}; object.x') # 10
-```
-
 ### arg(n)
 
 Returns the `n`th argument to the current script:
@@ -136,15 +51,6 @@ Type 'quit' when you're done, 'help' if you get lost!
 ["abs", "--flag1", "--flag2", "arg1", "arg2"]
 ⧐   args().len()
 5
-```
-
-### type(var)
-
-Returns the type if the given variable:
-
-``` bash
-type("") # "STRING"
-type({}) # "HASH"
 ```
 
 ### cd() or cd(path)
@@ -180,18 +86,51 @@ dirs = cd() && `ls`.lines()
 len(dirs)   # number of directories in homeDir
 ```
 
-### pwd()
+### echo(var)
 
-Returns the path to the current working directory -- equivalent
-to `env("PWD")`. 
-
-If executed from a script this will initially be the directory
-containing the script.
-
-To change the working directory, see `cd()`.
+Prints the given variable:
 
 ``` bash
-pwd() # /go/src/github.com/abs-lang/abs
+echo("hello world")
+```
+
+You can use use placeholders in your strings:
+
+``` bash
+echo("hello %s", "world")
+```
+
+### env(str)
+
+Returns the `str` environment variable:
+
+``` bash
+env("PATH") # "/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+```
+
+### eval(str)
+
+Evaluates the `str` as ABS code:
+
+``` bash
+eval("1 + 1") # 2
+eval('object = {"x": 10}; object.x') # 10
+```
+
+### exit(code [, message])
+
+Exits the script with status `code`:
+
+``` bash
+exit(99)
+```
+
+You can specify a message that's going to be outputted right
+before exiting:
+
+``` bash
+⧐  exit(99, "Got problems...")
+Got problems...
 ```
 
 ### flag(str)
@@ -235,12 +174,26 @@ Type 'quit' when you're done, 'help' if you get lost!
 STRING
 ```
 
-### sleep(ms)
+### pwd()
 
-Halts the process for as many `ms` you specified:
+Returns the path to the current working directory -- equivalent
+to `env("PWD")`. 
+
+If executed from a script this will initially be the directory
+containing the script.
+
+To change the working directory, see `cd()`.
 
 ``` bash
-sleep(1000) # sleeps for 1 second
+pwd() # /go/src/github.com/abs-lang/abs
+```
+
+### rand(max)
+
+Returns a random integer number between 0 and `max`:
+
+``` bash
+rand(10) # 7
 ```
 
 ### require(path_to_file.abs)
@@ -277,6 +230,14 @@ Note that `require` uses paths that are relative to
 the current script. Say that you have 2 files (`a.abs` and `b.abs`)
 in the `/tmp` folder, `a.abs` can `require("./b.abs")`
 without having to specify the full path (eg. `require("/tmp/b.abs")`).
+
+### sleep(ms)
+
+Halts the process for as many `ms` you specified:
+
+``` bash
+sleep(1000) # sleeps for 1 second
+```
 
 ### source(path_to_file.abs)
 
@@ -348,6 +309,45 @@ source("~/path/to/abs/lib")
 This will limit the source inclusion depth to 15 levels for this
 `source()` statement and will also apply to future `source()`
 statements until changed.
+
+### stdin()
+
+Reads from the `stdin`:
+
+``` bash
+echo("What do you like?")
+echo("Oh, you like %s!", stdin()) # This line will block until user enters some text
+```
+
+Worth to note that you can read
+the `stdin` indefinitely with:
+
+``` bash
+# Will read all input to the
+# stdin and output it back
+for input in stdin {
+    echo(input)
+}
+
+# Or from the REPL:
+
+⧐  for input in stdin { echo((input.int() / 2).str() + "...try again:")  }
+10
+5...try again:
+5
+2.5...try again:
+
+...
+```
+
+### type(var)
+
+Returns the type if the given variable:
+
+``` bash
+type("") # "STRING"
+type({}) # "HASH"
+```
 
 ### unix_ms()
 

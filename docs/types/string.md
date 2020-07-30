@@ -200,69 +200,21 @@ a\\nb\\nc
 ```
 ## Supported functions
 
-### len()
+### any(str)
 
-Returns the length of a string:
+Checks whether any of the characters in `str` are present in the string:
 
 ``` bash
-"hello world".len() # 11
+"string".any("abs") # true
+"string".any("xyz") # false
 ```
 
-### fmt()
+### camel()
 
-Formats a string ([sprintf convention](https://linux.die.net/man/3/sprintf)):
+Converts the string to camelCase:
 
-``` bash
-"hello %s".fmt("world") # "hello world"
-```
-
-### number()
-
-Converts a string to a number, if possible:
-
-``` bash
-"99.5".number() # 99.5
-"a".number() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
-```
-
-### is_number()
-
-Checks whether a string can be converted to a number:
-
-``` bash
-"99.5".is_number() # true
-"a".is_number() # false
-```
-
-Use this function when `"...".number()` might return an error.
-
-### int()
-
-Converts a string to a number, and then rounds it
-towards zero to the closest integer.
-The string must represent a number.
-
-``` bash
-"99.5".int() # 99
-"-99.5".int() # -99
-"a".int() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
-```
-
-### round(precision?)
-
-Converts a string to a number, and then rounds
-the number with the given precision.
-
-The precision argument is optional, and set to `0`
-by default.
-
-The string must represent a number.
-
-``` bash
-"10.3".round() # 10
-"10.6".round() # 11
-"10.333".round(1) # 10.3
-"a".round() # ERROR: round(...) can only be called on strings which represent numbers, 'a' given
+```bash
+"a short sentence".camel() # aShortSentence
 ```
 
 ### ceil()
@@ -291,22 +243,45 @@ The string must represent a number.
 "a".floor() # ERROR: floor(...) can only be called on strings which represent numbers, 'a' given
 ```
 
-### split(separator)
+### fmt()
 
-Splits a string by `separator`, defaulting to a single space:
-
-``` bash
-"1.2.3.4".split(".") # ["1", "2", "3", "4"]
-"1 2 3 4".split()    # ["1", "2", "3", "4"]
-```
-
-### lines()
-
-Splits a string by newline:
+Formats a string ([sprintf convention](https://linux.die.net/man/3/sprintf)):
 
 ``` bash
-"first\nsecond".lines() # ["first", "second"]
+"hello %s".fmt("world") # "hello world"
 ```
+
+### index(str)
+
+Returns the first index at which `str` is found:
+
+``` bash
+"string".index("t") # 1
+"string".index("ri") # 2
+```
+
+### int()
+
+Converts a string to a number, and then rounds it
+towards zero to the closest integer.
+The string must represent a number.
+
+``` bash
+"99.5".int() # 99
+"-99.5".int() # -99
+"a".int() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
+```
+
+### is_number()
+
+Checks whether a string can be converted to a number:
+
+``` bash
+"99.5".is_number() # true
+"a".is_number() # false
+```
+
+Use this function when `"...".number()` might return an error.
 
 ### json()
 
@@ -321,21 +296,54 @@ Parses the string as JSON, returning a [hash](/types/hash):
 {x: 10, y: 20}
 ```
 
-### str()
+### kebab()
 
-Identity:
+Converts the string to kebab-case:
 
-``` bash
-"string".str() # "string"
+```bash
+"a short sentence".snake() # a-short-sentence
 ```
 
-### any(str)
+### last_index(str)
 
-Checks whether any of the characters in `str` are present in the string:
+Returns the last index at which `str` is found:
 
 ``` bash
-"string".any("abc") # true
-"string".any("xyz") # false
+"string string".last_index("g") # 13
+"string string".last_index("ri") # 9
+```
+
+### len()
+
+Returns the length of a string:
+
+``` bash
+"hello world".len() # 11
+```
+
+### lines()
+
+Splits a string by newline:
+
+``` bash
+"first\nsecond".lines() # ["first", "second"]
+```
+
+### lower()
+
+Lowercases the string:
+
+``` bash
+"STRING".lower() # "string"
+```
+
+### number()
+
+Converts a string to a number, if possible:
+
+``` bash
+"99.5".number() # 99.5
+"a".number() # ERROR: int(...) can only be called on strings which represent numbers, 'a' given
 ```
 
 ### prefix(str)
@@ -345,15 +353,6 @@ Checks whether the string starts with `str`:
 ``` bash
 "string".prefix("str") # true
 "string".prefix("abc") # false
-```
-
-### suffix(str)
-
-Checks whether the string ends with `str`:
-
-``` bash
-"string".suffix("ing") # true
-"string".suffix("ong") # false
 ```
 
 ### repeat(i)
@@ -376,13 +375,6 @@ If `n` is omitted or negative, it will replace all occurrences:
 "A man, a plan, a canal, Panama!".replace("a ", "ur-") # "A man, ur-plan, ur-canal, Panama!"
 ```
 
-You can also replace an array of strings:
-
-``` bash
-"string".replace(["i", "g"], "o") # "strono"
-"A man, a plan, a canal, Panama!".replace(["a ", "l"], "ur-") # "A man, ur-pur-an, ur-canaur-, Panama!"
-```
-
 ### reverse()
 
 Returns a new string with the order of characters/glyphs reversed from the
@@ -393,28 +385,70 @@ source.
 "世界".reverse() # "界世"
 ```
 
+### round(precision?)
+
+Converts a string to a number, and then rounds
+the number with the given precision.
+
+The precision argument is optional, and set to `0`
+by default.
+
+The string must represent a number.
+
+``` bash
+"10.3".round() # 10
+"10.6".round() # 11
+"10.333".round(1) # 10.3
+"a".round() # ERROR: round(...) can only be called on strings which represent numbers, 'a' given
+```
+
+You can also replace an array of strings:
+
+``` bash
+"string".replace(["i", "g"], "o") # "strono"
+"A man, a plan, a canal, Panama!".replace(["a ", "l"], "ur-") # "A man, ur-pur-an, ur-canaur-, Panama!"
+```
+
+### snake()
+
+Converts the string to snake_case:
+
+```bash
+"a short sentence".snake() # a_short_sentence
+```
+
+### split(separator)
+
+Splits a string by `separator`, defaulting to a single space:
+
+``` bash
+"1.2.3.4".split(".") # ["1", "2", "3", "4"]
+"1 2 3 4".split()    # ["1", "2", "3", "4"]
+```
+
+### str()
+
+Identity:
+
+``` bash
+"string".str() # "string"
+```
+
+### suffix(str)
+
+Checks whether the string ends with `str`:
+
+``` bash
+"string".suffix("ing") # true
+"string".suffix("ong") # false
+```
+
 ### title()
 
 Titlecases the string:
 
 ``` bash
 "hello world".title() # "Hello World"
-```
-
-### lower()
-
-Lowercases the string:
-
-``` bash
-"STRING".lower() # "string"
-```
-
-### upper()
-
-Uppercases the string:
-
-``` bash
-"string".upper() # "STRING"
 ```
 
 ### trim()
@@ -434,47 +468,12 @@ Removes `str` from the beginning and end of the string:
 "stringest".trim_by("st") # "ringe"
 ```
 
-### index(str)
+### upper()
 
-Returns the first index at which `str` is found:
-
-``` bash
-"string".index("t") # 1
-"string".index("ri") # 2
-```
-
-### last_index(str)
-
-Returns the last index at which `str` is found:
+Uppercases the string:
 
 ``` bash
-"string string".last_index("g") # 13
-"string string".last_index("ri") # 9
-```
-
-### camel()
-
-Converts the string to camelCase:
-
-```bash
-"a short sentence".camel() # aShortSentence
-```
-
-### snake()
-
-Converts the string to snake_case:
-
-```bash
-"a short sentence".snake() # a_short_sentence
-```
-
-
-### kebab()
-
-Converts the string to kebab-case:
-
-```bash
-"a short sentence".snake() # a-short-sentence
+"string".upper() # "STRING"
 ```
 
 ## Next

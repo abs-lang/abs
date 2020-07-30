@@ -60,33 +60,6 @@ underscores that can be used (eg. `10__________0 == 100`).
 
 ## Supported functions
 
-### number()
-
-Identity:
-
-``` bash
-99.5.number() # 99.5
-```
-
-### int()
-
-Rounds the number towards zero to the closest integer:
-
-``` bash
-10.3.int() # 10
--10.3.int() # -10
-```
-
-### round([precision])
-
-Rounds the number with the given `precision` (default 0):
-
-``` bash
-10.3.round() # 10
-10.6.round() # 11
-10.333.round(1) # 10.3
-```
-
 ### between(min, max)
 
 Checks whether the number is between `min` and `max`:
@@ -124,6 +97,33 @@ Rounds the number down to the closest integer:
 ``` bash
 10.9.floor() # 10
 -10.9.floor() # -11
+```
+
+### int()
+
+Rounds the number towards zero to the closest integer:
+
+``` bash
+10.3.int() # 10
+-10.3.int() # -10
+```
+
+### number()
+
+Identity:
+
+``` bash
+99.5.number() # 99.5
+```
+
+### round([precision])
+
+Rounds the number with the given `precision` (default 0):
+
+``` bash
+10.3.round() # 10
+10.6.round() # 11
+10.333.round(1) # 10.3
 ```
 
 ### str()
