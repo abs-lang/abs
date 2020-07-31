@@ -1,9 +1,11 @@
 package repl
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -228,6 +230,13 @@ func BeginRepl(args []string, version string) {
 			panic(err)
 		}
 		fmt.Printf("Hello %s, welcome to the ABS (%s) programming language!\n", user.Username, version)
+		// check for new version about 10% of the time,
+		// to avoid too many hangups
+		if r, e := rand.Int(rand.Reader, big.NewInt(100)); e == nil && r.Int64() < 10 {
+			if newver, update := util.UpdateAvailable(version); update {
+				fmt.Printf("*** Update available: %s ***\n", newver)
+			}
+		}
 		fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")
 		Start(os.Stdin, os.Stdout)
 	} else {
