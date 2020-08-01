@@ -221,6 +221,10 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() ast.Statement {
+	if p.curToken.Type == token.COMMENT {
+		return nil
+	}
+
 	if p.curToken.Type == token.RETURN {
 		return p.parseReturnStatement()
 	}
