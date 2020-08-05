@@ -234,7 +234,7 @@ func BeginRepl(args []string, version string) {
 		// to avoid too many hangups
 		if r, e := rand.Int(rand.Reader, big.NewInt(100)); e == nil && r.Int64() < 10 {
 			if newver, update := util.UpdateAvailable(version); update {
-				fmt.Printf("*** Update available: %s ***\n", newver)
+				fmt.Printf("*** Update available: %s (your version is %s) ***\n", newver, version)
 			}
 		}
 		fmt.Printf("Type 'quit' when you're done, 'help' if you get lost!\n")

@@ -22,7 +22,7 @@ func main() {
 
 	if len(args) == 2 && args[1] == "--check-update" {
 		if newver, update := util.UpdateAvailable(Version); update {
-			fmt.Printf("Update available: %s (you have %s)\n", newver, Version)
+			fmt.Printf("Update available: %s (your version is %s)\n", newver, Version)
 			os.Exit(1)
 		} else {
 			return
