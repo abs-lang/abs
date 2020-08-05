@@ -138,9 +138,10 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '/':
 		if l.peekChar() == '/' {
-			tok.Type = token.COMMENT
-			tok.Position = l.position
-			tok.Literal = l.readLine()
+			// comment chunk - skip it
+			_ = l.readLine()
+			l.readChar()
+			return l.NextToken()
 		} else if l.peekChar() == '=' {
 			tok.Type = token.COMP_SLASH
 			tok.Position = l.position
@@ -150,9 +151,10 @@ func (l *Lexer) NextToken() token.Token {
 			tok = l.newToken(token.SLASH)
 		}
 	case '#':
-		tok.Type = token.COMMENT
-		tok.Position = l.position
-		tok.Literal = l.readLine()
+		// comment chunk - skip it
+		_ = l.readLine()
+		l.readChar()
+		return l.NextToken()
 	case '&':
 		if l.peekChar() == '&' {
 			tok.Type = token.AND

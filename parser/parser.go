@@ -109,7 +109,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LBRACKET, p.ParseArrayLiteral)
 	p.registerPrefix(token.LBRACE, p.ParseHashLiteral)
 	p.registerPrefix(token.COMMAND, p.parseCommand)
-	p.registerPrefix(token.COMMENT, p.parseComment)
 	p.registerPrefix(token.BREAK, p.parseBreak)
 	p.registerPrefix(token.CONTINUE, p.parseContinue)
 	p.registerPrefix(token.CURRENT_ARGS, p.parseCurrentArgsLiteral)

@@ -286,8 +286,6 @@ f hello(x, y) {
 		{token.IDENT, "a"},
 		{token.DOT, "."},
 		{token.IDENT, "prop"},
-		{token.COMMENT, "# Comment"},
-		{token.COMMENT, "// Comment"},
 		{token.IDENT, "hello"},
 		{token.COMMAND, "command; command"},
 		{token.COMMAND, "command2; command2"},

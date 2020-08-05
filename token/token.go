@@ -10,7 +10,6 @@ const (
 	IDENT        = "IDENT"  // add, foobar, x, y, ...
 	NUMBER       = "NUMBER" // 1343456, 1.23456
 	STRING       = "STRING" // "foobar"
-	COMMENT      = "#"      // # Comment
 	AT           = "@"      // @ At symbol
 	NULL         = "NULL"   // # null
 	CURRENT_ARGS = "..."    // # ... function args
