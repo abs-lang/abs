@@ -1135,7 +1135,7 @@ func fmtFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	list := []interface{}{}
 
 	for _, s := range args[1:] {
-		list = append(list, s.Inspect())
+		list = append(list, s.Raw())
 	}
 
 	return &object.String{Token: tok, Value: fmt.Sprintf(args[0].(*object.String).Value, list...)}
