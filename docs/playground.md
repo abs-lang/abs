@@ -13,26 +13,18 @@ without having to download and install it in your system.
 <script src="/wasm_exec.js"></script>
 
 <script>
-  if (!WebAssembly.instantiateStreaming) {
-    // polyfill
-    WebAssembly.instantiateStreaming = async (resp, importObject) => {
-      const source = await (await resp).arrayBuffer();
-      return await WebAssembly.instantiate(source, importObject);
-    };
-  }
-
   const go = new Go();
-
   let mod, inst;
 
-  WebAssembly.instantiateStreaming(fetch("/abs.wasm"), go.importObject).then(
-    async result => {
-      mod = result.module;
-      inst = result.instance;
-      // document.getElementById("runButton").disabled = false;
-      await go.run(inst);
-    }
-  );
+  async function fetch_wasm_module() {
+    const response = await fetch("/abs.wasm");
+    const buffer = await response.arrayBuffer();
+    const obj = await WebAssembly.instantiate(buffer, go.importObject);
+    mod = obj.module;
+    inst = obj.instance;
+    await go.run(inst);
+  }
+  fetch_wasm_module()
 
   function run() {
     var editor = ace.edit("editor");
