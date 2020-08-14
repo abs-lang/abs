@@ -28,6 +28,9 @@
 # "netbsd/386",
 # "netbsd/amd64",
 # "netbsd/arm"
+#
+# dropped by Go
+# "darwin/386",
 
 platforms = [
     "linux/386",
@@ -41,7 +44,6 @@ platforms = [
     "windows/amd64",
     "windows/386",
     "darwin/amd64",
-    "darwin/386",
     "js/wasm"
 ]
 
