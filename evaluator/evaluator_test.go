@@ -520,6 +520,30 @@ func TestReturnStatements(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		{`
+if false {
+	return
+}		
+return 3
+`, 3},
+		{`
+if true {
+	return
+}		
+return 3
+`, nil},
+		{`
+if false {
+	return;
+}		
+return 3
+`, 3},
+		{`
+if true {
+	return;
+}		
+return 3
+`, nil},
 		{"return;", nil},
 		{"return", nil},
 		{"return 1", 1},

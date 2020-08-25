@@ -346,16 +346,15 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 	returnToken := p.curToken
 
-	p.nextToken()
-
 	// return;
-	if p.curTokenIs(token.SEMICOLON) {
+	if p.peekTokenIs(token.SEMICOLON) {
 		stmt.ReturnValue = &ast.NullLiteral{Token: p.curToken}
-	} else if p.curTokenIs(token.RBRACE) || p.curTokenIs(token.EOF) {
+	} else if p.peekTokenIs(token.RBRACE) || p.peekTokenIs(token.EOF) {
 		// return
 		stmt.ReturnValue = &ast.NullLiteral{Token: returnToken}
 	} else {
 		// return xyz
+		p.nextToken()
 		stmt.ReturnValue = p.parseExpression(LOWEST)
 	}
 
