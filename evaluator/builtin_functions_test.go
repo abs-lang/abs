@@ -582,8 +582,8 @@ func TestClamp(t *testing.T) {
 func TestCamel(t *testing.T) {
 	tests := []Tests{
 		{`"long cool woman in a black dress".camel()`, "longCoolWomanInABlackDress"},
-		{`"  long cool woman in a black dress   ".camel()`, "longCoolWomanInABlackDress"},
-		{`"  long cool woman in a_black dress   ".camel()`, "longCoolWomanInABlackDress"},
+		{`"long cool woman in a black dress   ".camel()`, "longCoolWomanInABlackDress"},
+		{`"long cool woman in a_black dress   ".camel()`, "longCoolWomanInABlackDress"},
 	}
 
 	testBuiltinFunction(tests, t)
