@@ -1935,13 +1935,16 @@ func reverseFn(tok token.Token, env *object.Environment, args ...object.Object) 
 
 	if spec == 0 {
 		// array
-		array := args[0].(*object.Array)
+		elements := args[0].(*object.Array).Elements
+		length := len(elements)
+		newElements := make([]object.Object, length, length)
+		copy(newElements, elements)
 
-		for i, j := 0, len(array.Elements)-1; i < j; i, j = i+1, j-1 {
-			array.Elements[i], array.Elements[j] = array.Elements[j], array.Elements[i]
+		for i, j := 0, len(newElements)-1; i < j; i, j = i+1, j-1 {
+			newElements[i], newElements[j] = newElements[j], newElements[i]
 		}
 
-		return array
+		return &object.Array{Elements: newElements}
 	} else {
 		// string
 		str := []rune(args[0].(*object.String).Value)
