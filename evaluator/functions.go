@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/big"
+	mrand "math/rand"
 	"os"
 	"os/exec"
 	"os/user"
@@ -366,6 +367,11 @@ func getFns() map[string]*object.Builtin {
 		"reverse": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn:    reverseFn,
+		},
+		// shuffle([1,2,3])
+		"shuffle": &object.Builtin{
+			Types: []string{object.ARRAY_OBJ},
+			Fn:    shuffleFn,
 		},
 		// push([1,2,3], 4)
 		"push": &object.Builtin{
@@ -1946,6 +1952,25 @@ func reverseFn(tok token.Token, env *object.Environment, args ...object.Object) 
 
 		return &object.String{Token: tok, Value: string(str)}
 	}
+}
+
+// shuffle([1,2,3])
+func shuffleFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "shuffle", args, 1, [][]string{{object.ARRAY_OBJ}})
+
+	if err != nil {
+		return err
+	}
+
+	array := args[0].(*object.Array)
+	length := len(array.Elements)
+	newElements := make([]object.Object, length, length)
+	copy(newElements, array.Elements)
+
+	mrand.Seed(time.Now().UnixNano())
+	mrand.Shuffle(len(newElements), func(i, j int) { newElements[i], newElements[j] = newElements[j], newElements[i] })
+
+	return &object.Array{Elements: newElements}
 }
 
 // push([1,2,3], 4)
