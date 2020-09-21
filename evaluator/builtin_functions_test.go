@@ -385,6 +385,16 @@ func TestReverse(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestShuffle(t *testing.T) {
+	tests := []Tests{
+		{`(1..1000).shuffle().str() != (1..1000).str();`, true},
+		{`(1..1000).shuffle().len() == (1..1000).len();`, true},
+		{`(1..1000).shuffle().sort().str() == (1..1000).str();`, true},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func TestPush(t *testing.T) {
 	tests := []Tests{
 		{`[1, 2].push("a");`, []interface{}{1, 2, "a"}},

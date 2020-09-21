@@ -350,6 +350,15 @@ a.shift() # 1
 a # [2, 3]
 ```
 
+### shuffle()
+
+Shuffles elements in the array:
+
+``` py
+a = [1, 2, 3, 4]
+a.shuffle() # [3, 1, 2, 4]
+```
+
 ### some(f)
 
 Returns true when at least one of the elements in the array
