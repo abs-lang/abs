@@ -116,6 +116,9 @@ f hello(x, y) {
 @decorator
 @decorator()
 ...
+1 !in []
+!in_variable_named_in
+!i
 `
 
 	tests := []struct {
@@ -403,6 +406,14 @@ f hello(x, y) {
 		{token.LPAREN, "("},
 		{token.RPAREN, ")"},
 		{token.CURRENT_ARGS, "..."},
+		{token.NUMBER, "1"},
+		{token.NOT_IN, "!in"},
+		{token.LBRACKET, "["},
+		{token.RBRACKET, "]"},
+		{token.BANG, "!"},
+		{token.IDENT, "in_variable_named_in"},
+		{token.BANG, "!"},
+		{token.IDENT, "i"},
 		{token.EOF, ""},
 	}
 

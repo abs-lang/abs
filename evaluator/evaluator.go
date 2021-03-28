@@ -566,6 +566,8 @@ func evalInfixExpression(
 		return evalHashInfixExpression(tok, operator, left, right)
 	case operator == "in":
 		return evalInExpression(tok, left, right)
+	case operator == "!in":
+		return evalNotInExpression(tok, left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
@@ -715,6 +717,10 @@ func evalStringInfixExpression(
 		return evalInExpression(tok, left, right)
 	}
 
+	if operator == "!in" {
+		return evalNotInExpression(tok, left, right).(*object.Boolean)
+	}
+
 	if operator == ">" {
 		err := writeFile(rightVal, leftVal)
 
@@ -831,6 +837,12 @@ func evalInExpression(tok token.Token, left, right object.Object) object.Object 
 	}
 
 	return &object.Boolean{Token: tok, Value: found}
+}
+
+func evalNotInExpression(tok token.Token, left, right object.Object) object.Object {
+	obj := evalInExpression(tok, left, right).(*object.Boolean)
+	obj.Value = !obj.Value
+	return obj
 }
 
 func evalIfExpression(

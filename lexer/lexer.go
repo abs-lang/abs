@@ -126,6 +126,11 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			literal := string(ch) + string(l.ch)
 			tok.Literal = literal
+		} else if l.peekChars(3) == "in " {
+			tok = l.newToken(token.NOT_IN)
+			l.readChar()
+			l.readChar()
+			tok.Literal = "!in"
 		} else {
 			tok = l.newToken(token.BANG)
 		}
@@ -361,6 +366,13 @@ func (l *Lexer) readIdentifier() string {
 		l.readChar()
 	}
 	return string(l.input[position:l.position])
+}
+
+func (l *Lexer) peekChars(amount int) string {
+	if l.readPosition+amount >= len(l.input) {
+		return ""
+	}
+	return string(l.input[l.readPosition : l.readPosition+amount])
 }
 
 // List of character that can appear in a "number"
