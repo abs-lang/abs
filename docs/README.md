@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://travis-ci.com/abs-lang/abs"><img alt="Travis Status" src="https://travis-ci.com/abs-lang/abs.svg?branch=master"></a>
+  <a href="https://github.com/abs-lang/abs"><img alt="GitHub branch checks state" src="https://img.shields.io/github/checks-status/abs-lang/abs/master"></a>
   <a href="https://github.com/abs-lang/abs"><img alt="License" src="https://img.shields.io/github/license/abs-lang/abs.svg"></a>
   <a href="https://github.com/abs-lang/abs"><img alt="Version" src="https://img.shields.io/github/release-pre/abs-lang/abs.svg"></a>
   <img href="https://github.com/abs-lang/abs/releases" alt="undefined" src="https://img.shields.io/github/release-date/abs-lang/abs.svg?style=flat">
