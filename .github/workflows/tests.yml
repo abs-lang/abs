@@ -1,0 +1,59 @@
+name: tests
+
+# Run this workflow every time a new commit pushed to your repository
+on: push
+
+jobs:
+  linux:
+    name: Run tests on linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.0'
+      - name: run tests
+        run: |
+          go test `go list ./... | grep -v "/js"` -vet=off -v -covermode=count -coverprofile=coverage.out
+          go get -u github.com/jandelgado/gcov2lcov
+          cat coverage.out | gcov2lcov > coverage.lcov
+        env:
+          CONTEXT: abs
+      - name: coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./coverage.lcov
+  win:
+    name: Run tests on windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.0'
+      - name: run tests
+        run: |
+          rm ./js*
+          go test ./...
+        env:
+          CONTEXT: abs
+  macos:
+    name: Run tests on macos
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.0'
+      - name: run tests
+        run: |
+          go test `go list ./... | grep -v "/js"`
+        env:
+          CONTEXT: abs
