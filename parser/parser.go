@@ -24,6 +24,7 @@ const (
 	INDEX       // array[index]
 	QUESTION    // some?.function() or some?.property
 	DOT         // some.function() or some.property
+	HIGHEST     // special preference for -x or +y
 )
 
 var precedences = map[token.TokenType]int{
@@ -97,6 +98,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.STRING, p.ParseStringLiteral)
 	p.registerPrefix(token.NULL, p.ParseNullLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
+	p.registerPrefix(token.PLUS, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.TILDE, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.ParseBoolean)
@@ -115,10 +117,10 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.AT, p.parseDecorator)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
-	p.registerInfix(token.QUESTION, p.parseQuestionExpression)
-	p.registerInfix(token.DOT, p.parseDottedExpression)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
+	p.registerInfix(token.QUESTION, p.parseQuestionExpression)
+	p.registerInfix(token.DOT, p.parseDottedExpression)
 	p.registerInfix(token.SLASH, p.parseInfixExpression)
 	p.registerInfix(token.EXPONENT, p.parseInfixExpression)
 	p.registerInfix(token.MODULO, p.parseInfixExpression)
@@ -380,6 +382,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
+
 	if prefix == nil {
 		p.noPrefixParseFnError(p.curToken)
 		return nil
@@ -465,9 +468,18 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 		Token:    p.curToken,
 		Operator: p.curToken.Literal,
 	}
+	precedence := PREFIX
 
+	// When +- are used as prefixes, we want them to have
+	// the highest priority, so that -5.clamp(4, 5) is read
+	// as (-5).clamp(4, 5) = 4 instead of
+	// -(5.clamp(4,5)) = -5
+	if p.curTokenIs(token.PLUS) || p.curTokenIs(token.MINUS) {
+		precedence = HIGHEST
+	}
 	p.nextToken()
-	expression.Right = p.parseExpression(PREFIX)
+
+	expression.Right = p.parseExpression(precedence)
 
 	return expression
 }
