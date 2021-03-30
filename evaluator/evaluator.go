@@ -506,6 +506,8 @@ func evalPrefixExpression(tok token.Token, operator string, right object.Object)
 		return evalBangOperatorExpression(right)
 	case "-":
 		return evalMinusPrefixOperatorExpression(tok, right)
+	case "+":
+		return evalPlusPrefixOperatorExpression(tok, right)
 	case "~":
 		return evalTildePrefixOperatorExpression(tok, right)
 	default:
@@ -599,6 +601,14 @@ func evalMinusPrefixOperatorExpression(tok token.Token, right object.Object) obj
 
 	value := right.(*object.Number).Value
 	return &object.Number{Value: -value}
+}
+
+func evalPlusPrefixOperatorExpression(tok token.Token, right object.Object) object.Object {
+	if right.Type() != object.NUMBER_OBJ {
+		return newError(tok, "unknown operator: +%s", right.Type())
+	}
+
+	return right
 }
 
 func evalNumberInfixExpression(
