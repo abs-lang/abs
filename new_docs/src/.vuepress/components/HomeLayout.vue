@@ -66,7 +66,7 @@ export default {
 };
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
 .home {
   padding: $navbarHeight 2rem 0;
   max-width: $homePageWidth;
