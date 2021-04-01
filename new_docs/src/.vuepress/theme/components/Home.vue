@@ -3,8 +3,6 @@
     class="home"
     :aria-labelledby="data.heroText !== null ? 'main-title' : null"
   >
-    <Navbar />
-
     <header class="hero">
       <img
         v-if="data.heroImage"
@@ -25,19 +23,17 @@
       </p>
     </header>
 
-    <div class="feature-wrapper">
-      <div v-if="data.features && data.features.length" class="features">
-        <div
-          v-for="(feature, index) in data.features"
-          :key="index"
-          class="feature"
-        >
-          <h2>{{ feature.title }}</h2>
-          <p>{{ feature.details }}</p>
-        </div>
+    <div v-if="data.features && data.features.length" class="features">
+      <div
+        v-for="(feature, index) in data.features"
+        :key="index"
+        class="feature"
+      >
+        <h2>{{ feature.title }}</h2>
+        <p>{{ feature.details }}</p>
       </div>
-      <Content slot-key="sample-code" />
     </div>
+
     <Content class="theme-default-content custom" />
 
     <div v-if="data.footer" class="footer">
@@ -47,11 +43,10 @@
 </template>
 
 <script>
-import Navbar from "@theme/components/Navbar.vue";
 import NavLink from "@theme/components/NavLink.vue";
 export default {
   name: "Home",
-  components: { NavLink, Navbar },
+  components: { NavLink },
   computed: {
     data() {
       return this.$page.frontmatter;
@@ -115,16 +110,11 @@ export default {
     }
   }
 
-  .feature-wrapper {
+  .features {
+    border-top: 1px solid $borderColor;
     padding: 1.2rem 0;
     margin-top: 2.5rem;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-  }
-
-  .features {
     display: flex;
-    flex-direction: column;
     flex-wrap: wrap;
     align-items: flex-start;
     align-content: stretch;
@@ -133,6 +123,8 @@ export default {
 
   .feature {
     flex-grow: 1;
+    flex-basis: 30%;
+    max-width: 30%;
 
     h2 {
       font-size: 1.4rem;
