@@ -1,0 +1,19 @@
+{
+  "name": "abs-lang.org",
+  "version": "0.0.1",
+  "description": "Home of the ABS programming language - the joy of shell scripting.",
+  "main": "index.js",
+  "authors": {
+    "name": "Alex",
+    "email": "alex@gmail.com"
+  },
+  "repository": "https://github.com/abs-lang/abs-lang.org",
+  "scripts": {
+    "dev": "vuepress dev src",
+    "build": "vuepress build src"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vuepress": "^1.5.3"
+  }
+}

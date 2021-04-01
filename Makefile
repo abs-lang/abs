@@ -23,5 +23,7 @@ release: build_simple
 travis: test
 docs:
 	cd docs && bundle exec jekyll serve
+docs_new:
+	cd new_docs && npm i && npm run dev
 wasm:
 	GOOS=js GOARCH=wasm go build -o docs/abs.wasm js/js.go
