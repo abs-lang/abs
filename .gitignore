@@ -1,9 +1,12 @@
 docs/_site
+new_docs/**/dist
 *.ignore
 test-ignore-*
+node_modules
 vendor
 builds/*
 !builds/.gitkeep
 .idea/
 .vscode/
+.DS_Store
 packages.abs.json
