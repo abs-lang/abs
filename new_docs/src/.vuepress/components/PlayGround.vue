@@ -8,15 +8,16 @@
           v-model="code"
           language="shell"
           :options="options"
+          @editorDidMount="editorDidMount"
         />
         <div class="results">
           <h4>Output</h4>
-          <div class="output-shell">result</div>
+          <pre class="output-shell" v-text="out"></pre>
           <h4>Result</h4>
-          <div class="output-shell">Result</div>
+          <pre class="output-shell" v-text="result"></pre>
         </div>
         <div class="button-wrapper">
-          <button class="run-button">RUN</button>
+          <button class="run-button" @click="run">RUN</button>
         </div>
       </div>
       <p>
@@ -37,13 +38,52 @@
 <script>
 import MonacoEditor from "vue-monaco";
 
+let mod, inst, go;
+
+async function fetch_wasm_module() {
+  const response = await fetch("/abs.wasm");
+  const buffer = await response.arrayBuffer();
+  const obj = await WebAssembly.instantiate(buffer, go.importObject);
+  mod = obj.module;
+  inst = obj.instance;
+  await go.run(inst);
+}
+
 export default {
   components: {
     MonacoEditor,
   },
+  beforeCreate() {
+    let s = document.createElement("script");
+    s.setAttribute("type", "application/javascript");
+    s.setAttribute("src", "/wasm_exec.js");
+    s.onload = function load() {
+      go = new Go();
+      fetch_wasm_module();
+    };
+    document.body.appendChild(s);
+  },
+  methods: {
+    editorDidMount(editor) {
+      setTimeout(() => {
+        this.run();
+      }, 1000);
+    },
+    run() {
+      if (!go) {
+        go = new Go();
+        fetch_wasm_module();
+      }
+      let { out, result } = abs_run_code(this.code);
+      this.out = out;
+      this.result = result;
+    },
+  },
 
   data() {
     return {
+      out: "",
+      result: "",
       code: `
 lebron = {
   "id": 23, 
@@ -62,7 +102,7 @@ for nickname in lebron.nicknames {
 return lebron.id
       `,
       options: {
-        fontSize: 13,
+        fontSize: 12.5,
         minimap: {
           enabled: false,
         },
@@ -85,7 +125,7 @@ return lebron.id
   border-bottom: 2px solid #ccc;
   border: 2px solid #eee;
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.5fr 1fr;
   grid-template-rows: 1fr 50px;
   box-shadow: 0 0 10px #eee inset;
   padding: 3px;
@@ -105,9 +145,6 @@ return lebron.id
   padding: 5px 15px;
   cursor: pointer;
   font-weight: bold;
-}
-.editor {
-  width: 500px;
 }
 .output-shell {
   padding: 20px;
