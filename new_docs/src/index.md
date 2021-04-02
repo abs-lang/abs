@@ -3,7 +3,7 @@ home: true
 heroImage: /abs-horizontal.png
 tagline: "Bring back the joy of shell scripting."
 actionText: Quick Start →
-actionLink: /introduction/
+actionLink: /quickstart/
 features:
   - title: A familiar syntax
     details: "ABS should look familiar to most of us: its elements are borrowed from popular programming languages such as Ruby, Python or JavaScript"

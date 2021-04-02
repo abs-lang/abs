@@ -2,6 +2,11 @@
   <div class="wrapper">
     <div class="message">
       <h3>ABS Playground</h3>
+      <p>
+        This is a playground for you to test ABS code directly in the browser:
+        you can execute code by either pressing <code>Ctrl+Enter</code> or
+        clicking on the button right below the editor.
+      </p>
       <div class="editor-wrapper">
         <MonacoEditor
           class="editor"
@@ -9,6 +14,7 @@
           language="shell"
           :options="options"
           @editorDidMount="editorDidMount"
+          ref="editor"
         />
         <div class="results">
           <h4>Output</h4>
@@ -21,12 +27,7 @@
         </div>
       </div>
       <p>
-        This is a playground for you to test ABS code directly in the browser:
-        you can execute code by either pressing <code>Ctrl+Enter</code> or
-        clicking on the button right below the editor.
-      </p>
-      <p>
-        Please note that <strong class="red">system commands</strong> like
+        Please note that <a href="/syntax/system-commands/">system commands</a> like
         <code>ls -la</code> do not work as this code is running directly in your
         browser and not on a server, but you can still explore ABS’ syntax
         without having to download and install it in your system.
@@ -62,12 +63,39 @@ export default {
       fetch_wasm_module();
     };
     document.body.appendChild(s);
+
   },
   methods: {
-    editorDidMount(editor) {
-      setTimeout(() => {
-        this.run();
-      }, 1000);
+    editorDidMount() {
+      let run_code = this.run
+      this.$refs.editor.getEditor().addAction({
+        // An unique identifier of the contributed action.
+        id: 'my-unique-id',
+
+        // A label of the action that will be presented to the user.
+        label: 'My Label!!!',
+
+        // An optional array of keybindings for the action.
+        keybindings: [
+          monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+        ],
+
+        // A precondition for this action.
+        precondition: null,
+
+        // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+        keybindingContext: null,
+
+        contextMenuGroupId: 'navigation',
+
+        contextMenuOrder: 1.5,
+
+        // Method that will be executed when the action is triggered.
+        // @param editor The editor instance is passed in as a convinience
+        run: function(ed) {
+          run_code()
+        }
+      });
     },
     run() {
       if (!go) {
@@ -82,9 +110,9 @@ export default {
 
   data() {
     return {
-      out: "",
-      result: "",
-      code: `
+      out: `Here is where everything that's outputted from the script will appear. Try running "echo(123)"!`,
+      result: `Here is where the return value of the script will appear. Try running "return 42"!`,
+      code: `# Try pressing ctrl + enter
 lebron = {
   "id": 23, 
   "name": "LeBron James", 
@@ -103,6 +131,7 @@ return lebron.id
       `,
       options: {
         fontSize: 12.5,
+        fontFamily: "Source Code Pro",
         minimap: {
           enabled: false,
         },
@@ -155,6 +184,8 @@ return lebron.id
   margin-right: 10px;
   font-size: 12px;
   height: 120px;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 .results {
   display: grid;
@@ -163,5 +194,13 @@ return lebron.id
 }
 .results h4 {
   margin: 0;
+}
+
+pre {
+    white-space: pre-wrap;       /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 </style>
