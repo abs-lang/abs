@@ -390,9 +390,3 @@ Bitwise left shift:
 1 << 1 # 2
 1 << "hello" # ERROR: type mismatch: NUMBER << STRING
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [commenting code](/syntax/comments).
