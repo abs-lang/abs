@@ -26,14 +26,8 @@ func(9) # 10
 
 The default value of a `return` is `null`:
 
-```
+```bash
 if x {
     return # null
 }
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [if expressions](/syntax/if).

@@ -121,9 +121,3 @@ v4r14ble = 1
 世界 = 1
 世界_that_was_unicode = 1
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [returning values](/syntax/return).

@@ -19,9 +19,3 @@ while x < 100 {
 
 echo(x) # 99
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [system (or shell) commands](/syntax/system-commands).

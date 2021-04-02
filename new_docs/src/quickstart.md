@@ -1,7 +1,7 @@
 # Quickstart
 
-In order to run programs written in abs, you can simply download
-the latest release of ABS from Github, and dump the ABS executable
+In order to run programs written in abs, you can simply [download
+the latest release](https://github.com/abs-lang/abs/releases) of ABS from Github, and dump the ABS executable
 in your `PATH`. Windows, OSX and a few Linux flavors are supported.
 
 We also provide a 1-command installer that should work across

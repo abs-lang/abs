@@ -5,7 +5,7 @@ permalink: /syntax/system-commands
 # System (shell) commands
 
 Executing system commands is one of the most important features
-of ABS, as it allows the mixing of conveniency of the shell with
+of ABS, as it allows mixing the conveniency of the shell with
 the syntax of a modern programming language.
 
 Commands are executed with the `` `command` `` syntax,
@@ -29,7 +29,7 @@ manually to understand if a command executed without errors;
 in ABS, the returned string has a special property `ok` that
 checks whether the command was successful:
 
-```bash
+```js
 if `ls -la`.ok {
     echo("hello world")
 }
@@ -190,9 +190,3 @@ requires the `bash` executable to [be available on the system](https://github.co
 On Windows, commands are executed through [cmd.exe](https://github.com/abs-lang/abs/blob/ee793641be09ad8572c3e913fef8468f69b0c0a2/evaluator/evaluator.go#L1101-L1103).
 Future work will make it possible to select which shell to use,
 as well as bypassing the shell altogether (see [#73](https://github.com/abs-lang/abs/issues/73)).
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [operators](/syntax/operators).

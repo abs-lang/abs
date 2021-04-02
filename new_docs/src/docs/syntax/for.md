@@ -152,9 +152,3 @@ for user in users {
   print("We don't have students above the age of 20")
 }
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [while loops](/syntax/while).

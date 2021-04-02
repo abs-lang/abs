@@ -32,9 +32,3 @@ if (x > 0) {
     echo("hello world")
 }
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [for loops](/syntax/for).
