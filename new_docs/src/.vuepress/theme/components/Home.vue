@@ -24,13 +24,43 @@
     </header>
 
     <div v-if="data.features && data.features.length" class="features">
-      <div
-        v-for="(feature, index) in data.features"
-        :key="index"
-        class="feature"
-      >
-        <h2>{{ feature.title }}</h2>
-        <p>{{ feature.details }}</p>
+      <div class="feature">
+        <h2>A familiar syntax</h2>
+        <p>ABS should look familiar to most of us: its elements are borrowed from popular programming languages such as Ruby, Python or JavaScript</p>
+        <pre class="language-markup" tabindex="0"><code class="  language-clike">obj <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span> 
+<span class="token keyword">for</span> n <span class="token keyword">in</span> <span class="token number">1.</span><span class="token number">.10</span> <span class="token punctuation">{</span>     
+  <span class="token keyword">if</span> n <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token punctuation">{</span> 
+    obj<span class="token punctuation">[</span>n<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">rand</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token operator">*</span><span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span> 
+<span class="token function">echo</span><span class="token punctuation">(</span><span class="token string">"We have %s"</span><span class="token punctuation">,</span> obj<span class="token punctuation">)</span>  
+# <span class="token punctuation">{</span><span class="token string">"10"</span><span class="token punctuation">:</span> <span class="token number">79</span><span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">}</span></code></pre>
+      </div>
+
+      <div class="feature">
+        <h2>Scripting made easy</h2>
+        <p>System commands are deeply integrated (and encouraged) in scripts: they make ABS ideal to work with in the context of shell scripting</p>
+        <pre class="language-markup" tabindex="0"><code class="  language-javascript">ip <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">curl icanhazip.com</span><span class="token template-punctuation string">`</span></span>
+
+ip<span class="token punctuation">.</span>ok <span class="token comment">// true</span>
+ip <span class="token comment">// 1.2.3.4</span>
+
+<span class="token function">echo</span><span class="token punctuation">(</span><span class="token string">"type something..."</span><span class="token punctuation">)</span>
+input <span class="token operator">=</span> <span class="token function">stdin</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token function">echo</span><span class="token punctuation">(</span><span class="token string">"you typed %s",</span>input<span class="token punctuation">)</span></code></pre>
+      </div>
+
+      <div class="feature">
+        <h2>Easy to run</h2>
+        <p>Grab the latest release, run <code>abs your_script.abs</code> and see the magic happening. ABS works on Mac, Windows and Linux</p>
+        <pre class="language-markup" tabindex="0"><code class="  language-markup">$ abs test.abs 
+
+1.2.3.4
+
+type something...
+Hello world!
+you typed Hello world!
+$</code></pre>
       </div>
     </div>
 
