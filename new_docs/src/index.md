@@ -1,17 +1,17 @@
 ---
 home: true
 heroImage: /abs-horizontal.png
-tagline: Home of the ABS programming language - the joy of shell scripting.
+tagline: "Bring back the joy of shell scripting."
 actionText: Quick Start →
 actionLink: /introduction/
 features:
-  - title: Feature 1 Title
-    details: Feature 1 Description
-  - title: Feature 2 Title
-    details: Feature 2 Description
-  - title: Feature 3 Title
-    details: Feature 3 Description
-footer: Made by Alex Nadalin with ❤️
+  - title: A familiar syntax
+    details: "ABS should look familiar to most of us: its elements are borrowed from popular programming languages such as Ruby, Python or JavaScript"
+  - title: Scripting made easy
+    details: "System commands are deeply integrated (and encouraged) in scripts: they make ABS ideal to work with in the context of shell scripting"
+  - title: Easy to run
+    details: Grab the latest release, run abs your_script.abs and see the magic happening. ABS works on Mac, Windows and Linux.
+footer: "©️ 2021 -- No developers were harmed in the making of this language"
 ---
 
 ::: slot sample-code
