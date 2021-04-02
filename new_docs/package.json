@@ -1,7 +1,7 @@
 {
   "name": "abs-lang.org",
   "version": "0.0.1",
-  "description": "Home of the ABS programming language - the joy of shell scripting.",
+  "description": "Home of the ABS programming language: the joy of shell scripting.",
   "main": "index.js",
   "authors": {
     "name": "Alex",

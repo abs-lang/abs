@@ -4,7 +4,7 @@ module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
-  title: ' ',
+  title: 'The ABS programing language',
   port: 4000,
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
@@ -30,7 +30,7 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
-    repo: 'https://github.com/abs-lang',
+    repo: 'https://github.com/abs-lang/abs',
     logo: '/abs-horizontal.png',
     search: false,
     editLinks: false,
@@ -40,7 +40,7 @@ module.exports = {
     sidebarDepth: 0,
     nav: [
       {
-        text: 'Introduction',
+        text: 'Quick start',
         link: '/introduction/',
       },
       {
