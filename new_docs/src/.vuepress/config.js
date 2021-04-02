@@ -5,6 +5,7 @@ module.exports = {
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
   title: ' ',
+  port: 4000,
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
    */
