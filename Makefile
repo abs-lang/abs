@@ -20,10 +20,9 @@ build_simple:
 	go build -o builds/abs main.go
 release: build_simple
 	./builds/abs ./scripts/release.abs
-travis: test
 docs:
-	cd docs && bundle exec jekyll serve
-docs_new:
-	cd new_docs && npm i && npm run dev
+	cd docs && npm i && npm run dev
+build_docs:
+	cd docs && npm i && npm run build
 wasm:
 	GOOS=js GOARCH=wasm go build -o docs/abs.wasm js/js.go
