@@ -363,9 +363,3 @@ Returns the current unix epoch time, in milliseconds:
 ```bash
 unix_ms() # 1594049453157
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read a little bit about [decorators](/types/decorator).

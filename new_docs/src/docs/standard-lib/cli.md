@@ -180,9 +180,3 @@ ok
 count
 -8
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read a little bit about [the util module](/stdlib/util).

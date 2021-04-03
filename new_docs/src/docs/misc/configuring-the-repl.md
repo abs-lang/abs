@@ -96,9 +96,3 @@ user@hostname:~$ `ls .absrc`
 .absrc
 user@hostname:~$
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read [about the ABS runtime](/misc/runtime).

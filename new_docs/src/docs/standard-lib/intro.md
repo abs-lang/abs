@@ -100,9 +100,3 @@ f help() {
 
 return cli
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now explore ABS' first standard library module, the [@runtime](/stdlib/runtime).

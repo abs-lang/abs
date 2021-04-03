@@ -2,12 +2,12 @@
 permalink: /misc/3pl
 ---
 
-# Installing 3rd party libraries
+# Installing 3rd party libraries <Badge text="experimental" type="warning"/>
 
 The ABS interpreter comes with a built-in installer for 3rd party libraries,
 very similar to `npm install`, `pip install` or `go get`.
 
-The installer, budled since the `1.8.0` release, is currently **experimental**
+The installer, bundled since the `1.8.0` release, is currently **experimental**
 and a few things might change.
 
 In order to install a package, you simply need to run `abs get`:
@@ -86,9 +86,3 @@ f() {return hello world;}
 Currently, the installer supports modules hosted on:
 
 * GitHub
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read a little bit about [errors](/misc/error).

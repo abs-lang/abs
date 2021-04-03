@@ -483,9 +483,3 @@ Uppercases the string:
 ```bash
 "string".upper() # "STRING"
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [numbers](/types/number).

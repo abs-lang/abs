@@ -470,9 +470,3 @@ Returns the array with duplicate values removed. The values need not be sorted:
 [1, 1, 1, 2].unique() # [1, 2]
 [2, 1, 2, 3].unique() # [2, 1, 3]
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [hashes](/types/hash).

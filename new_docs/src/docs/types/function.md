@@ -226,9 +226,3 @@ f(x){}.str()
 #
 # }
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [builtin functions](/types/builtin-function).

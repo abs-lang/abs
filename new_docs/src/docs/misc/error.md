@@ -61,9 +61,3 @@ ERROR: type mismatch: NUMBER + STRING
 $ echo $?
 99
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read [how to configure the REPL](/misc/configuring-the-repl).
