@@ -52,8 +52,7 @@ And here's how you could write the same code in ABS:
 res = `curl -s 'https://api.ipify.org?format=json'`
 
 if !res.ok {
-  echo("An error occurred: %s", res)
-  exit(1)
+  exit(1, "An error occurred: %s".fmt(res))
 }
 
 ip = res.json().ip
