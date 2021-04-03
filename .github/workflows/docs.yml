@@ -3,8 +3,7 @@ name: github pages
 on:
   push:
     branches:
-      # - main
-      - '*'
+      - master
 
 jobs:
   deploy:
@@ -24,12 +23,8 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - run: cd docs && npm ci
-      - run: cd docs && npm run build
-
-      # - name: Deploy
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./public
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/src/.vuepress/dist
