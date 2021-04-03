@@ -218,9 +218,3 @@ Error: add number to null hash element
 ERROR: type mismatch: NULL + NUMBER
 	[78:8]	h["g"] += 1
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read how to [upgrade from ABS 1 to 2](/misc/upgrade-from-abs-1-to-2).

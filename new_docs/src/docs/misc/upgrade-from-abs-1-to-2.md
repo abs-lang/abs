@@ -79,9 +79,3 @@ As you can see there are 2 main differences:
 ## What more?
 
 That's really it: upgrading to ABS 2 should be an extremely painless process!
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read ABS' [credits](/misc/credits).

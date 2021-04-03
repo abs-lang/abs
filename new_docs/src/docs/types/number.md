@@ -52,7 +52,7 @@ ABS encounters `1_000_000` it will internally convert it
 to a million. Underscore separators can be placed anywhere
 on a number (`10_`, `10_00`, `10.00_00_00`) except at its start:
 
-```
+```bash
 1000000 # 1M
 1_000_000 # 1M, just a lot more readable
 1_00_00_00 # 1M, formatted with another separator pattern
@@ -137,9 +137,3 @@ Returns a string containing the number:
 ```bash
 99.str() # "99"
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [arrays](/types/array).

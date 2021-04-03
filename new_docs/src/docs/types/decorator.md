@@ -103,9 +103,3 @@ mmm, we were pretty slow...
 
 Decorators are heavily inspired by [Python](https://www.python.org/dev/peps/pep-0318/) -- if you wish to understand
 how they work more in depth we'd recommend reading this [primer on Python decorators](https://realpython.com/primer-on-python-decorators).
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read a little bit about [ABS' standard library](/stdlib/intro).

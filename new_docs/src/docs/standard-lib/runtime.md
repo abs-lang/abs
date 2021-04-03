@@ -28,9 +28,3 @@ Returns the name of the runtime:
 ```py
 runtime.name # "abs"
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now explore how to easily build command-line applications through the [@cli](/stdlib/cli) module.

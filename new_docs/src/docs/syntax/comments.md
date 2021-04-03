@@ -27,10 +27,3 @@ Though you can comment after a statement:
 ```bash
 x = 1 # Now, this is a cool assignment!
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about data types available in
-ABS, starting from the [string](/types/string).

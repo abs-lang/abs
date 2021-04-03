@@ -38,9 +38,3 @@ Type 'quit' when you're done, 'help' if you get lost!
 ⧐  ABS_INTERACTIVE
 true
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read [a few more technical details about ABS](/misc/technical-details).

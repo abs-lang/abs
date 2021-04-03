@@ -4,7 +4,8 @@ permalink: /types/hash
 
 # Hash
 
-Hashes represent a list of key-value pairs that can conveniently be accessed with `O(1)` cost:
+Hashes represent a list of key-value pairs that can conveniently be accessed with `O(1)` cost.
+Think of JavaScript's objects or Python's dictionaries:
 
 ```bash
 h = {"key": "val"}
@@ -96,7 +97,7 @@ h # {a: 1, b: 2, c: {x: 10, y: 20}, z: {xx: 11, yy: 21}}
 
 Nested hashes can be accessed by chaining keys, though it's best to use `?.` to "drill down" through keys that may not exist:
 
-```
+```bash
 h = {"a": 1, "b": 2, "c": {"x": 10, "y": 20}, "z": {"xx": 11, "yy": 21}}
 h.c.y # 20
 h["c"].x # 10
@@ -197,9 +198,3 @@ Since hash values can be of any type, we can create objects with custom function
 hash = {"greeter": f(name) { return "Hello $name!" }}
 hash.greeter("Sally") # "Hello Sally!"
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read about [functions](/types/function).

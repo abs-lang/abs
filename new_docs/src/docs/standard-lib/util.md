@@ -35,9 +35,3 @@ Arguments are serialized using the `str()` method:
 ```bash
 [12, {}, 0.23, "hello"].str() # "[12, {}, 0.23, \"hello\"]"
 ```
-
-## Next
-
-That's about it for this section!
-
-You can now head over to read a little bit about [how to install 3rd party libraries](/misc/3pl).
