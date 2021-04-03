@@ -10,7 +10,8 @@
   "repository": "https://github.com/abs-lang/abs-lang.org",
   "scripts": {
     "dev": "vuepress dev src",
-    "build": "vuepress build src"
+    "build": "vuepress build src",
+    "docs:build": "vuepress build docs"
   },
   "license": "MIT",
   "devDependencies": {
