@@ -81,7 +81,7 @@ for platform in platforms {
     }
 
     if goos == "js" {
-        output_name = "docs/abs.wasm"
+        output_name = "docs/src/.vuepress/public/abs.wasm"
         entry_point = "js/js.go"
     }
 
@@ -89,9 +89,15 @@ for platform in platforms {
     build = `GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w -X 'main.Version=$version'" -o $output_name $entry_point`
 
     if !build.ok {
-        echo("error: " + build)
-        exit(1)
+        exit(1, "error: " + build)
     }
+}
+
+echo("building docs")
+docs = `make build_docs`
+
+if !docs.ok {
+    exit(1, docs)
 }
 
 echo("done")
