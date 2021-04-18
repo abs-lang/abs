@@ -39,7 +39,7 @@
 
       <div class="feature">
         <h2>Scripting made easy</h2>
-        <p>System commands are deeply integrated (and encouraged): they make ABS ideal to work with in the context of shell scripting:</p>
+        <p>System commands are deeply integrated (and encouraged); they make ABS ideal to work with in the context of shell scripting:</p>
         <pre class="language-markup" tabindex="0"><code class="  language-javascript">ip <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">curl icanhazip.com</span><span class="token template-punctuation string">`</span></span>
 
 ip<span class="token punctuation">.</span>ok <span class="token comment">// true</span>
