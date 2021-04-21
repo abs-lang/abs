@@ -100,7 +100,7 @@ greet = f (name) {
 greet(`whoami`) # "Hello root!"
 ```
 
-Named functions are the basis of [decorators](/types/decorators).
+Named functions are the basis of [decorators](/types/decorator).
 
 ## Optional parameters
 
