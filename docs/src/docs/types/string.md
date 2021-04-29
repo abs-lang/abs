@@ -259,6 +259,14 @@ Formats a string ([sprintf convention](https://linux.die.net/man/3/sprintf)):
 "hello %s".fmt("world") # "hello world"
 ```
 
+In order to print a literal `%`, you can simply escape it with another `%%`:
+
+```bash
+"30%%".fmt() # 30%
+"30%% %s".fmt("higher") # 30% higher
+"30%".fmt() # 30%!(NOVERB)
+```
+
 ### index(str)
 
 Returns the first index at which `str` is found:

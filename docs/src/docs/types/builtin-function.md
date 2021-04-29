@@ -104,6 +104,9 @@ You can use use placeholders in your strings:
 echo("hello %s", "world")
 ```
 
+To know more about how the placeholders work, please have a look at the documentation
+for [string.fmt()](/types/string/#fmt)
+
 ### env(str)
 
 Returns the `str` environment variable:
