@@ -57,7 +57,7 @@ and if `end` is omitted it is assumed to be the last character in the
 string:
 
 ```bash
-"string"[0:3] // "str"
+"string"[:3] // "str"
 "string"[1:] // "tring"
 ```
 

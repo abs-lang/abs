@@ -26,7 +26,15 @@ x, y = [1]
 y # null
 ```
 
-An individual array element may be assigned to via its `array[index]`. This includes compound operators such as `+=`. Also an array can be extended by assigning to an index beyond its current length.
+If the number of variables you're trying to set is shorter than the array, the extra elements of the array just won't be assigned:
+
+```bash
+x, y = [1, 2, 3]
+x # 1
+y # 2
+```
+
+An individual array element may be assigned a value via its `array[index]`. This includes compound operators such as `+=`. An array can also be extended by assigning to an index beyond its current length.
 
 ```bash
 a = [1, 2, 3, 4]

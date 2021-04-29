@@ -5,7 +5,7 @@ permalink: /syntax/system-commands
 # System (shell) commands
 
 Executing system commands is one of the most important features
-of ABS, as it allows mixing the conveniency of the shell with
+of ABS, as it allows mixing the convenience of the shell with
 the syntax of a modern programming language.
 
 Commands are executed with the `` `command` `` syntax,
@@ -97,7 +97,7 @@ declared within your program using the `$` symbol:
 
 ```bash
 file = "cpuinfo"
-x = $(cat /proc/$file)
+x = `cat /proc/$file`
 echo(x) # processor: 0\nvendor_id: GenuineIntel...
 ```
 

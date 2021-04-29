@@ -5,7 +5,7 @@ permalink: /types/array
 # Array
 
 Arrays represent lists of elements
-of any other type:
+of any type:
 
 ```bash
 [1, 2, "hello", [1, f(x){ x + 1 }]]

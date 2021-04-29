@@ -17,10 +17,10 @@ directory -- again, we recommend to move it to your `$PATH`.
 Afterwards, you can run ABS scripts with:
 
 ```bash
-$ abs path/to/scripts.abs
+$ abs path/to/script.abs
 ```
 
-Scripts do not have to have a specific extension,
+Scripts do not need a specific extension,
 although it's recommended to use `.abs` as a
 convention: we may reserve some keywords in the
 future (such as `abs version` or `abs install`)
@@ -29,20 +29,23 @@ scripts you're trying to run.
 
 ## REPL
 
-If you want to get a more _live_ feeling of ABS, you can
+If you want to get a more "live" feeling of ABS, you can
 also simply run the interpreter; without any argument. It
 will launch ABS' REPL, and you will be able to test code on
 the fly:
 
-```bash
+```
 $ abs
 Hello there, welcome to the ABS programming language!
 Type 'quit' when you're done, 'help' if you get lost!
+
 ⧐  ip = `curl icanhazip.com`
 ⧐  ip.ok
 true
+
 ⧐  ip()
 ERROR: not a function: STRING
+
 ⧐  ip
 94.204.178.37
 ```
@@ -50,10 +53,10 @@ ERROR: not a function: STRING
 ## ABS from bash
 
 You can also run an executable abs script directly from bash
-using a bash shebang line at the top of the script file.
+using a bash shebang.
 
 In this example the abs executable is linked to `/usr/local/bin/abs`
-and the abs script `~/bin/remote.abs` has its execute permissions set.
+and the script `~/bin/remote.abs` is executable (`chmod +x`):
 
 ```bash
 $ cat ~/bin/hello.abs
@@ -68,7 +71,7 @@ Hello world!
 
 ## Explore the docs!
 
-A bit lost right now? Here's what we'd suggest you do:
+A bit lost right now? Here's what we suggest you do:
 
 * explore the [docs](/docs) to learn more about ABS' features 
 * try running some ABS code in our browser-based [playground](/playground)

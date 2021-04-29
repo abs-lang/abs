@@ -24,7 +24,7 @@ if x > 0 {
 }
 ```
 
-You can wrap conditions in parenthesis, although we believe that,
+You can wrap conditions in parentheses, although we believe that,
 from a readability standpoint, it's usually better to omit them:
 
 ```bash
