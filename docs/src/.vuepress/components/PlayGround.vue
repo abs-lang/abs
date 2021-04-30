@@ -24,6 +24,7 @@
         </div>
         <div class="button-wrapper">
           <button class="run-button" @click="run">RUN</button>
+          <button class="run-button" @click="share">GENERATE SHARABLE URL</button>
         </div>
       </div>
       <p>
@@ -97,6 +98,11 @@ export default {
         }
       });
     },
+    share() {
+      let code = btoa(this.code)
+      
+      window.history.pushState({}, "", `?snippet=${encodeURIComponent(code)}`);
+    },
     run() {
       if (!go) {
         go = new Go();
@@ -109,7 +115,7 @@ export default {
   },
 
   data() {
-    return {
+    let data = {
       out: `Here is where everything that's outputted from the script will appear. Try running "echo(123)"!`,
       result: `Here is where the return value of the script will appear. Try running "return 42"!`,
       code: `# Try pressing ctrl + enter
@@ -137,6 +143,15 @@ return lebron.id
         },
       },
     };
+
+    let params = new URLSearchParams(window.location.search);
+    let snippet = params.get("snippet")
+
+    if (snippet) {
+      data.code = atob(snippet)
+    }
+
+    return data
   },
 };
 </script>
