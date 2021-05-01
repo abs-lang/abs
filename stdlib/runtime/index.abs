@@ -1,4 +1,4 @@
 return {
     "name": "abs",
-    "version": ABS_VERSION
+    "version": ABS_VERSION,
 }

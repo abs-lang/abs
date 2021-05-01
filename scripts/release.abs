@@ -62,7 +62,11 @@ if selection != "y" {
     exit(2)
 }
 
-`go-bindata -o evaluator/stdlib.go -pkg evaluator stdlib/...`
+build_stdlib = `go-bindata -o evaluator/stdlib.go -pkg evaluator stdlib/...`
+
+if !build_stdlib.ok {
+    exit(99, "failed to build stdlib: %s".fmt(build_stdlib))
+}
 
 tests = `make test`
 echo(tests)
