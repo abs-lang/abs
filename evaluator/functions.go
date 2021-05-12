@@ -14,7 +14,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -2427,19 +2426,9 @@ func execFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	// interpolate any $vars in the cmd string
 	cmd = util.InterpolateStringVars(cmd, env)
 
-	var commands []string
-	var executor string
-	if runtime.GOOS == "windows" {
-		commands = []string{"/C", cmd}
-		executor = "cmd.exe"
-	} else { //assume it's linux, darwin, freebsd, openbsd, solaris, etc
-		// invoke bash commands with login option (-l) --
-		// this allows the use of commands in $PATH
-		commands = []string{"-lc", cmd}
-		executor = "bash"
-	}
 	// set up command to execute using our stdIO
-	c := exec.Command(executor, commands...)
+	parts := strings.Split(os.Getenv("ABS_COMMAND_EXECUTOR"), " ")
+	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
