@@ -31,6 +31,15 @@ var lex *lexer.Lexer
 
 func init() {
 	Fns = getFns()
+	if os.Getenv("ABS_COMMAND_EXECUTOR") == "" {
+		// Set the executor for system commands
+		// thanks to @haifenghuang
+		os.Setenv("ABS_COMMAND_EXECUTOR", "bash -c")
+
+		if runtime.GOOS == "windows" {
+			os.Setenv("ABS_COMMAND_EXECUTOR", "cmd.exe /C")
+		}
+	}
 }
 
 func newError(tok token.Token, format string, a ...interface{}) *object.Error {
@@ -566,6 +575,8 @@ func evalInfixExpression(
 		return evalHashInfixExpression(tok, operator, left, right)
 	case operator == "in":
 		return evalInExpression(tok, left, right)
+	case operator == "!in":
+		return evalNotInExpression(tok, left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
@@ -715,6 +726,10 @@ func evalStringInfixExpression(
 		return evalInExpression(tok, left, right)
 	}
 
+	if operator == "!in" {
+		return evalNotInExpression(tok, left, right).(*object.Boolean)
+	}
+
 	if operator == ">" {
 		err := writeFile(rightVal, leftVal)
 
@@ -831,6 +846,12 @@ func evalInExpression(tok token.Token, left, right object.Object) object.Object 
 	}
 
 	return &object.Boolean{Token: tok, Value: found}
+}
+
+func evalNotInExpression(tok token.Token, left, right object.Object) object.Object {
+	obj := evalInExpression(tok, left, right).(*object.Boolean)
+	obj.Value = !obj.Value
+	return obj
 }
 
 func evalIfExpression(
@@ -1467,17 +1488,8 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 	// The string holding the command
 	s := &object.String{}
 
-	// thanks to @haifenghuang
-	var commands []string
-	var executor string
-	if runtime.GOOS == "windows" {
-		commands = []string{"/C", cmd}
-		executor = "cmd.exe"
-	} else { //assume it's linux, darwin, freebsd, openbsd, solaris, etc
-		commands = []string{"-c", cmd}
-		executor = "bash"
-	}
-	c := exec.Command(executor, commands...)
+	parts := strings.Split(os.Getenv("ABS_COMMAND_EXECUTOR"), " ")
+	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
 	c.Stdin = os.Stdin
 	var stdout bytes.Buffer

@@ -29,6 +29,7 @@ func logErrorWithPosition(t *testing.T, msg string, expected interface{}) {
 		t.Error(expectedStr, "\ngot=", errorStr)
 	}
 }
+
 func TestEvalFloatExpression(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -1074,6 +1075,10 @@ func TestInExpressions(t *testing.T) {
 		{`"x" in {"x": 0}`, true},
 		{`"y" in {"x": 0}`, false},
 		{`"y" in 12`, "'in' operator not supported on NUMBER"},
+		{`1 !in [1]`, false},
+		{`1 !in []`, true},
+		{`"x" !in ""`, true},
+		{`"x" !in "xyz"`, false},
 	}
 
 	for _, tt := range tests {
@@ -1219,6 +1224,9 @@ func TestCommand(t *testing.T) {
 			{"`echo 123; sleep 10 &`.ok", false},
 			{"`echo 123; sleep 10 &`.kill().done", true},
 			{"`echo 123; sleep 10 &`.kill().ok", false},
+			{"`echo \\$0`", "bash"},
+			{"env('ABS_COMMAND_EXECUTOR', 'sh -c'); `echo \\$0`", "sh"},
+			{"env('ABS_COMMAND_EXECUTOR', 'bash -c'); `echo \\$0`", "bash"},
 		}
 	}
 	for _, tt := range tests {

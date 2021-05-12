@@ -116,7 +116,21 @@ Membership test operator (find whether a needle is in the haystack):
 "y" in {"x": 1} # false
 ```
 
-## \*\*
+## !in
+
+Negative membership test operator (find whether a needle is not in the haystack):
+
+``` bash
+1 !in [1, 2, 3] # false
+9 !in [1, 2, 3] # true
+9 !in 9 # unknown operator: NUMBER in NUMBER
+"str" !in "string" # false
+"xyz" !in "string" # true
+"x" !in {"x": 1} # false
+"y" !in {"x": 1} # true
+```
+
+## **
 
 Mathematical exponentiation:
 

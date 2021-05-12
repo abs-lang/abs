@@ -14,7 +14,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -32,15 +31,16 @@ import (
 var scanner *bufio.Scanner
 var tok token.Token
 var scannerPosition int
+var requireCache map[string]object.Object
 
 func init() {
 	scanner = bufio.NewScanner(os.Stdin)
+	requireCache = make(map[string]object.Object)
 }
 
 /*
 Here be the hairy map to all the Builtin Functions ... ARRRGH, matey
 */
-
 func getFns() map[string]*object.Builtin {
 	return map[string]*object.Builtin{
 		// len(var:"hello")
@@ -2169,8 +2169,23 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		file = filepath.Join(env.Dir, file)
 	}
 
+	if evaluated, ok := requireCache[file]; ok {
+		return evaluated
+	}
+
 	e := object.NewEnvironment(env.Writer, filepath.Dir(file), env.Version)
-	return doSource(tok, e, file, args...)
+	evaluated := doSource(tok, e, file, args...)
+
+	// If a module fails to be imported, let's
+	// not cache the result
+	switch ret := evaluated.(type) {
+	case *object.Error:
+		return ret
+	default:
+		requireCache[file] = evaluated
+	}
+
+	return evaluated
 }
 
 func doSource(tok token.Token, env *object.Environment, fileName string, args ...object.Object) object.Object {
@@ -2427,19 +2442,9 @@ func execFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	// interpolate any $vars in the cmd string
 	cmd = util.InterpolateStringVars(cmd, env)
 
-	var commands []string
-	var executor string
-	if runtime.GOOS == "windows" {
-		commands = []string{"/C", cmd}
-		executor = "cmd.exe"
-	} else { //assume it's linux, darwin, freebsd, openbsd, solaris, etc
-		// invoke bash commands with login option (-l) --
-		// this allows the use of commands in $PATH
-		commands = []string{"-lc", cmd}
-		executor = "bash"
-	}
 	// set up command to execute using our stdIO
-	c := exec.Command(executor, commands...)
+	parts := strings.Split(os.Getenv("ABS_COMMAND_EXECUTOR"), " ")
+	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout

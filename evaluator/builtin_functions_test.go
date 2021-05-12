@@ -324,6 +324,7 @@ func TestSource(t *testing.T) {
 	tests := []Tests{
 		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = source("test-ignore-source-vs-require.abs"); a`, 2},
 		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = source("test-ignore-source-vs-require.abs"); x`, 10},
+		{`"a = 10" >> "test-ignore-source-is-not-cached.abs"; a = 1; source("test-ignore-source-is-not-cached.abs"); a = 1; source("test-ignore-source-is-not-cached.abs"); a`, 10},
 	}
 
 	testBuiltinFunction(tests, t)
@@ -331,8 +332,10 @@ func TestSource(t *testing.T) {
 
 func TestRequire(t *testing.T) {
 	tests := []Tests{
-		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = require("test-ignore-source-vs-require.abs"); a`, 1},
-		{`"a = 2; return 10" >> "test-ignore-source-vs-require.abs"; a = 1; x = require("test-ignore-source-vs-require.abs"); x`, 10},
+		{`"a = 2; return 10" >> "test-ignore-source-vs-require.1.abs"; a = 1; x = require("test-ignore-source-vs-require.1.abs"); a`, 1},
+		{`"a = 2; return 10" >> "test-ignore-source-vs-require.2.abs"; a = 1; x = require("test-ignore-source-vs-require.2.abs"); x`, 10},
+		{`require('@runtime').name = "xxx"; require('@runtime').name`, "xxx"},
+		{`'return {"test": 11}' >> "test-ignore-require-is-cached.3.abs"; require('test-ignore-require-is-cached.3.abs').test = 0; require('test-ignore-require-is-cached.3.abs').test`, 0},
 	}
 
 	testBuiltinFunction(tests, t)

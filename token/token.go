@@ -80,6 +80,7 @@ const (
 	WHILE    = "WHILE"
 	FOR      = "FOR"
 	IN       = "IN"
+	NOT_IN   = "NOT_IN"
 	BREAK    = "BREAK"
 	CONTINUE = "CONTINUE"
 )

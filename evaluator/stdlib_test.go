@@ -14,7 +14,8 @@ type tests struct {
 func TestRuntime(t *testing.T) {
 	tests := []tests{
 		{`require('@runtime').version`, "test_version"},
-		{`require('@runtime').name`, "abs"},
+		{`"version" in require('@runtime').keys()`, true},
+		{`"name" in require('@runtime').keys()`, true},
 	}
 
 	testStdLib(tests, t)
