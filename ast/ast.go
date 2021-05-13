@@ -25,17 +25,26 @@ type Expression interface {
 	expressionNode()
 }
 
+// Deferrable is used to be able to
+// check whether an expression needs
+// to be executed now or at the end
+// of the scope
 type Deferrable interface {
 	IsDeferred() bool
 	SetDeferred(bool)
 }
 
+// Deferred is a struct that can be embedded
+// in order to define whether the current node
+// needs to be executed right away or whether
+// it should be deferred until the end of the
+// current scope.
 type Deferred struct {
-	Defer bool
+	deferred bool
 }
 
-func (d *Deferred) IsDeferred() bool          { return d.Defer }
-func (d *Deferred) SetDeferred(deferred bool) { d.Defer = deferred }
+func (d *Deferred) IsDeferred() bool          { return d.deferred }
+func (d *Deferred) SetDeferred(deferred bool) { d.deferred = deferred }
 
 // Represents the whole program
 // as a bunch of statements
