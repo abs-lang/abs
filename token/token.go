@@ -83,6 +83,7 @@ const (
 	NOT_IN   = "NOT_IN"
 	BREAK    = "BREAK"
 	CONTINUE = "CONTINUE"
+	DEFER    = "DEFER"
 )
 
 type Token struct {
@@ -104,6 +105,7 @@ var keywords = map[string]TokenType{
 	"null":     NULL,
 	"break":    BREAK,
 	"continue": CONTINUE,
+	"defer":    DEFER,
 }
 
 // NumberAbbreviations is a list of abbreviations that can be used in numbers eg. 1k, 20B

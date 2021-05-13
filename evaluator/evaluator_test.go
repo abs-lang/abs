@@ -428,6 +428,29 @@ func TestStringInterpolation(t *testing.T) {
 	}
 }
 
+func TestDeferredFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// you can use functions
+		{`x = {"test": ""}; f deferred() { x.test += "c"}; f fn() { x.test += "a"; defer deferred(); x.test += "b"}; fn(); x.test`, "abc"},
+		{`x = {"test": ""}; f deferred() { x.test += "c"}; f fn() { x.test += "a"; defer deferred(); x.test += "b"; return;}; fn(); x.test`, "abc"},
+		{`x = {"test": ""}; f deferred() { x.test += "c"}; f fn() { x.test += "a"; defer deferred(); return; x.test += "b"}; fn(); x.test`, "ac"},
+		// you can use commands
+		{"f test() { 'a' > 'test-ignore-defer.abs'; defer `echo c >> test-ignore-defer.abs`; 'b' >> 'test-ignore-defer.abs' }; test(); `cat test-ignore-defer.abs`", "abc"},
+		// let's just test you can use methods
+		{`x = {"test": ""}; f fn() { x.test += "a"; defer "".upper(); x.test += "b"}; fn(); x.test`, "ab"},
+		// you can use defer in the main scope
+		{`x = {"test": "a"}; defer f() {x.test += "c"}; x.test += "b"; x.test`, "ab"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testStringObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestForInExpressions(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -541,17 +564,17 @@ func TestReturnStatements(t *testing.T) {
 		expected interface{}
 	}{
 		{`
-if false {
-	return
-}		
-return 3
-`, 3},
-		{`
 if true {
 	return
 }		
 return 3
 `, nil},
+		{`
+if false {
+	return
+}		
+return 3
+`, 3},
 		{`
 if false {
 	return;

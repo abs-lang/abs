@@ -119,6 +119,7 @@ f hello(x, y) {
 1 !in []
 !in_variable_named_in
 !i
+defer fn
 `
 
 	tests := []struct {
@@ -414,6 +415,8 @@ f hello(x, y) {
 		{token.IDENT, "in_variable_named_in"},
 		{token.BANG, "!"},
 		{token.IDENT, "i"},
+		{token.DEFER, "defer"},
+		{token.IDENT, "fn"},
 		{token.EOF, ""},
 	}
 

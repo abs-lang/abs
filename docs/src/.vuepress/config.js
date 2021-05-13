@@ -82,6 +82,7 @@ module.exports = {
             'syntax/system-commands',
             'syntax/operators',
             'syntax/comments',
+            'syntax/defer',
           ]
         },
         {

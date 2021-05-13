@@ -231,34 +231,68 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	var result object.Object
+	deferred := []*ast.ExpressionStatement{}
+
+loop:
 	for _, statement := range program.Statements {
-		result = Eval(statement, env)
-		switch result := result.(type) {
-		case *object.ReturnValue:
-			return result.Value
-		case *object.Error:
-			return result
+		x, ok := statement.(*ast.ExpressionStatement)
+
+		if ok {
+			if d, ok := x.Expression.(ast.Deferrable); ok && d.IsDeferred() {
+				deferred = append(deferred, x)
+				continue
+			}
 		}
+		result = Eval(statement, env)
+
+		switch ret := result.(type) {
+		case *object.ReturnValue:
+			result = ret.Value
+			break loop
+		case *object.Error:
+			break loop
+		}
+	}
+
+	for _, statement := range deferred {
+		Eval(statement, env)
 	}
 
 	return result
 }
 
+// This should fundamentally be using the same function as evalProgram,
+// but there are some subtle difference on how they brak / handle return
+// values. You will see a lot of repeated code between the 2, especially
+// since we introduced `defer` which adds a bit of complexity to both.
 func evalBlockStatement(
 	block *ast.BlockStatement,
 	env *object.Environment,
 ) object.Object {
 	var result object.Object
+	deferred := []*ast.ExpressionStatement{}
 
 	for _, statement := range block.Statements {
+		x, ok := statement.(*ast.ExpressionStatement)
+
+		if ok {
+			if d, ok := x.Expression.(ast.Deferrable); ok && d.IsDeferred() {
+				deferred = append(deferred, x)
+				continue
+			}
+		}
 		result = Eval(statement, env)
 
 		if result != nil {
 			rt := result.Type()
 			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
-				return result
+				break
 			}
 		}
+	}
+
+	for _, statement := range deferred {
+		Eval(statement, env)
 	}
 
 	return result

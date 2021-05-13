@@ -25,6 +25,18 @@ type Expression interface {
 	expressionNode()
 }
 
+type Deferrable interface {
+	IsDeferred() bool
+	SetDeferred(bool)
+}
+
+type Deferred struct {
+	Defer bool
+}
+
+func (d *Deferred) IsDeferred() bool          { return d.Defer }
+func (d *Deferred) SetDeferred(deferred bool) { d.Defer = deferred }
+
 // Represents the whole program
 // as a bunch of statements
 type Program struct {
@@ -275,6 +287,7 @@ type MethodExpression struct {
 	Method    Expression
 	Arguments []Expression
 	Optional  bool
+	Deferred
 }
 
 func (me *MethodExpression) expressionNode()      {}
@@ -416,6 +429,7 @@ func (fe *ForExpression) String() string {
 type CommandExpression struct {
 	Token token.Token // The command itself
 	Value string
+	Deferred
 }
 
 func (ce *CommandExpression) expressionNode()      {}
@@ -479,6 +493,7 @@ type CallExpression struct {
 	Token     token.Token // The '(' token
 	Function  Expression  // Identifier or FunctionLiteral
 	Arguments []Expression
+	Deferred
 }
 
 func (ce *CallExpression) expressionNode()      {}
