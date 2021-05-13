@@ -116,6 +116,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.CONTINUE, p.parseContinue)
 	p.registerPrefix(token.CURRENT_ARGS, p.parseCurrentArgsLiteral)
 	p.registerPrefix(token.AT, p.parseDecorator)
+	p.registerPrefix(token.DEFER, p.parseDefer)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -846,6 +847,20 @@ func (p *Parser) parseDecorator() ast.Expression {
 	dc.Expression = exp.Expression
 
 	return dc
+}
+
+// defer fn()
+func (p *Parser) parseDefer() ast.Expression {
+	p.nextToken()
+	exp := p.parseExpression(0)
+
+	if d, ok := exp.(ast.Deferrable); ok {
+		d.SetDeferred(true)
+	} else {
+		p.reportError("you can only defer a call: defer some.method() | defer `some command` | defer some_fn()", p.curToken)
+	}
+
+	return exp
 }
 
 // ...
