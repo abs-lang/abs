@@ -30,11 +30,11 @@
         <pre class="language-markup" tabindex="0"><code class="  language-clike">obj <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span> 
 <span class="token keyword">for</span> n <span class="token keyword">in</span> <span class="token number">1.</span><span class="token number">.10</span> <span class="token punctuation">{</span>     
   <span class="token keyword">if</span> n <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token punctuation">{</span> 
-    obj<span class="token punctuation">[</span>n<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">rand</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token operator">*</span><span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span> 
+    obj<span class="token punctuation">[</span>n.str()<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">rand</span><span class="token punctuation">(</span><span class="token number">6</span><span class="token operator">*</span><span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span> 
   <span class="token punctuation">}</span> 
 <span class="token punctuation">}</span> 
 <span class="token function">echo</span><span class="token punctuation">(</span><span class="token string">"We have %s"</span><span class="token punctuation">,</span> obj<span class="token punctuation">)</span>  
-# <span class="token punctuation">{</span><span class="token string">"10"</span><span class="token punctuation">:</span> <span class="token number">79</span><span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">}</span></code></pre>
+# We have <span class="token punctuation">{</span><span class="token string">"10"</span><span class="token punctuation">:</span> <span class="token number">79</span><span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">}</span></code></pre>
       </div>
 
       <div class="feature">
