@@ -26,7 +26,7 @@
 
 ABS is a programming language that works best when you're scripting on
 your terminal. It tries to combine the elegance of languages
-such as Python, or Ruby, to the convenience of Bash.
+such as Python, or Ruby with the convenience of Bash.
 
 ``` bash
 tz = `cat /etc/timezone`
@@ -46,7 +46,7 @@ See it in action:
 [![asciicast](https://asciinema.org/a/218909.svg)](https://asciinema.org/a/218909)
 
 Let's try to fetch our IP address and print the sum of its
-parts, if its higher than 100. Here's how you could do it
+parts if it's higher than 100. Here's how you do it
 in Bash:
 
 ``` bash
@@ -69,7 +69,7 @@ if [ $total -gt 100 ]; then
 fi
 ```
 
-And here's how you could write the same code in ABS:
+And here's the same code in ABS:
 
 ``` bash
 # Simple program that fetches your IP and sums it up
@@ -87,7 +87,7 @@ if total > 100 {
 }
 ```
 
-Wondering how you can run this code? Simply grab the latest
+Wondering how to run this code? Grab the latest
 [release](https://github.com/abs-lang/abs/releases) and run:
 
 ```
@@ -111,25 +111,25 @@ $ abs path/to/scripts.abs
 ## Documentation
 
 Visit [abs-lang.org](https://www.abs-lang.org) or check the [examples directory](https://github.com/abs-lang/abs/tree/master/examples),
-which contains a few brief scripts.
+which contains a few short scripts.
 
 ## Contributing
 
-Wanna hack on ABS locally? The recommended development
-environment is inside a Docker container -- simply:
+Want to hack on ABS locally? The recommended development
+environment is inside a Docker container — simply:
 
 * `make build` (builds the container)
 * `make run` (sends you inside the development container)
 * `make test` (runs the abs tests)
 
-After you make any change, simply run `make test` and check
-if any errors pops up. If everything looks fine that means
+After you make any change, run `make test` and check
+if any errors pop up. If everything looks fine that means
 you're ready to [open a pull request](https://github.com/abs-lang/abs/pulls)!
 
 ## Status
 
-ABS is fresh and under active development, meaning exciting
-things happen on a weekly basis.
+ABS is fresh and under active development; exciting
+things happen on a weekly basis!
 
-Have a look at the roadmaps [here](https://github.com/abs-lang/abs/milestones):
+Have a look at the roadmap [here](https://github.com/abs-lang/abs/milestones):
 to know of what version we're currently working on take a look at [abs-lang.org/misc/technical-details](https://www.abs-lang.org/misc/technical-details).
