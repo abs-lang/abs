@@ -317,7 +317,7 @@ Parses the string as JSON, returning a [hash](/types/hash):
 Converts the string to kebab-case:
 
 ```bash
-"a short sentence".snake() # a-short-sentence
+"a short sentence".kebab() # a-short-sentence
 ```
 
 ### last_index(str)
