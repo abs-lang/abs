@@ -1,7 +1,8 @@
-FROM golang:1.16
+FROM golang:1.17
 
 RUN apt-get update
-RUN apt-get install bash make git curl jq -y
+RUN apt-get install bash make git curl jq nodejs npm -y
+RUN go get -u github.com/jteeuwen/go-bindata/...
 ENV CONTEXT=abs
 COPY . /abs
 WORKDIR /abs
