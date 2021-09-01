@@ -18,7 +18,7 @@ cli = require('@cli')
 A decorator that registers a command to be executed via CLI:
 
 ```py
-@cli.cmd("date", "prints the current date", {format: ''})
+@cli.cmd("date", "prints the current date", {"format": ''})
 f date(args, flags) {
     format = flags.format
     return `date ${format}`
