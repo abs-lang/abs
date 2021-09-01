@@ -49,7 +49,7 @@ cli.cmd = f(name, description, flags) {
                     flags[k] = v
                 }
             }
-            
+
             # Call the original cmd
             result = fn.call([args()[3:], flags])
 
