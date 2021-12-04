@@ -29,5 +29,3 @@ cmd.wait()
 echo("finished")
 echo(cmd)
 echo(cmd.ok)
-
-# TODO make cmd.wait() work
