@@ -86,7 +86,7 @@ cd("..")        # /home/user/git or C:\Users\user\git
 
 cd("/usr/local/bin") # /usr/local/bin
 
-dirs = cd() && `ls */`.lines()
+dirs = cd() && `ls /`.lines()
 len(dirs)   # number of directories in homeDir
 ```
 
