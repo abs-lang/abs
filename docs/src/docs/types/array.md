@@ -371,8 +371,8 @@ Returns true when at least one of the elements in the array
 returns `true` when applied to the function `f`:
 
 ```py
-[0, 1, 2].map(f(x){x == 1}) # true
-[0, 1, 2].map(f(x){x == 4}) # false
+[0, 1, 2].some(f(x){x == 1}) # true
+[0, 1, 2].some(f(x){x == 4}) # false
 ```
 
 ### sort()
