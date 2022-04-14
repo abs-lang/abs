@@ -17,7 +17,7 @@ jobs:
       - name: run tests
         run: |
           go test `go list ./... | grep -v "/js"` -vet=off -v -covermode=count -coverprofile=coverage.out
-          go get -u github.com/jandelgado/gcov2lcov
+          go install github.com/jandelgado/gcov2lcov@latest
           cat coverage.out | gcov2lcov > coverage.lcov
         env:
           CONTEXT: abs
