@@ -23,8 +23,14 @@ fi
 
 ARCH="386"
 MACHINE_TYPE=$(uname -m)
+
 if [ "${MACHINE_TYPE}" = 'x86_64' ]; then
   ARCH="amd64"
+fi
+
+# M1
+if [ "${MACHINE_TYPE}" = 'arm64' ]; then
+  ARCH="arm64"
 fi
 
 echo "Trying to detect the details of your architecture."
