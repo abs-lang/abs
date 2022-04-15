@@ -980,7 +980,7 @@ func TestForElseExpression(t *testing.T) {
 }
 
 func TestFunctionLiteralParsing(t *testing.T) {
-	input := `f(x, y = 2) { x + y; }`
+	input := `f(x, y = 2) { defer f() {echo(1)}(); x + y; }`
 
 	l := lexer.New(input)
 	p := New(l)
@@ -1012,18 +1012,29 @@ func TestFunctionLiteralParsing(t *testing.T) {
 	testParameter(t, function.Parameters[0], "x")
 	testParameter(t, function.Parameters[1], "y = 2")
 
-	if len(function.Body.Statements) != 1 {
+	if len(function.Body.Statements) != 2 {
 		t.Fatalf("function.Body.Statements has not 1 statements. got=%d\n",
 			len(function.Body.Statements))
 	}
 
-	bodyStmt, ok := function.Body.Statements[0].(*ast.ExpressionStatement)
+	stmt, ok = function.Body.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("function body stmt is not ast.ExpressionStatement. got=%T",
 			function.Body.Statements[0])
 	}
 
-	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+	_, ok = stmt.Expression.(*ast.CallExpression)
+	if !ok {
+		t.Fatalf("expression should be a call expression, got=%T", stmt.Expression)
+	}
+
+	secondExpr, ok := function.Body.Statements[1].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("function body stmt is not ast.ExpressionStatement. got=%T",
+			function.Body.Statements[1])
+	}
+
+	testInfixExpression(t, secondExpr.Expression, "x", "+", "y")
 }
 
 func TestCommandParsing(t *testing.T) {

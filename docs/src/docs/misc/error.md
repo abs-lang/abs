@@ -8,7 +8,7 @@ When using ABS, you might bump into errors within your code. When the interprete
 
 Note that there are 2 phases of the interpreter: parser and evaluator.
 
-When the parser phase encounters a syntax error it will continue to process the rest of the file and report all of the syntax errors it finds. 
+When the parser phase encounters a syntax error it will continue to process the rest of the file and report all of the syntax errors it finds.
 
 However, the evaluator phase will quit immediately when it encounters an evaluation error. Thus, you may need to run the ABS interpreter multiple times to find all the run-time errors.
 
