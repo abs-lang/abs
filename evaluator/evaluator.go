@@ -1,8 +1,10 @@
 package evaluator
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"os"
@@ -1526,13 +1528,9 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
 	c.Stdin = os.Stdin
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	c.Stdout = &stdout
-	c.Stderr = &stderr
+	var stdoutStderr bytes.Buffer
 
-	s.Stdout = &stdout
-	s.Stderr = &stderr
+	s.StdoutStderr = &stdoutStderr
 	s.Cmd = c
 	s.Token = tok
 
@@ -1543,14 +1541,33 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 		// wait for it by calling s.Wait().
 		s.SetRunning()
 
-		err := c.Start()
+		stdoutPipe, err := s.Cmd.StdoutPipe()
 		if err != nil {
+			s.SetCmdResult(FALSE)
+			return FALSE
+		}
+
+		stderrPipe, err := s.Cmd.StderrPipe()
+		if err != nil {
+			s.SetCmdResult(FALSE)
+			return FALSE
+		}
+
+		combinedReader := io.MultiReader(stdoutPipe, stderrPipe)
+
+		s.Scanner = bufio.NewScanner(combinedReader)
+		s.Scanner.Split(bufio.ScanLines)
+
+		if err := s.Cmd.Start(); err != nil {
 			s.SetCmdResult(FALSE)
 			return FALSE
 		}
 
 		go evalCommandInBackground(s)
 	} else {
+		c.Stdout = &stdoutStderr
+		c.Stderr = &stdoutStderr
+
 		err = c.Run()
 	}
 
