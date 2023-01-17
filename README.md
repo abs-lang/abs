@@ -5,9 +5,15 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/abs-lang/abs"><img alt="GitHub Workflow Status (branch)" src="https://img.shields.io/github/workflow/status/abs-lang/abs/tests/master"></a>
-  <a href="https://github.com/abs-lang/abs"><img alt="License" src="https://img.shields.io/github/license/abs-lang/abs.svg"></a>
-  <a href="https://github.com/abs-lang/abs"><img alt="Version" src="https://img.shields.io/github/release-pre/abs-lang/abs.svg"></a>
+  <a href="https://github.com/abs-lang/abs">
+    <img alt="GitHub Workflow Status (branch)" src="https://img.shields.io/github/actions/workflow/status/abs-lang/abs/tests.yml?branch=master">
+  </a>
+  <a href="https://github.com/abs-lang/abs">
+    <img alt="License" src="https://img.shields.io/github/license/abs-lang/abs.svg">
+  </a>
+  <a href="https://github.com/abs-lang/abs">
+    <img alt="Version" src="https://img.shields.io/github/release-pre/abs-lang/abs.svg">
+  </a>
   <img alt="undefined" src="https://img.shields.io/github/release-date/abs-lang/abs.svg?style=flat">
   <img alt="undefined" src="https://img.shields.io/github/downloads/abs-lang/abs/total.svg?style=flat">
   <br />
