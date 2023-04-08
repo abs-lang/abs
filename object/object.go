@@ -1,6 +1,7 @@
 package object
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"os/exec"
@@ -211,14 +212,15 @@ func (f *Function) Json() string { return f.Inspect() }
 // cmd.wait() // ...
 // cmd.done // TRUE
 type String struct {
-	Token  token.Token
-	Value  string
-	Ok     *Boolean  // A special property to check whether a command exited correctly
-	Cmd    *exec.Cmd // A special property to access the underlying command
-	Stdout *bytes.Buffer
-	Stderr *bytes.Buffer
-	Done   *Boolean
-	mux    *sync.Mutex
+	Token        token.Token
+	Value        string
+	Ok           *Boolean  // A special property to check whether a command exited correctly
+	Cmd          *exec.Cmd // A special property to access the underlying command
+	StdoutStderr *bytes.Buffer
+	Scanner      *bufio.Scanner
+	Done         *Boolean
+	lineno       int64
+	mux          *sync.Mutex
 }
 
 func (s *String) Type() ObjectType  { return STRING_OBJ }
@@ -259,6 +261,15 @@ func (s *String) SetRunning() {
 // wait on the background command
 // to be done.
 func (s *String) Wait() {
+	// Read all 'unread bytes' from stdout/stderr but just in case it hasn't been read yet
+	if s.Scanner != nil {
+		for s.Scanner.Scan() {
+			s.StdoutStderr.Write(s.Scanner.Bytes())
+		}
+
+		s.Value = strings.TrimSpace(s.StdoutStderr.String())
+	}
+
 	s.mustHaveMutex()
 	s.mux.Lock()
 	s.mux.Unlock()
@@ -271,9 +282,8 @@ func (s *String) Kill() error {
 
 	// The command value includes output and possible error
 	// We might want to change this
-	output := s.Stdout.String()
-	outputErr := s.Stderr.String()
-	s.Value = strings.TrimSpace(output) + strings.TrimSpace(outputErr)
+	output := s.StdoutStderr.String()
+	s.Value = strings.TrimSpace(output)
 
 	if err != nil {
 		return err
@@ -291,17 +301,30 @@ func (s *String) Kill() error {
 // - str.done
 func (s *String) SetCmdResult(Ok *Boolean) {
 	s.Ok = Ok
-	var output string
 
-	if Ok.Value {
-		output = s.Stdout.String()
-	} else {
-		output = s.Stderr.String()
-	}
+	output := s.StdoutStderr.String()
 
 	// trim space at both ends of out.String(); works in both linux and windows
 	s.Value = strings.TrimSpace(output)
 	s.Done = TRUE
+}
+
+func (s *String) Next() (Object, Object) {
+	if s.Scanner == nil {
+		return nil, nil
+	}
+
+	for s.Scanner.Scan() {
+		line := s.Scanner.Text()
+		s.lineno += 1
+		return &Number{Value: float64(s.lineno - 1)}, &String{Value: line, Scanner: s.Scanner, lineno: s.lineno}
+	}
+
+	return nil, nil
+}
+
+func (s *String) Reset() {
+	s.lineno = 0
 }
 
 type Builtin struct {
