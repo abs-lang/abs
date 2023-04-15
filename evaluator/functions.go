@@ -98,6 +98,11 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{},
 			Fn:    echoFn,
 		},
+                // echo_n(arg:"hello")
+                "echo_n": &object.Builtin{
+                        Types: []string{},
+                        Fn:    echo_nFn,
+                },
 		// int(string:"123")
 		// int(number:"123")
 		"int": &object.Builtin{
@@ -764,6 +769,24 @@ func echoFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	fmt.Fprintln(env.Writer, "")
 
 	return NULL
+}
+
+// echo_n(arg:"hello")
+func echo_nFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+        if len(args) == 0 {
+                // allow echo() without crashing
+                return NULL
+        }
+        var arguments []interface{} = make([]interface{}, len(args)-1)
+        for i, d := range args {
+                if i > 0 {
+                        arguments[i-1] = d.Inspect()
+                }
+        }
+
+        fmt.Fprintf(env.Writer, args[0].Inspect(), arguments...)
+
+        return NULL
 }
 
 // int(string:"123")
