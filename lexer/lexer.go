@@ -116,9 +116,18 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Position = l.position
 			tok.Literal = "%="
 			l.readChar()
-		} else {
-			tok = l.newToken(token.MODULO)
+			break
 		}
+
+		if l.peekChar() == '%' {
+			tok.Type = token.PERCENT
+			tok.Position = l.position
+			tok.Literal = "%%"
+			l.readChar()
+			break
+		}
+
+		tok = l.newToken(token.MODULO)
 	case '!':
 		if l.peekChar() == '=' {
 			tok = l.newToken(token.NOT_EQ)

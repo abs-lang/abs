@@ -156,6 +156,17 @@ Modulo:
 19 % 5 # 4
 ```
 
+## %%
+
+Percent calculator:
+
+```bash
+1 %% 4 # 25
+1 %% 3 # 33.3...
+5 %% 1 # 500
+49k %% 139k # 35.2...
+```
+
 ## %=
 
 Compound modulo:

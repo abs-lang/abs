@@ -17,7 +17,7 @@ echo(2)
 # 3
 ```
 
-When you schedule a function to be deferred, it will executed right at
+When you schedule a function to be deferred, it will be executed right at
 the end of the current scope. A `defer` inside a function will then
 execute at the end of that function itself:
 

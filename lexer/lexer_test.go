@@ -120,6 +120,7 @@ f hello(x, y) {
 !in_variable_named_in
 !i
 defer fn
+%%
 `
 
 	tests := []struct {
@@ -417,6 +418,7 @@ defer fn
 		{token.IDENT, "i"},
 		{token.DEFER, "defer"},
 		{token.IDENT, "fn"},
+		{token.PERCENT, "%%"},
 		{token.EOF, ""},
 	}
 

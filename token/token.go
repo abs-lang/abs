@@ -24,6 +24,7 @@ const (
 	SLASH         = "/"
 	EXPONENT      = "**"
 	MODULO        = "%"
+	PERCENT       = "%%"
 	COMP_PLUS     = "+="
 	COMP_MINUS    = "-="
 	COMP_ASTERISK = "*="

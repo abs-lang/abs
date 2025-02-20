@@ -52,6 +52,7 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK:      PRODUCT,
 	token.EXPONENT:      PRODUCT,
 	token.MODULO:        PRODUCT,
+	token.PERCENT:       PRODUCT,
 	token.COMP_PLUS:     EQUALS,
 	token.COMP_MINUS:    EQUALS,
 	token.COMP_SLASH:    EQUALS,
@@ -133,6 +134,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.COMP_EXPONENT, p.parseCompoundAssignment)
 	p.registerInfix(token.COMP_MODULO, p.parseCompoundAssignment)
 	p.registerInfix(token.COMP_ASTERISK, p.parseCompoundAssignment)
+	p.registerInfix(token.PERCENT, p.parseInfixExpression)
 	p.registerInfix(token.EQ, p.parseInfixExpression)
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.TILDE, p.parseInfixExpression)
@@ -594,13 +596,15 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
-// if x {
-//   return x
-// } else if y {
-//   return y
-// } else {
-//   return z
-// }
+//	if x {
+//	  return x
+//	} else if y {
+//
+//	  return y
+//	} else {
+//
+//	  return z
+//	}
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
 	scenarios := []*ast.Scenario{}
@@ -651,9 +655,9 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	return expression
 }
 
-// while true {
-// 	echo("true")
-// }
+//	while true {
+//		echo("true")
+//	}
 func (p *Parser) parseWhileExpression() ast.Expression {
 	expression := &ast.WhileExpression{Token: p.curToken}
 
@@ -709,9 +713,9 @@ func (p *Parser) parseForExpression() ast.Expression {
 	return expression
 }
 
-// for x in [1,2,3] {
-// 	echo("true")
-// }
+//	for x in [1,2,3] {
+//		echo("true")
+//	}
 func (p *Parser) parseForInExpression(initialExpression *ast.ForExpression) ast.Expression {
 	expression := &ast.ForInExpression{Token: initialExpression.Token}
 
@@ -787,9 +791,9 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
-// f() {
-//   return 1
-// }
+//	f() {
+//	  return 1
+//	}
 func (p *Parser) parseFunctionLiteral() ast.Expression {
 	lit := &ast.FunctionLiteral{Token: p.curToken}
 
