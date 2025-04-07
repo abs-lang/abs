@@ -1,2 +1,2 @@
 ip = `curl -s 'https://api.ipify.org?format=json' | jq -rj ".ip"`
-echo "your ip is " + ip
+echo("your ip is " + ip)
