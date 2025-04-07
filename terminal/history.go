@@ -1,4 +1,4 @@
-package repl
+package terminal
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/util"
 )
 
@@ -33,7 +34,7 @@ const (
 // 1) we look in the ABS global environment as these vars can be set by the ABS init file
 // 2) we look in the OS environment
 // 3) we use the constant defaults
-func getHistoryConfiguration() (string, int) {
+func getHistoryConfiguration(env *object.Environment) (string, int) {
 	// obtain any ABS global environment vars or OS environment vars
 	// ABS_MAX_HISTORY_LINES
 	maxHistoryLines := util.GetEnvVar(env, "ABS_MAX_HISTORY_LINES", ABS_MAX_HISTORY_LINES)
