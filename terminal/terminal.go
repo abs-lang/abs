@@ -34,6 +34,7 @@ import (
 // worth renaming repl to runner? and maybe terminal back to repl
 // add prompt formatting tests
 // more example statements
+// suggestions
 
 type (
 	errMsg error
@@ -85,6 +86,14 @@ func (m Model) Quit() (Model, tea.Cmd) {
 	return m, tea.Quit
 }
 
+func (m Model) EngagePlaceholder() (Model, tea.Cmd) {
+	if m.in.Placeholder != "" {
+		m.in.SetValue(m.in.Placeholder)
+	}
+
+	return m, nil
+}
+
 func (m Model) Eval() (Model, tea.Cmd) {
 	m.in.Placeholder = ""
 	m.dirty = ""
@@ -125,12 +134,26 @@ var exampleStatements = []string{
 	"'string' ~ 'sTrINg'",
 	"true || sleep(1000)",
 	"true && sleep(1000)",
+	"one, two, three = [1, 2, 3]",
+	"!!true",
+	"10 ** 2",
+	"6 <=> 5",
+	"{'x': 1}?.x?.x",
+	"defer echo(1); echo(2)",
+	"\"hello world\"[-2]",
+	"\"hello world\"[:5]",
+	"\"hello %s\".fmt(\"world\")",
+	"`cat /etc/hosts`.lines()",
+	"10.3.ceil()",
+	"[1, 2] + [3]",
+	"[{'name': 'Lebron', 'age': 40}, {'name': 'Michalel', 'age': 'older...'}].tsv()",
+	"f greeter(greeting = 'hello'){ '%s world'.fmt(greeting) }",
 }
 
 func getInitialState(user string, version string, env *object.Environment, r Runner) Model {
 	in := textinput.New()
 	in.Prompt = getPrompt(env)
-	in.Placeholder = exampleStatements[mrand.Intn(len(exampleStatements))] + " # just something you can run..."
+	in.Placeholder = exampleStatements[mrand.Intn(len(exampleStatements))] + " # just something you can run... (tab + enter)"
 	historyFile, maxLines := getHistoryConfiguration(env)
 	history := getHistory(historyFile, maxLines)
 	in.Focus()
@@ -188,6 +211,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.Interrupt()
 		case tea.KeyEnter:
 			return m.Eval()
+		case tea.KeyTab:
+			return m.EngagePlaceholder()
 		case tea.KeyCtrlL:
 			return m.Clear()
 		case tea.KeyUp:
