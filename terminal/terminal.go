@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	mrand "math/rand"
 	"os"
 	"os/user"
 	"strings"
@@ -26,12 +27,13 @@ import (
 // print parse errors / generale errors correctly
 // > noexist (for example)
 // stdin() not working
+// sleep blocks everything
 // maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go
 // remove deprecated ioutil methods
-// placeholder
 // remove dependencies
 // worth renaming repl to runner? and maybe terminal back to repl
 // add prompt formatting tests
+// more example statements
 
 type (
 	errMsg error
@@ -73,6 +75,7 @@ type Model struct {
 
 func (m Model) Clear() (Model, tea.Cmd) {
 	m.messages = []string{}
+	m.in.Placeholder = ""
 	return m, tea.ClearScreen
 }
 
@@ -83,6 +86,7 @@ func (m Model) Quit() (Model, tea.Cmd) {
 }
 
 func (m Model) Eval() (Model, tea.Cmd) {
+	m.in.Placeholder = ""
 	m.dirty = ""
 	m.messages = append(m.messages, m.prompt(m.env)+m.in.Value())
 
@@ -99,6 +103,7 @@ func (m Model) Eval() (Model, tea.Cmd) {
 	}
 
 	m.in.Prompt = m.prompt(m.env)
+	m.in.Placeholder = ""
 	m.in.Reset()
 
 	return m, nil
@@ -111,29 +116,40 @@ func (m Model) Interrupt() (Model, tea.Cmd) {
 	return m, nil
 }
 
+var exampleStatements = []string{
+	"`ls -la`",
+	"`cat /etc/hosts`",
+	"['a', 'b', 'c'].map(f(l) {l.upper()})",
+	"1..10",
+	"1 in [0,1,2,3,4]",
+	"'string' ~ 'sTrINg'",
+	"true || sleep(1000)",
+	"true && sleep(1000)",
+}
+
 func getInitialState(user string, version string, env *object.Environment, r Runner) Model {
 	in := textinput.New()
 	in.Prompt = getPrompt(env)
-	in.Placeholder = "`date`"
+	in.Placeholder = exampleStatements[mrand.Intn(len(exampleStatements))] + " # just something you can run..."
 	historyFile, maxLines := getHistoryConfiguration(env)
 	history := getHistory(historyFile, maxLines)
 	in.Focus()
-	// ti.CharLimit = 156
-	// ti.Width = 20
 	messages := []string{}
 	messages = append(messages, fmt.Sprintf("Hello %s, welcome to the ABS (%s) programming language!", user, version))
+	messages = append(messages, "Type 'quit' when you're done, 'help' if you get lost!")
+
 	// check for new version about 10% of the time,
 	// to avoid too many hangups
 	if r, e := rand.Int(rand.Reader, big.NewInt(100)); e == nil && r.Int64() < 10 {
 		if newver, update := util.UpdateAvailable(version); update {
-			messages = append(messages, fmt.Sprintf(
-				"*** Update available: %s (your version is %s) ***",
+			msg := fmt.Sprintf(
+				"\n*** Update available: %s (your version is %s) ***",
 				newver,
 				version,
-			))
+			)
+			messages = append(messages, lipgloss.NewStyle().Faint(true).Render(msg))
 		}
 	}
-	messages = append(messages, "Type 'quit' when you're done, 'help' if you get lost!")
 
 	return Model{
 		user:            user,
@@ -148,13 +164,12 @@ func getInitialState(user string, version string, env *object.Environment, r Run
 		historyMaxLInes: maxLines,
 		dirty:           "",
 		messages:        messages,
-
-		err: nil,
+		err:             nil,
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return textarea.Blink
+	return tea.Batch(tea.SetWindowTitle("abs-repl"), textarea.Blink)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
