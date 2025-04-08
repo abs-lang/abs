@@ -16,27 +16,22 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// TODO clear working
+// TODO
 // history
 // cursor up and down
 // quit command
 // help
 // autocompleter
-// TODO don't make environment global, not needed anymore, instead pass it to model
 // navigate commands up
 // print parse errors / generale errors correctly
 // > noexist (for example)
-// blue color prompt
 // stdin() not working
-// ctrlc?
-// move under terminal package
-// remove deprecated terminat package
 // maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go
 // remove deprecated ioutil methods
-// live prefix
 // placeholder
 // remove dependencies
 // worth renaming repl to runner? and maybe terminal back to repl
+// add prompt formatting tests
 
 type (
 	errMsg error
@@ -56,14 +51,16 @@ type Runner func(string) string
 
 func New(user string, version string, env *object.Environment, runner Runner) *Terminal {
 	return &Terminal{
-		tea.NewProgram(initialConsole(user, version, env, runner)),
+		tea.NewProgram(getInitialState(user, version, env, runner)),
 	}
 }
 
-type model struct {
+type Model struct {
 	user            string
 	version         string
 	runner          Runner
+	env             *object.Environment
+	prompt          func(*object.Environment) string
 	history         []string
 	historyPoint    int
 	historyFile     string
@@ -71,13 +68,52 @@ type model struct {
 	dirty           string
 	messages        []string
 	in              textinput.Model
-	// senderStyle lipgloss.Style
-	err error
+	err             error
 }
 
-func initialConsole(user string, version string, env *object.Environment, r Runner) model {
+func (m Model) Clear() (Model, tea.Cmd) {
+	m.messages = []string{}
+	return m, tea.ClearScreen
+}
+
+func (m Model) Quit() (Model, tea.Cmd) {
+	saveHistory(m.historyFile, m.historyMaxLInes, m.history)
+
+	return m, tea.Quit
+}
+
+func (m Model) Eval() (Model, tea.Cmd) {
+	m.dirty = ""
+	m.messages = append(m.messages, m.prompt(m.env)+m.in.Value())
+
+	if m.in.Value() == "" {
+		return m, nil
+	}
+
+	res := m.runner(m.in.Value())
+	m.history = append(m.history, m.in.Value())
+	m.historyPoint = len(m.history)
+
+	if res != "" {
+		m.messages = append(m.messages, res)
+	}
+
+	m.in.Prompt = m.prompt(m.env)
+	m.in.Reset()
+
+	return m, nil
+}
+
+func (m Model) Interrupt() (Model, tea.Cmd) {
+	m.messages = append(m.messages, m.prompt(m.env)+m.in.Value())
+	m.in.Reset()
+
+	return m, nil
+}
+
+func getInitialState(user string, version string, env *object.Environment, r Runner) Model {
 	in := textinput.New()
-	in.Prompt = getPromptPrefix(env)
+	in.Prompt = getPrompt(env)
 	in.Placeholder = "`date`"
 	historyFile, maxLines := getHistoryConfiguration(env)
 	history := getHistory(historyFile, maxLines)
@@ -99,7 +135,12 @@ func initialConsole(user string, version string, env *object.Environment, r Runn
 	}
 	messages = append(messages, "Type 'quit' when you're done, 'help' if you get lost!")
 
-	return model{
+	return Model{
+		user:            user,
+		version:         version,
+		runner:          r,
+		prompt:          getPrompt,
+		env:             env,
 		in:              in,
 		history:         history,
 		historyPoint:    len(history),
@@ -107,19 +148,16 @@ func initialConsole(user string, version string, env *object.Environment, r Runn
 		historyMaxLInes: maxLines,
 		dirty:           "",
 		messages:        messages,
-		user:            user,
-		version:         version,
-		runner:          r,
-		// senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+
 		err: nil,
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return textarea.Blink
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		tiCmd tea.Cmd
 	)
@@ -130,28 +168,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEsc, tea.KeyCtrlD:
-			saveHistory(m.historyFile, m.historyMaxLInes, m.history)
-			return m, tea.Quit
-		case tea.KeyEnter, tea.KeyCtrlC:
-			m.dirty = ""
-			m.messages = append(m.messages, m.in.Prompt+" "+m.in.Value())
-
-			if m.in.Value() == "" {
-				break
-			}
-
-			res := m.runner(m.in.Value())
-			m.history = append(m.history, m.in.Value())
-			m.historyPoint = len(m.history)
-
-			if res != "" {
-				m.messages = append(m.messages, res)
-			}
-			m.in.Reset()
+			return m.Quit()
+		case tea.KeyCtrlC:
+			return m.Interrupt()
+		case tea.KeyEnter:
+			return m.Eval()
 		case tea.KeyCtrlL:
-
+			return m.Clear()
 		case tea.KeyUp:
-			// oly store dirty state on first key up
+			// oly store dirty Model on first key up
 			if m.dirty == "" {
 				m.dirty = m.in.Value()
 			}
@@ -188,45 +213,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tiCmd
 }
 
-func formatMsg(msg string) string {
-	return lipgloss.NewStyle().Render(msg)
-}
+func (m Model) View() string {
+	if len(m.messages) == 0 {
+		return m.in.View()
+	}
 
-func (m model) View() string {
 	return fmt.Sprintf(
 		"%s\n%s",
-		formatMsg(strings.Join(m.messages, "\n")),
+		strings.Join(m.messages, "\n"),
 		m.in.View(),
 	)
 }
 
-func getPromptPrefix(env *object.Environment) string {
-	// get prompt prefix template string
-	promptPrefix := util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_PROMPT_PREFIX)
-	// get live prompt boolean
+func getPrompt(env *object.Environment) string {
+	prompt := util.GetEnvVar(env, "ABS_PROMPT_PREFIX", ABS_DEFAULT_PROMPT)
+	prompt = lipgloss.NewStyle().Foreground(lipgloss.Color("#4287f5")).Render(prompt)
 	livePrompt := util.GetEnvVar(env, "ABS_PROMPT_LIVE_PREFIX", "false")
+
 	if livePrompt == "true" {
-		LivePrefixState.LivePrefix = promptPrefix
-		LivePrefixState.IsEnable = true
-	} else {
-		if promptPrefix != formatLivePrefix(promptPrefix) {
-			// we have a template string when livePrompt mode is turned off
-			// use default static prompt instead
-			promptPrefix = ABS_PROMPT_PREFIX
-		}
+		return formatLivePrefix(prompt)
 	}
 
-	return promptPrefix
-}
-
-var LivePrefixState struct {
-	LivePrefix string
-	IsEnable   bool
-}
-
-func changeLivePrefix() (string, bool) {
-	livePrefix := formatLivePrefix(LivePrefixState.LivePrefix)
-	return livePrefix, LivePrefixState.IsEnable
+	return prompt
 }
 
 // format ABS_PROMPT_PREFIX = "{user}@{host}:{dir} $"
@@ -249,4 +257,4 @@ func formatLivePrefix(prefix string) string {
 }
 
 // support for user config of ABS REPL prompt string
-const ABS_PROMPT_PREFIX = "⧐  "
+var ABS_DEFAULT_PROMPT = "> "
