@@ -18,13 +18,11 @@ import (
 // TODO
 // history
 // cursor up and down
-// quit command
 // help
 // autocompleter
 // navigate commands up
 // print parse errors / generale errors correctly
 // > noexist (for example)
-// stdin() not working
 // maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go
 // remove deprecated ioutil methods
 // remove dependencies
@@ -144,6 +142,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC:
 			return m.Interrupt()
 		case tea.KeyEnter:
+			if m.in.Value() == "quit" {
+				return m.Quit()
+			}
+
 			return m.Eval()
 		case tea.KeyTab:
 			return m.EngagePlaceholder()
