@@ -460,15 +460,15 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 	return nil
 }
 
-// spec is an array of {
-//   {															// signature: func(num|str, arr)
-//     { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
-//     { ARRAY_OBJ},								// type options for arg 1
-//   },
-//   {															// signature: func(num|str)
-//     { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
-//   },
-// }
+//	spec is an array of {
+//	  {															// signature: func(num|str, arr)
+//	    { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
+//	    { ARRAY_OBJ},								// type options for arg 1
+//	  },
+//	  {															// signature: func(num|str)
+//	    { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
+//	  },
+//	}
 func validateVarArgs(tok token.Token, name string, args []object.Object, specs [][][]string) (object.Object, int) {
 	required := -1
 	max := 0
@@ -896,6 +896,17 @@ func isNumberFn(tok token.Token, env *object.Environment, args ...object.Object)
 
 // stdin() -- implemented with 2 functions
 func stdinFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	if env.Interactive {
+		r := bufio.NewReader(os.Stdin)
+		s, _, err := r.ReadLine()
+
+		if err != nil {
+			return &object.Error{Message: err.Error()}
+		}
+
+		return &object.String{Token: tok, Value: string(s)}
+	}
+
 	v := scanner.Scan()
 
 	if !v {
@@ -907,14 +918,15 @@ func stdinFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 func stdinNextFn() (object.Object, object.Object) {
 	v := scanner.Scan()
 
-	if !v {
+	if !v || scanner.Text() == "" {
+		scannerPosition = 0
 		return nil, EOF
 	}
 
-	defer func() {
-		scannerPosition += 1
-	}()
-	return &object.Number{Value: float64(scannerPosition)}, &object.String{Token: tok, Value: scanner.Text()}
+	currentPosition := scannerPosition
+	scannerPosition += 1
+
+	return &object.Number{Value: float64(currentPosition)}, &object.String{Token: tok, Value: scanner.Text()}
 }
 
 // env(variable:"PWD") or env(string:"KEY", string:"VAL")
@@ -1088,7 +1100,7 @@ func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env = object.NewEnvironment(env.Writer, env.Dir, env.Version)
+	env = object.NewEnvironment(env.Writer, env.Dir, env.Version, env.Interactive)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -2173,7 +2185,7 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		return evaluated
 	}
 
-	e := object.NewEnvironment(env.Writer, filepath.Dir(file), env.Version)
+	e := object.NewEnvironment(env.Writer, filepath.Dir(file), env.Version, env.Interactive)
 	evaluated := doSource(tok, e, file, args...)
 
 	// If a module fails to be imported, let's
