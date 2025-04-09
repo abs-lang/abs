@@ -101,23 +101,14 @@ func printParserErrors(errors []string) {
 // load the ABS_INIT_FILE into the global env
 func BeginRepl(args []string, version string) {
 	d, _ := os.Getwd()
-	env := object.NewEnvironment(os.Stdout, d, "")
-	env.Version = version
-	env.Set("ABS_VERSION", &object.String{Value: version})
+	interactive := true
 
-	// if we're called without arguments, this is interactive REPL, otherwise a script
-	var interactive bool
-	if len(args) == 1 || strings.HasPrefix(args[1], "-") {
-		interactive = true
-		env.Set("ABS_INTERACTIVE", evaluator.TRUE)
-	} else {
+	if len(args) > 1 && !strings.HasPrefix(args[1], "-") {
 		interactive = false
-		env.Set("ABS_INTERACTIVE", evaluator.FALSE)
-		// Make sure we set the right Dir when evaluating a script,
-		// so that the script thinks it's running from its location
-		// and things like relative require() calls work.
-		env.Dir = filepath.Dir(args[1])
+		d = filepath.Dir(args[1])
 	}
+
+	env := object.NewEnvironment(os.Stdout, d, version, interactive)
 
 	// get abs init file
 	// user may test ABS_INTERACTIVE to decide what code to run
@@ -131,16 +122,15 @@ func BeginRepl(args []string, version string) {
 			panic(err)
 		}
 
-		term := terminal.New(
+		term := terminal.NewTerminal(
 			user.Username,
-			version,
 			env,
 			func(code string) string {
 				return Run(code, env)
 			},
 		)
 
-		if err := term.Run(); err != nil {
+		if _, err := term.Run(); err != nil {
 			log.Fatal(err)
 		}
 

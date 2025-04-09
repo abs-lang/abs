@@ -99,7 +99,7 @@ func TestInterpolateStringVars(t *testing.T) {
 		{"${string x", "${string x"},
 	}
 
-	env := object.NewEnvironment(os.Stdout, "", "dev")
+	env := object.NewEnvironment(os.Stdout, "", "dev", false)
 	env.Set("string", &object.String{Value: "test"})
 
 	for _, tt := range tests {
