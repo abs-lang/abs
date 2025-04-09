@@ -18,7 +18,6 @@ import (
 // TODO
 // history
 // cursor up and down
-// help
 // autocompleter
 // navigate commands up
 // print parse errors / generale errors correctly
@@ -142,11 +141,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC:
 			return m.Interrupt()
 		case tea.KeyEnter:
-			if m.in.Value() == "quit" {
-				return m.Quit()
+			m.in.Placeholder = ""
+
+			if m.in.Value() == "" {
+				return m.PrintNewline()
 			}
 
-			return m.Eval()
+			m.history = append(m.history, m.in.Value())
+			m.historyPoint = len(m.history)
+
+			switch m.in.Value() {
+			case "quit":
+				return m.Quit()
+			case "help":
+				return m.Help()
+			default:
+				return m.Eval()
+			}
+
 		case tea.KeyTab:
 			return m.EngagePlaceholder()
 		case tea.KeyCtrlL:
@@ -211,6 +223,29 @@ func (m Model) Quit() (Model, tea.Cmd) {
 	return m, tea.Quit
 }
 
+func (m Model) Help() (Model, tea.Cmd) {
+	prompt := m.prompt(m.env)
+	help := func(s string) string { return lipgloss.NewStyle().Faint(true).Render(s) }
+
+	m.messages = append(
+		m.messages,
+		help("\nTry typing something along the lines of:\n"),
+		"  "+prompt+help("current_date = `date`\n"),
+		help("A command should be triggered in your system. Then try printing the result of that command with:\n"),
+		"  "+prompt+help("current_date\n"),
+		help("Here some other valid examples of ABS code:\n"),
+	)
+
+	for i := 0; i < 5; i++ {
+		ix := mrand.Intn(len(exampleStatements))
+		m.messages = append(m.messages, "  "+prompt+help(exampleStatements[ix]+"\n"))
+	}
+
+	m.in.SetValue("")
+
+	return m, nil
+}
+
 func (m Model) EngagePlaceholder() (Model, tea.Cmd) {
 	if m.in.Placeholder != "" {
 		m.in.SetValue(m.in.Placeholder)
@@ -227,15 +262,7 @@ type evalCmd struct {
 var ch = make(chan evalCmd)
 
 func (m Model) Eval() (Model, tea.Cmd) {
-	m.in.Placeholder = ""
 	m.dirty = ""
-
-	if m.in.Value() == "" {
-		return m.Print(evalCmd{})
-	}
-
-	m.history = append(m.history, m.in.Value())
-	m.historyPoint = len(m.history)
 
 	return m, func() tea.Msg {
 		m.signals <- SIGNAL_TERMINAL_SUSPEND
@@ -257,8 +284,13 @@ func (m Model) Print(msg evalCmd) (Model, tea.Cmd) {
 	}
 
 	m.in.Prompt = m.prompt(m.env)
-	m.in.Placeholder = ""
 	m.in.Reset()
+
+	return m, nil
+}
+
+func (m Model) PrintNewline() (Model, tea.Cmd) {
+	m.messages = append(m.messages, m.prompt(m.env))
 
 	return m, nil
 }
