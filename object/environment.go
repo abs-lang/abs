@@ -10,7 +10,7 @@ import (
 // new environment has access to identifiers stored
 // in the outer one.
 func NewEnclosedEnvironment(outer *Environment, args []Object) *Environment {
-	env := NewEnvironment(outer.Writer, outer.Dir, outer.Version)
+	env := NewEnvironment(outer.Writer, outer.Dir, outer.Version, outer.Interactive)
 	env.outer = outer
 	env.CurrentArgs = args
 	return env
@@ -20,12 +20,14 @@ func NewEnclosedEnvironment(outer *Environment, args []Object) *Environment {
 // ABS in, specifying a writer for the output of the
 // program and the base dir (which is used to require
 // other scripts)
-func NewEnvironment(w io.Writer, dir string, version string) *Environment {
+func NewEnvironment(w io.Writer, dir string, version string, interactive bool) *Environment {
 	s := make(map[string]Object)
+	// TODO
 	// e.Version and ABS_VERSION are duplicate, we should
 	// find a better way to manage it
-	e := &Environment{store: s, outer: nil, Writer: w, Dir: dir, Version: version}
+	e := &Environment{store: s, outer: nil, Writer: w, Dir: dir, Version: version, Interactive: interactive}
 	e.Set("ABS_VERSION", &String{Value: e.Version})
+	e.Set("ABS_INTERACTIVE", TRUE)
 
 	return e
 }
@@ -61,6 +63,8 @@ type Environment struct {
 	Dir string
 	// Version of the ABS runtime
 	Version string
+	// is abs running in interactive mode?
+	Interactive bool
 }
 
 // Get returns an identifier stored within the environment
