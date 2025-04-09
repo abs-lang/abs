@@ -27,7 +27,6 @@ import (
 // print parse errors / generale errors correctly
 // > noexist (for example)
 // stdin() not working
-// sleep blocks everything
 // maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go
 // remove deprecated ioutil methods
 // remove dependencies
@@ -59,11 +58,14 @@ func New(user string, version string, env *object.Environment, runner Runner) *T
 }
 
 type Model struct {
-	user            string
-	version         string
-	runner          Runner
-	env             *object.Environment
-	prompt          func(*object.Environment) string
+	user    string
+	version string
+	runner  Runner
+	env     *object.Environment
+	prompt  func(*object.Environment) string
+	// whether this model is busy running a command
+	// thinking, thinking...
+	thinking        bool
 	history         []string
 	historyPoint    int
 	historyFile     string
@@ -94,26 +96,44 @@ func (m Model) EngagePlaceholder() (Model, tea.Cmd) {
 	return m, nil
 }
 
+type evalCmd struct {
+	code   string
+	result string
+}
+
 func (m Model) Eval() (Model, tea.Cmd) {
+	if m.thinking {
+		return m, nil
+	}
+
 	m.in.Placeholder = ""
 	m.dirty = ""
-	m.messages = append(m.messages, m.prompt(m.env)+m.in.Value())
 
 	if m.in.Value() == "" {
 		return m, nil
 	}
 
-	res := m.runner(m.in.Value())
 	m.history = append(m.history, m.in.Value())
 	m.historyPoint = len(m.history)
+	m.thinking = true
 
-	if res != "" {
-		m.messages = append(m.messages, res)
+	return m, func() tea.Msg {
+		return evalCmd{m.in.Value(), m.runner(m.in.Value())}
+	}
+}
+
+func (m Model) Print(msg evalCmd) (Model, tea.Cmd) {
+	m.messages = append(m.messages, m.prompt(m.env)+msg.code)
+	s := msg.result
+
+	if s != "" {
+		m.messages = append(m.messages, s)
 	}
 
 	m.in.Prompt = m.prompt(m.env)
 	m.in.Placeholder = ""
 	m.in.Reset()
+	m.thinking = false
 
 	return m, nil
 }
@@ -203,6 +223,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.in, tiCmd = m.in.Update(msg)
 
 	switch msg := msg.(type) {
+	case evalCmd:
+		return m.Print(msg)
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEsc, tea.KeyCtrlD:
