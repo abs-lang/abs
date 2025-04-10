@@ -7,6 +7,7 @@ import (
 
 	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/util"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -66,4 +67,10 @@ func formatLivePrefix(prefix string) string {
 		livePrefix = strings.Replace(livePrefix, "{dir}", dir, 1)
 	}
 	return livePrefix
+}
+
+type Lines []tea.Cmd
+
+func (l *Lines) Add(msg string) {
+	*l = append(*l, tea.Println(msg))
 }
