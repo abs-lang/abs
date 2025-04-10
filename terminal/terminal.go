@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	mrand "math/rand"
-	"strings"
 
 	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/util"
@@ -64,44 +63,34 @@ func NewTerminal(user string, env *object.Environment, runner Runner) *tea.Progr
 }
 
 func getInitialModel(sigs signals, user string, env *object.Environment, r Runner) Model {
-	in := textinput.New()
-	in.Prompt = getPrompt(env)
-	in.Placeholder = exampleStatements[mrand.Intn(len(exampleStatements))] + " # just something you can run... (tab + enter)"
 	historyFile, maxLines := getHistoryConfiguration(env)
 	history := getHistory(historyFile, maxLines)
-	in.Focus()
-	messages := []string{}
-	messages = append(messages, fmt.Sprintf("Hello %s, welcome to the ABS (%s) programming language!", user, env.Version))
-	messages = append(messages, "Type 'quit' when you're done, 'help' if you get lost!")
 
-	// check for new version about 10% of the time,
-	// to avoid too many hangups
-	if r, e := rand.Int(rand.Reader, big.NewInt(100)); e == nil && r.Int64() < 10 {
-		if newver, update := util.UpdateAvailable(env.Version); update {
-			msg := fmt.Sprintf(
-				"\n*** Update available: %s (your version is %s) ***",
-				newver,
-				env.Version,
-			)
-			messages = append(messages, lipgloss.NewStyle().Faint(true).Render(msg))
-		}
-	}
-
-	return Model{
+	m := Model{
 		signals:         sigs,
 		user:            user,
 		runner:          r,
-		prompt:          getPrompt,
 		env:             env,
-		in:              in,
 		history:         history,
 		historyPoint:    len(history),
 		historyFile:     historyFile,
 		historyMaxLInes: maxLines,
 		dirty:           "",
-		messages:        messages,
-		err:             nil,
 	}
+
+	m.prompt = func() string {
+		return getPrompt(m.env)
+	}
+
+	// Setup the input line of our terminal
+	in := textinput.New()
+	in.Prompt = m.prompt()
+	in.Placeholder = exampleStatements[mrand.Intn(len(exampleStatements))] + " # just something you can run... (tab + enter)"
+	in.Focus()
+
+	m.in = in
+
+	return m
 }
 
 type Model struct {
@@ -109,19 +98,37 @@ type Model struct {
 	user            string
 	runner          Runner
 	env             *object.Environment
-	prompt          func(*object.Environment) string
+	prompt          func() string
 	history         []string
 	historyPoint    int
 	historyFile     string
 	historyMaxLInes int
 	dirty           string
-	messages        []string
 	in              textinput.Model
-	err             error
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(tea.SetWindowTitle("abs-repl"), textarea.Blink)
+	lines := Lines{}
+	lines.Add(fmt.Sprintf("Hello %s, welcome to the ABS (%s) programming language!", m.user, m.env.Version))
+	lines.Add("Type 'quit' when you're done, 'help' if you get lost!")
+
+	// check for new version about 10% of the time,
+	// to avoid too many hangups
+	if r, e := rand.Int(rand.Reader, big.NewInt(100)); e == nil && r.Int64() < 10 {
+		if newver, update := util.UpdateAvailable(m.env.Version); update {
+			lines.Add(lipgloss.NewStyle().Faint(true).Render(fmt.Sprintf(
+				"\n*** Update available: %s (your version is %s) ***",
+				newver,
+				m.env.Version,
+			)))
+		}
+	}
+
+	return tea.Batch(
+		tea.SetWindowTitle("abs-repl"),
+		textarea.Blink,
+		tea.Sequence(lines...),
+	)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -144,7 +151,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.in.Placeholder = ""
 
 			if m.in.Value() == "" {
-				return m.PrintNewline()
+				return m, tea.Println(m.prompt())
 			}
 
 			m.history = append(m.history, m.in.Value())
@@ -160,7 +167,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case tea.KeyTab:
-			return m.EngagePlaceholder()
+			if m.in.Placeholder != "" {
+				return m.EngagePlaceholder()
+			}
 		case tea.KeyCtrlL:
 			return m.Clear()
 		case tea.KeyUp:
@@ -199,19 +208,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	if len(m.messages) == 0 {
-		return m.in.View()
-	}
-
-	return fmt.Sprintf(
-		"%s\n%s",
-		strings.Join(m.messages, "\n"),
-		m.in.View(),
-	)
+	return m.in.View()
 }
 
 func (m Model) Clear() (Model, tea.Cmd) {
-	m.messages = []string{}
 	m.in.Placeholder = ""
 
 	return m, tea.ClearScreen
@@ -223,33 +223,34 @@ func (m Model) Quit() (Model, tea.Cmd) {
 	return m, tea.Quit
 }
 
+func (m Model) currentLine() string {
+	return m.prompt() + m.in.Value()
+}
+
 func (m Model) Help() (Model, tea.Cmd) {
-	prompt := m.prompt(m.env)
+	lines := Lines{}
+	prompt := m.prompt()
 	help := func(s string) string { return lipgloss.NewStyle().Faint(true).Render(s) }
 
-	m.messages = append(
-		m.messages,
-		help("\nTry typing something along the lines of:\n"),
-		"  "+prompt+help("current_date = `date`\n"),
-		help("A command should be triggered in your system. Then try printing the result of that command with:\n"),
-		"  "+prompt+help("current_date\n"),
-		help("Here some other valid examples of ABS code:\n"),
-	)
+	lines.Add(m.currentLine())
+	lines.Add(help("Try typing something along the lines of:\n"))
+	lines.Add("  " + prompt + help("current_date = `date`\n"))
+	lines.Add(help("A command should be triggered in your system. Then try printing the result of that command with:\n"))
+	lines.Add("  " + prompt + help("current_date\n"))
+	lines.Add(help("Here some other valid examples of ABS code:\n"))
 
 	for i := 0; i < 5; i++ {
 		ix := mrand.Intn(len(exampleStatements))
-		m.messages = append(m.messages, "  "+prompt+help(exampleStatements[ix]+"\n"))
+		lines.Add("  " + prompt + help(exampleStatements[ix]+"\n"))
 	}
 
-	m.in.SetValue("")
+	m.in.Reset()
 
-	return m, nil
+	return m, tea.Sequence(lines...)
 }
 
 func (m Model) EngagePlaceholder() (Model, tea.Cmd) {
-	if m.in.Placeholder != "" {
-		m.in.SetValue(m.in.Placeholder)
-	}
+	m.in.SetValue(m.in.Placeholder)
 
 	return m, nil
 }
@@ -276,28 +277,21 @@ func (m Model) Eval() (Model, tea.Cmd) {
 }
 
 func (m Model) Print(msg evalCmd) (Model, tea.Cmd) {
-	m.messages = append(m.messages, m.prompt(m.env)+msg.code)
-	s := msg.result
+	lines := Lines{}
+	lines.Add(m.prompt() + msg.code)
 
-	if s != "" {
-		m.messages = append(m.messages, s)
+	if msg.result != "" {
+		lines.Add(msg.result)
 	}
 
-	m.in.Prompt = m.prompt(m.env)
 	m.in.Reset()
 
-	return m, nil
-}
-
-func (m Model) PrintNewline() (Model, tea.Cmd) {
-	m.messages = append(m.messages, m.prompt(m.env))
-
-	return m, nil
+	return m, tea.Sequence(lines...)
 }
 
 func (m Model) Interrupt() (Model, tea.Cmd) {
-	m.messages = append(m.messages, m.prompt(m.env)+m.in.Value())
+	l := m.currentLine()
 	m.in.Reset()
 
-	return m, nil
+	return m, tea.Println(l)
 }
