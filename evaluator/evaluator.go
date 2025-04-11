@@ -1525,7 +1525,7 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 	parts := strings.Split(os.Getenv("ABS_COMMAND_EXECUTOR"), " ")
 	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
-	c.Stdin = os.Stdin
+	c.Stdin = env.Stdio.Stdin
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	c.Stdout = &stdout
