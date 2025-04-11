@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -200,7 +199,12 @@ func createAlias(module string) (string, error) {
 	}
 	defer f.Close()
 
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
+
+	if err != nil {
+		fmt.Printf("Could not read alias file %s\n", err)
+		return "", err
+	}
 
 	data := make(map[string]string)
 	moduleName := filepath.Base(module)

@@ -22,7 +22,6 @@ import (
 // autocompleter
 // navigate commands up
 // maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go
-// remove deprecated ioutil methods
 // remove dependencies
 // worth renaming repl to runner? and maybe terminal back to repl
 // add prompt formatting tests
