@@ -21,8 +21,8 @@ build_simple:
 release: build_simple
 	./builds/abs ./scripts/release.abs
 docs:
-	cd docs && npm i && npm run dev
+	cd docs && npm i && NODE_OPTIONS=--openssl-legacy-provider npm run dev
 build_docs:
-	cd docs && npm i && npm run build
+	cd docs && npm i && NODE_OPTIONS=--openssl-legacy-provider npm run build
 wasm:
 	GOOS=js GOARCH=wasm go build -o docs/abs.wasm js/js.go
