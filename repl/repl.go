@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -29,7 +30,7 @@ func getAbsInitFile(env *object.Environment) {
 	// expand the ABS_INIT_FILE to the user's HomeDir
 	filePath, err := util.ExpandPath(initFile)
 	if err != nil {
-		fmt.Printf("Unable to expand ABS init file path: %s\nError: %s\n", initFile, err.Error())
+		fmt.Fprintf(env.Stdout, "Unable to expand ABS init file path: %s\nError: %s\n", initFile, err.Error())
 		os.Exit(99)
 	}
 	initFile = filePath
@@ -46,7 +47,7 @@ func getAbsInitFile(env *object.Environment) {
 //
 // This function takes code and evaluates
 // it, spitting out the result.
-func Run(code string, env *object.Environment) string {
+func Run(code string, env *object.Environment) {
 	// let's check if this REPL is interactive
 	v, _ := env.Get("ABS_INTERACTIVE")
 	interactive := v == object.TRUE
@@ -56,11 +57,11 @@ func Run(code string, env *object.Environment) string {
 
 	program := p.ParseProgram()
 	if len(p.Errors()) != 0 {
-		printParserErrors(p.Errors())
+		printParserErrors(p.Errors(), env)
 		if !interactive {
 			os.Exit(99)
 		}
-		return ""
+		return
 	}
 
 	// invoke BeginEval() passing in the program, env, and lexer for error position
@@ -71,27 +72,26 @@ func Run(code string, env *object.Environment) string {
 		isError := evaluated.Type() == object.ERROR_OBJ
 
 		if isError {
-			fmt.Printf("%s", evaluated.Inspect())
-			fmt.Println("")
+			fmt.Fprintf(env.Stdout, "%s", evaluated.Inspect())
+			fmt.Fprintln(env.Stdout)
 
 			if !interactive {
 				os.Exit(99)
 			}
-			return ""
+			return
 		}
 
 		if interactive && evaluated.Type() != object.NULL_OBJ {
-			return evaluated.Inspect()
+			env.Stdout.Write([]byte(evaluated.Inspect()))
+			return
 		}
 	}
-
-	return ""
 }
 
-func printParserErrors(errors []string) {
-	fmt.Printf("%s", " parser errors:\n")
+func printParserErrors(errors []string, env *object.Environment) {
+	fmt.Fprintf(env.Stdout, "%s", " parser errors:\n")
 	for _, msg := range errors {
-		fmt.Printf("%s", "\t"+msg+"\n")
+		fmt.Fprintf(env.Stdout, " \t"+msg+"\n")
 	}
 }
 
@@ -108,7 +108,7 @@ func BeginRepl(args []string, version string) {
 		d = filepath.Dir(args[1])
 	}
 
-	env := object.NewEnvironment(os.Stdout, d, version, interactive)
+	env := object.NewEnvironment(os.Stdout, os.Stderr, d, version, interactive)
 
 	// get abs init file
 	// user may test ABS_INTERACTIVE to decide what code to run
@@ -122,12 +122,14 @@ func BeginRepl(args []string, version string) {
 			panic(err)
 		}
 
+		stdio := bytes.NewBufferString("")
+		env.Stdout = stdio
+		env.Stderr = stdio
+
 		term := terminal.NewTerminal(
 			user.Username,
 			env,
-			func(code string) string {
-				return Run(code, env)
-			},
+			Run,
 		)
 
 		if _, err := term.Run(); err != nil {
@@ -141,7 +143,7 @@ func BeginRepl(args []string, version string) {
 	// let's parse our argument as a file and run it
 	code, err := ioutil.ReadFile(args[1])
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Fprintln(env.Stdout, err.Error())
 		os.Exit(99)
 	}
 
