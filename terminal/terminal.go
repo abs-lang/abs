@@ -3,6 +3,7 @@ package terminal
 import (
 	"crypto/rand"
 	"fmt"
+	"io"
 	"math/big"
 	mrand "math/rand"
 
@@ -19,8 +20,6 @@ import (
 // cursor up and down
 // autocompleter
 // navigate commands up
-// print parse errors / generale errors correctly
-// > noexist (for example)
 // maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go
 // remove deprecated ioutil methods
 // remove dependencies
@@ -38,7 +37,7 @@ const (
 // Runner takes in ABS code and returns
 // the programs output after evaluating
 // it
-type Runner func(string) string
+type Runner func(string, *object.Environment)
 
 // Channel that can be used to communicate
 // with the terminal
@@ -268,7 +267,11 @@ func (m Model) Eval() (Model, tea.Cmd) {
 	return m, func() tea.Msg {
 		m.signals <- SIGNAL_TERMINAL_SUSPEND
 		go func() {
-			res := evalCmd{m.in.Value(), m.runner(m.in.Value())}
+			m.runner(m.in.Value(), m.env)
+			out, _ := io.ReadAll(m.env.Stdout)
+			err, _ := io.ReadAll(m.env.Stderr)
+
+			res := evalCmd{m.in.Value(), string(out) + string(err)}
 			m.signals <- SIGNAL_TERMINAL_RESTORE
 			ch <- res
 		}()

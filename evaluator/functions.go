@@ -582,7 +582,7 @@ func exitFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	if message != "" {
-		fmt.Fprintf(env.Writer, message)
+		fmt.Fprintf(env.Stdout, message)
 	}
 
 	arg := args[0].(*object.Number)
@@ -750,7 +750,7 @@ func clampFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 func echoFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	if len(args) == 0 {
 		// allow echo() without crashing
-		fmt.Fprintln(env.Writer, "")
+		fmt.Fprintln(env.Stdout, "")
 		return NULL
 	}
 	var arguments []interface{} = make([]interface{}, len(args)-1)
@@ -760,8 +760,8 @@ func echoFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 		}
 	}
 
-	fmt.Fprintf(env.Writer, args[0].Inspect(), arguments...)
-	fmt.Fprintln(env.Writer, "")
+	fmt.Fprintf(env.Stdout, args[0].Inspect(), arguments...)
+	fmt.Fprintln(env.Stdout, "")
 
 	return NULL
 }
@@ -1100,7 +1100,7 @@ func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env = object.NewEnvironment(env.Writer, env.Dir, env.Version, env.Interactive)
+	env = object.NewEnvironment(env.Stdout, env.Stderr, env.Dir, env.Version, env.Interactive)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -2185,7 +2185,7 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		return evaluated
 	}
 
-	e := object.NewEnvironment(env.Writer, filepath.Dir(file), env.Version, env.Interactive)
+	e := object.NewEnvironment(env.Stdout, env.Stderr, filepath.Dir(file), env.Version, env.Interactive)
 	evaluated := doSource(tok, e, file, args...)
 
 	// If a module fails to be imported, let's
