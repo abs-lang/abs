@@ -72,7 +72,7 @@ func getHistory(historyFile string, maxLines int) []string {
 	}
 	fd.Close()
 	// read the file and split the lines into history[...]
-	bytes, err := ioutil.ReadFile(historyFile)
+	bytes, err := os.ReadFile(historyFile)
 	if err != nil {
 		return history
 	}

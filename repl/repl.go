@@ -3,7 +3,6 @@ package repl
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,7 +33,7 @@ func getAbsInitFile(env *object.Environment) {
 	}
 	initFile = filePath
 	// read and eval the abs init file
-	code, err := ioutil.ReadFile(initFile)
+	code, err := os.ReadFile(initFile)
 	if err != nil {
 		// abs init file is optional -- nothing to do here
 		return
@@ -137,7 +136,7 @@ func BeginRepl(args []string, version string) {
 
 	// this is a script
 	// let's parse our argument as a file and run it
-	code, err := ioutil.ReadFile(args[1])
+	code, err := os.ReadFile(args[1])
 	if err != nil {
 		fmt.Fprintln(env.Stdio.Stdout, err.Error())
 		os.Exit(99)
