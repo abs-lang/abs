@@ -27,7 +27,7 @@ func runCode(this js.Value, i []js.Value) interface{} {
 	var stdin bytes.Buffer
 	// the first argument to our function
 	code := i[0].String()
-	env := object.NewEnvironment(&stdin, &stdio, &stdio, "", Version, true)
+	env := object.NewEnvironment(&object.Stdio{&stdin, &stdio, &stdio}, "", Version, true)
 	lex := lexer.New(code)
 	p := parser.New(lex)
 
