@@ -6,7 +6,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"math/big"
 	mrand "math/rand"
@@ -2153,7 +2152,7 @@ var packageAliasesLoaded bool
 
 func requireFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	if !packageAliasesLoaded {
-		a, err := ioutil.ReadFile("./packages.abs.json")
+		a, err := os.ReadFile("./packages.abs.json")
 
 		// We couldn't open the packages, file, possibly doesn't exists
 		// and the code shouldn't fail
@@ -2225,7 +2224,7 @@ func doSource(tok token.Token, env *object.Environment, fileName string, args ..
 		code, error = Asset("stdlib/" + fileName[1:])
 	} else {
 		// load the source file
-		code, error = ioutil.ReadFile(fileName)
+		code, error = os.ReadFile(fileName)
 	}
 
 	if error != nil {

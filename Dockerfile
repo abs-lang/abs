@@ -8,4 +8,4 @@ WORKDIR /abs
 RUN go install github.com/jteeuwen/go-bindata/...
 RUN go mod vendor
 
-CMD bash
+CMD ["bash"]
