@@ -1,4 +1,4 @@
-FROM golang:1.18
+FROM golang:1.24
 
 RUN apt-get update
 RUN apt-get install bash make git curl jq nodejs npm -y
