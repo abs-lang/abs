@@ -2,6 +2,7 @@ package object
 
 import (
 	"io"
+	"os"
 	"sort"
 )
 
@@ -10,7 +11,12 @@ import (
 // new environment has access to identifiers stored
 // in the outer one.
 func NewEnclosedEnvironment(outer *Environment, args []Object) *Environment {
-	env := NewEnvironment(outer.Stdout, outer.Stderr, outer.Dir, outer.Version, outer.Interactive)
+	env := NewEnvironment(
+		outer.Stdio,
+		outer.Dir,
+		outer.Version,
+		outer.Interactive,
+	)
 	env.outer = outer
 	env.CurrentArgs = args
 	return env
@@ -20,7 +26,7 @@ func NewEnclosedEnvironment(outer *Environment, args []Object) *Environment {
 // ABS in, specifying a writer for the output of the
 // program and the base dir (which is used to require
 // other scripts)
-func NewEnvironment(w io.ReadWriter, stderr io.ReadWriter, dir string, version string, interactive bool) *Environment {
+func NewEnvironment(stdio *Stdio, dir string, version string, interactive bool) *Environment {
 	s := make(map[string]Object)
 	// TODO
 	// e.Version and ABS_VERSION are duplicate, we should
@@ -28,8 +34,7 @@ func NewEnvironment(w io.ReadWriter, stderr io.ReadWriter, dir string, version s
 	e := &Environment{
 		store:       s,
 		outer:       nil,
-		Stdout:      w,
-		Stderr:      stderr,
+		Stdio:       stdio,
 		Dir:         dir,
 		Version:     version,
 		Interactive: interactive,
@@ -64,9 +69,8 @@ type Environment struct {
 	CurrentArgs []Object
 	outer       *Environment
 	// IO. This is typically os.Stdout, os.Stderr etc
-	// but you could capture in any io.Writer of choice
-	Stdout io.ReadWriter
-	Stderr io.ReadWriter
+	// but you could capture in any io.ReadWriter of choice
+	Stdio *Stdio
 	// Dir represents the directory from which we're executing code.
 	// It starts as the directory from which we invoke the ABS
 	// executable, but changes when we call require("...") as each
@@ -115,3 +119,11 @@ func (e *Environment) Set(name string, val Object) Object {
 func (e *Environment) Delete(name string) {
 	delete(e.store, name)
 }
+
+type Stdio struct {
+	Stdin  io.ReadWriter
+	Stdout io.ReadWriter
+	Stderr io.ReadWriter
+}
+
+var SystemStdio = &Stdio{os.Stdin, os.Stdout, os.Stderr}

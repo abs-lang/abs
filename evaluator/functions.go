@@ -34,6 +34,8 @@ var scannerPosition int
 var requireCache map[string]object.Object
 
 func init() {
+	// TODO this sucks and I should be ashamed
+	// but let's worry about it another day...
 	scanner = bufio.NewScanner(os.Stdin)
 	requireCache = make(map[string]object.Object)
 }
@@ -582,7 +584,7 @@ func exitFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	if message != "" {
-		fmt.Fprintf(env.Stdout, message)
+		fmt.Fprintf(env.Stdio.Stdout, message)
 	}
 
 	arg := args[0].(*object.Number)
@@ -750,7 +752,7 @@ func clampFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 func echoFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	if len(args) == 0 {
 		// allow echo() without crashing
-		fmt.Fprintln(env.Stdout, "")
+		fmt.Fprintln(env.Stdio.Stdout, "")
 		return NULL
 	}
 	var arguments []interface{} = make([]interface{}, len(args)-1)
@@ -760,8 +762,8 @@ func echoFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 		}
 	}
 
-	fmt.Fprintf(env.Stdout, args[0].Inspect(), arguments...)
-	fmt.Fprintln(env.Stdout, "")
+	fmt.Fprintf(env.Stdio.Stdout, args[0].Inspect(), arguments...)
+	fmt.Fprintln(env.Stdio.Stdout, "")
 
 	return NULL
 }
@@ -896,17 +898,7 @@ func isNumberFn(tok token.Token, env *object.Environment, args ...object.Object)
 
 // stdin() -- implemented with 2 functions
 func stdinFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	if env.Interactive {
-		r := bufio.NewReader(os.Stdin)
-		s, _, err := r.ReadLine()
-
-		if err != nil {
-			return &object.Error{Message: err.Error()}
-		}
-
-		return &object.String{Token: tok, Value: string(s)}
-	}
-
+	scanner = bufio.NewScanner(env.Stdio.Stdin)
 	v := scanner.Scan()
 
 	if !v {
@@ -1100,7 +1092,7 @@ func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env = object.NewEnvironment(env.Stdout, env.Stderr, env.Dir, env.Version, env.Interactive)
+	env = object.NewEnvironment(object.SystemStdio, env.Dir, env.Version, env.Interactive)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -2185,7 +2177,7 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		return evaluated
 	}
 
-	e := object.NewEnvironment(env.Stdout, env.Stderr, filepath.Dir(file), env.Version, env.Interactive)
+	e := object.NewEnvironment(object.SystemStdio, filepath.Dir(file), env.Version, env.Interactive)
 	evaluated := doSource(tok, e, file, args...)
 
 	// If a module fails to be imported, let's
@@ -2458,9 +2450,9 @@ func execFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	parts := strings.Split(os.Getenv("ABS_COMMAND_EXECUTOR"), " ")
 	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	c.Stdin = env.Stdio.Stdin
+	c.Stdout = env.Stdio.Stdout
+	c.Stderr = env.Stdio.Stderr
 
 	// N.B. that a bash command may end with '&' --
 	// in this case bash will launch it as a daemon process and then exit c.Run() immediately

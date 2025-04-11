@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 
@@ -30,7 +29,7 @@ func getAbsInitFile(env *object.Environment) {
 	// expand the ABS_INIT_FILE to the user's HomeDir
 	filePath, err := util.ExpandPath(initFile)
 	if err != nil {
-		fmt.Fprintf(env.Stdout, "Unable to expand ABS init file path: %s\nError: %s\n", initFile, err.Error())
+		fmt.Fprintf(env.Stdio.Stdout, "Unable to expand ABS init file path: %s\nError: %s\n", initFile, err.Error())
 		os.Exit(99)
 	}
 	initFile = filePath
@@ -72,8 +71,8 @@ func Run(code string, env *object.Environment) {
 		isError := evaluated.Type() == object.ERROR_OBJ
 
 		if isError {
-			fmt.Fprintf(env.Stdout, "%s", evaluated.Inspect())
-			fmt.Fprintln(env.Stdout)
+			fmt.Fprintf(env.Stdio.Stdout, "%s", evaluated.Inspect())
+			fmt.Fprintln(env.Stdio.Stdout)
 
 			if !interactive {
 				os.Exit(99)
@@ -82,16 +81,16 @@ func Run(code string, env *object.Environment) {
 		}
 
 		if interactive && evaluated.Type() != object.NULL_OBJ {
-			env.Stdout.Write([]byte(evaluated.Inspect()))
+			env.Stdio.Stdout.Write([]byte(evaluated.Inspect()))
 			return
 		}
 	}
 }
 
 func printParserErrors(errors []string, env *object.Environment) {
-	fmt.Fprintf(env.Stdout, "%s", " parser errors:\n")
+	fmt.Fprintf(env.Stdio.Stdout, "%s", " parser errors:\n")
 	for _, msg := range errors {
-		fmt.Fprintf(env.Stdout, " \t"+msg+"\n")
+		fmt.Fprintf(env.Stdio.Stdout, " \t"+msg+"\n")
 	}
 }
 
@@ -108,7 +107,7 @@ func BeginRepl(args []string, version string) {
 		d = filepath.Dir(args[1])
 	}
 
-	env := object.NewEnvironment(os.Stdout, os.Stderr, d, version, interactive)
+	env := object.NewEnvironment(object.SystemStdio, d, version, interactive)
 
 	// get abs init file
 	// user may test ABS_INTERACTIVE to decide what code to run
@@ -117,19 +116,16 @@ func BeginRepl(args []string, version string) {
 	// This is a terminal / actual REPL
 	if interactive {
 		// launch the interactive terminal
-		user, err := user.Current()
-		if err != nil {
-			panic(err)
-		}
-
 		stdio := bytes.NewBufferString("")
-		env.Stdout = stdio
-		env.Stderr = stdio
+		env.Stdio.Stdout = stdio
+		env.Stdio.Stderr = stdio
+		r, w, _ := os.Pipe()
+		env.Stdio.Stdin = r
 
 		term := terminal.NewTerminal(
-			user.Username,
 			env,
 			Run,
+			w,
 		)
 
 		if _, err := term.Run(); err != nil {
@@ -143,7 +139,7 @@ func BeginRepl(args []string, version string) {
 	// let's parse our argument as a file and run it
 	code, err := ioutil.ReadFile(args[1])
 	if err != nil {
-		fmt.Fprintln(env.Stdout, err.Error())
+		fmt.Fprintln(env.Stdio.Stdout, err.Error())
 		os.Exit(99)
 	}
 
