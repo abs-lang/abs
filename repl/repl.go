@@ -8,10 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/abs-lang/abs/evaluator"
-	"github.com/abs-lang/abs/lexer"
 	"github.com/abs-lang/abs/object"
-	"github.com/abs-lang/abs/parser"
+	"github.com/abs-lang/abs/runner"
 	"github.com/abs-lang/abs/terminal"
 	"github.com/abs-lang/abs/util"
 )
@@ -46,43 +44,35 @@ func getAbsInitFile(env *object.Environment) {
 // This function takes code and evaluates
 // it, spitting out the result.
 func Run(code string, env *object.Environment) {
+	out, ok, parseErrors := runner.Run(code, env)
+
 	// let's check if this REPL is interactive
 	v, _ := env.Get("ABS_INTERACTIVE")
 	interactive := v == object.TRUE
 
-	lex := lexer.New(code)
-	p := parser.New(lex)
+	if len(parseErrors) != 0 {
+		printParserErrors(parseErrors, env)
 
-	program := p.ParseProgram()
-	if len(p.Errors()) != 0 {
-		printParserErrors(p.Errors(), env)
+		if !interactive {
+			os.Exit(99)
+		}
+
+		return
+	}
+
+	if !ok {
+		fmt.Fprintf(env.Stdio.Stdout, "%s", out)
+		fmt.Fprintln(env.Stdio.Stdout)
+
 		if !interactive {
 			os.Exit(99)
 		}
 		return
 	}
 
-	// invoke BeginEval() passing in the program, env, and lexer for error position
-	// NB. Eval(node, env) is recursive so we can't call it directly
-	evaluated := evaluator.BeginEval(program, env, lex)
-
-	if evaluated != nil {
-		isError := evaluated.Type() == object.ERROR_OBJ
-
-		if isError {
-			fmt.Fprintf(env.Stdio.Stdout, "%s", evaluated.Inspect())
-			fmt.Fprintln(env.Stdio.Stdout)
-
-			if !interactive {
-				os.Exit(99)
-			}
-			return
-		}
-
-		if interactive && evaluated.Type() != object.NULL_OBJ {
-			env.Stdio.Stdout.Write([]byte(evaluated.Inspect()))
-			return
-		}
+	if interactive && out.Type() != object.NULL_OBJ {
+		env.Stdio.Stdout.Write([]byte(out.Inspect()))
+		return
 	}
 }
 
@@ -123,7 +113,6 @@ func BeginRepl(args []string, version string) {
 
 		term := terminal.NewTerminal(
 			env,
-			Run,
 			w,
 		)
 
