@@ -897,7 +897,7 @@ func isNumberFn(tok token.Token, env *object.Environment, args ...object.Object)
 
 // stdin() -- implemented with 2 functions
 func stdinFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	scanner = bufio.NewScanner(env.Stdio.Stdin)
+	scanner := bufio.NewScanner(env.Stdio.Stdin)
 	v := scanner.Scan()
 
 	if !v {
