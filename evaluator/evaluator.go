@@ -1121,7 +1121,7 @@ func evalIdentifier(
 		return builtin
 	}
 
-	return newError(node.Token, "identifier not found: "+node.Value)
+	return newError(node.Token, "identifier not found: %s", node.Value)
 }
 
 // This is the core of ABS's logical
