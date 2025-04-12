@@ -594,13 +594,15 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
-// if x {
-//   return x
-// } else if y {
-//   return y
-// } else {
-//   return z
-// }
+//	if x {
+//	  return x
+//	} else if y {
+//
+//	  return y
+//	} else {
+//
+//	  return z
+//	}
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
 	scenarios := []*ast.Scenario{}
@@ -651,9 +653,9 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	return expression
 }
 
-// while true {
-// 	echo("true")
-// }
+//	while true {
+//		echo("true")
+//	}
 func (p *Parser) parseWhileExpression() ast.Expression {
 	expression := &ast.WhileExpression{Token: p.curToken}
 
@@ -709,9 +711,9 @@ func (p *Parser) parseForExpression() ast.Expression {
 	return expression
 }
 
-// for x in [1,2,3] {
-// 	echo("true")
-// }
+//	for x in [1,2,3] {
+//		echo("true")
+//	}
 func (p *Parser) parseForInExpression(initialExpression *ast.ForExpression) ast.Expression {
 	expression := &ast.ForInExpression{Token: initialExpression.Token}
 
@@ -787,9 +789,9 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
-// f() {
-//   return 1
-// }
+//	f() {
+//	  return 1
+//	}
 func (p *Parser) parseFunctionLiteral() ast.Expression {
 	lit := &ast.FunctionLiteral{Token: p.curToken}
 

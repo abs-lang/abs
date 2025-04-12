@@ -7,8 +7,10 @@ import (
 	"math/big"
 	mrand "math/rand"
 	"os/user"
+	"strings"
 
 	"github.com/abs-lang/abs/object"
+	"github.com/abs-lang/abs/runner"
 	"github.com/abs-lang/abs/util"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -29,12 +31,7 @@ import (
 // suggestions
 // review entire code org
 
-// Runner takes in ABS code and returns
-// the programs output after evaluating
-// it
-type Runner func(string, *object.Environment)
-
-func NewTerminal(env *object.Environment, runner Runner, stdinRelay io.Writer) *tea.Program {
+func NewTerminal(env *object.Environment, stdinRelay io.Writer) *tea.Program {
 	historyFile, maxLines := getHistoryConfiguration(env)
 	history := getHistory(historyFile, maxLines)
 
@@ -49,7 +46,6 @@ func NewTerminal(env *object.Environment, runner Runner, stdinRelay io.Writer) *
 
 	m := Model{
 		in:              in,
-		runner:          runner,
 		env:             env,
 		stdinRelay:      stdinRelay,
 		prompt:          prompt,
@@ -67,8 +63,6 @@ func NewTerminal(env *object.Environment, runner Runner, stdinRelay io.Writer) *
 
 // Terminal state
 type Model struct {
-	// code runner
-	runner Runner
 	// environment code should be ran on
 	env *object.Environment
 	// our terminal hijacks OS stdio
@@ -117,7 +111,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case doneEval:
-		return m.onDoneEval()
+		return m.onDoneEval(msg)
 	case tea.KeyMsg:
 		// the REPL is evaluating ABS code,
 		// so if we type during this time,
@@ -228,16 +222,41 @@ func (m Model) welcome() []tea.Cmd {
 	return lines
 }
 
-func (m Model) onDoneEval() (Model, tea.Cmd) {
+func (m Model) onDoneEval(res doneEval) (Model, tea.Cmd) {
+	errfmt := func(s string) string { return lipgloss.NewStyle().Foreground(lipgloss.Color("#ed4747")).Render(s) }
 	m.isEvaluating = false
-	out, _ := io.ReadAll(m.env.Stdio.Stdout)
-	err, _ := io.ReadAll(m.env.Stdio.Stderr)
 
 	lines := Lines{}
 	lines.Add(m.prompt() + m.in.Value())
 
-	if string(out)+string(err) != "" {
-		lines.Add(string(out) + string(err))
+	if len(res.parseErrors) > 0 {
+		lines.Add(errfmt(fmt.Sprintf(
+			"encountered %d syntax errors:\n",
+			len(res.parseErrors),
+		)))
+
+		for _, e := range res.parseErrors {
+			ls := strings.Split(e, "\n")
+
+			for i, l := range ls {
+				prefix := ""
+
+				if i == 0 {
+					prefix = fmt.Sprintf("%d) ", i+1)
+				}
+				lines.Add(errfmt("  " + prefix + l))
+			}
+		}
+	}
+
+	if res.out != object.NULL {
+		out := res.out.Inspect()
+
+		if !res.ok {
+			out = errfmt(out)
+		}
+
+		lines.Add(out)
 	}
 
 	m.in.Reset()
@@ -299,7 +318,11 @@ func (m Model) engagePlaceholder() (Model, tea.Cmd) {
 	return m, nil
 }
 
-type doneEval struct{}
+type doneEval struct {
+	out         object.Object
+	ok          bool
+	parseErrors []string
+}
 
 func (m Model) eval() (Model, tea.Cmd) {
 	m.isEvaluating = true
@@ -307,8 +330,8 @@ func (m Model) eval() (Model, tea.Cmd) {
 	done := make(chan doneEval)
 
 	go func() {
-		m.runner(m.in.Value(), m.env)
-		done <- doneEval{}
+		out, ok, parseErrors := runner.Run(m.in.Value(), m.env)
+		done <- doneEval{out, ok, parseErrors}
 	}()
 
 	return m, func() tea.Msg {
