@@ -18,7 +18,6 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // TODO
@@ -96,7 +95,7 @@ func (m Model) Init() tea.Cmd {
 	return tea.Batch(
 		tea.SetWindowTitle("abs-repl"),
 		textarea.Blink,
-		tea.Sequence(m.welcome()...),
+		m.welcome(),
 	)
 }
 
@@ -221,10 +220,11 @@ func (m Model) View() string {
 
 	if debug {
 		m := m.asMap()
-		view += "\n"
+		wrapper := ""
 		for _, k := range slices.Sorted(maps.Keys(m)) {
-			view += fmt.Sprintf(faintStyle("\n  %s: %v"), k, m[k])
+			wrapper += fmt.Sprintf(("\n%s: %v"), k, m[k])
 		}
+		view += styleNestedContainer.Render(styleDebug.Render(wrapper))
 	}
 
 	return view
@@ -239,11 +239,7 @@ func (m Model) asMap() map[string]any {
 	}
 }
 
-func faintStyle(s string) string {
-	return lipgloss.NewStyle().Faint(true).Render(s)
-}
-
-func (m Model) welcome() []tea.Cmd {
+func (m Model) welcome() tea.Cmd {
 	u, err := user.Current()
 	username := u.Username
 
@@ -259,7 +255,7 @@ func (m Model) welcome() []tea.Cmd {
 	// to avoid too many hangups
 	if r, e := rand.Int(rand.Reader, big.NewInt(100)); e == nil && r.Int64() < 10 {
 		if newver, update := util.UpdateAvailable(m.env.Version); update {
-			lines.Add(faintStyle(fmt.Sprintf(
+			lines.Add(styleFaint.Render(fmt.Sprintf(
 				"\n*** Update available: %s (your version is %s) ***",
 				newver,
 				m.env.Version,
@@ -267,18 +263,17 @@ func (m Model) welcome() []tea.Cmd {
 		}
 	}
 
-	return lines
+	return lines.Dump()
 }
 
 func (m Model) onDoneEval(res doneEval) (Model, tea.Cmd) {
-	errfmt := func(s string) string { return lipgloss.NewStyle().Foreground(lipgloss.Color("#ed4747")).Render(s) }
 	m.isEvaluating = false
 
 	lines := Lines{}
 	lines.Add(m.prompt() + m.in.Value())
 
 	if len(res.parseErrors) > 0 {
-		lines.Add(errfmt(fmt.Sprintf(
+		lines.Add(styleErr.Render(fmt.Sprintf(
 			"encountered %d syntax errors:\n",
 			len(res.parseErrors),
 		)))
@@ -292,7 +287,7 @@ func (m Model) onDoneEval(res doneEval) (Model, tea.Cmd) {
 				if i == 0 {
 					prefix = fmt.Sprintf("%d) ", i+1)
 				}
-				lines.Add(errfmt("  " + prefix + l))
+				lines.Add(styleErr.Render("  " + prefix + l))
 			}
 		}
 	}
@@ -301,7 +296,7 @@ func (m Model) onDoneEval(res doneEval) (Model, tea.Cmd) {
 		out := res.out.Inspect()
 
 		if !res.ok {
-			out = errfmt(out)
+			out = styleErr.Render(out)
 		}
 
 		lines.Add(out)
@@ -309,7 +304,7 @@ func (m Model) onDoneEval(res doneEval) (Model, tea.Cmd) {
 
 	m.in.Reset()
 
-	return m, tea.Sequence(lines...)
+	return m, lines.Dump()
 }
 
 func (m Model) interceptStdin(msg tea.KeyMsg) (Model, tea.Cmd) {
@@ -352,26 +347,22 @@ func (m Model) currentLine() string {
 func (m Model) help() (Model, tea.Cmd) {
 	lines := Lines{}
 	prompt := m.prompt()
-	help := func(s string) string { return lipgloss.NewStyle().Faint(true).Render(s) }
-	code := func(s string) string {
-		return lipgloss.NewStyle().Foreground(lipgloss.Color("12")).Faint(true).Render(s)
-	}
 
-	lines.Add(m.currentLine())
-	lines.Add(help("Try typing something along the lines of:\n"))
-	lines.Add("  " + prompt + code("current_date = `date`\n"))
-	lines.Add(help("A command should be triggered in your system. Then try printing the result of that command with:\n"))
-	lines.Add("  " + prompt + code("current_date\n"))
-	lines.Add(help("Here some other valid examples of ABS code:\n"))
+	lines.Add(styleFaint.Render("Try typing something along the lines of:\n"))
+	lines.Add("  " + prompt + styleCode.Render("current_date = `date`\n"))
+	lines.Add(styleFaint.Render("A command should be triggered in your system. Then try printing the result of that command with:\n"))
+	lines.Add("  " + prompt + styleCode.Render("current_date\n"))
+	lines.Add(styleFaint.Render("Here some other valid examples of ABS code:\n"))
 
 	for i := 0; i < 5; i++ {
 		ix := mrand.Intn(len(exampleStatements))
-		lines.Add("  " + prompt + code(exampleStatements[ix]+"\n"))
+		lines.Add("  " + prompt + styleCode.Render(exampleStatements[ix]+"\n"))
 	}
 
+	msg := m.currentLine() + styleNestedContainer.Render(lines.Join())
 	m.in.Reset()
 
-	return m, tea.Sequence(lines...)
+	return m, tea.Println(msg)
 }
 
 func (m Model) engagePlaceholder() (Model, tea.Cmd) {
