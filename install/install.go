@@ -39,7 +39,6 @@ func Install(module string) {
 	}
 
 	fmt.Printf("Install Success. You can use the module with `require(\"%s\")`\n", alias)
-	return
 }
 
 func printLoader(done chan int64, message string) {
@@ -52,7 +51,7 @@ func printLoader(done chan int64, message string) {
 		case <-done:
 			stop = true
 		default:
-			fmt.Printf("\r" + symbols[i] + " - " + message)
+			fmt.Printf("\r%s - %s", symbols[i], message)
 			time.Sleep(100 * time.Millisecond)
 			i++
 			if i > len(symbols)-1 {
