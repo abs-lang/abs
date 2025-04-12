@@ -512,7 +512,7 @@ func validateVarArgs(tok token.Token, name string, args []object.Object, specs [
 	}
 
 	// no signature specs matched
-	return newError(tok, usageVarArgs(name, specs)), -1
+	return newError(tok, "%s", usageVarArgs(name, specs)), -1
 }
 
 func usageVarArgs(name string, specs [][][]string) string {
@@ -583,7 +583,7 @@ func exitFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	if message != "" {
-		fmt.Fprintf(env.Stdio.Stdout, message)
+		fmt.Fprint(env.Stdio.Stdout, message)
 	}
 
 	arg := args[0].(*object.Number)
@@ -664,7 +664,7 @@ func flagFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 func pwdFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	dir, err := os.Getwd()
 	if err != nil {
-		return newError(tok, err.Error())
+		return newError(tok, "%s", err.Error())
 	}
 	return &object.String{Token: tok, Value: dir}
 }
@@ -697,7 +697,7 @@ func applyStringCase(fnName string, fn func(string) string, tok token.Token, env
 func cdFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	user, ok := user.Current()
 	if ok != nil {
-		return newError(tok, ok.Error())
+		return newError(tok, "%s", ok.Error())
 	}
 	// Default: cd to user's homeDir
 	path := user.HomeDir
@@ -2385,7 +2385,7 @@ func tsvFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 		err := tsv.Write(header)
 
 		if err != nil {
-			return newError(tok, err.Error())
+			return newError(tok, "%s", err.Error())
 		}
 	}
 
@@ -2426,7 +2426,7 @@ func tsvFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 		err := tsv.Write(values)
 
 		if err != nil {
-			return newError(tok, err.Error())
+			return newError(tok, "%s", err.Error())
 		}
 	}
 

@@ -79,7 +79,7 @@ func Run(code string, env *object.Environment) {
 func printParserErrors(errors []string, env *object.Environment) {
 	fmt.Fprintf(env.Stdio.Stdout, "%s", " parser errors:\n")
 	for _, msg := range errors {
-		fmt.Fprintf(env.Stdio.Stdout, " \t"+msg+"\n")
+		fmt.Fprint(env.Stdio.Stdout, " \t"+msg+"\n")
 	}
 }
 
