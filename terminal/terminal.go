@@ -353,17 +353,20 @@ func (m Model) help() (Model, tea.Cmd) {
 	lines := Lines{}
 	prompt := m.prompt()
 	help := func(s string) string { return lipgloss.NewStyle().Faint(true).Render(s) }
+	code := func(s string) string {
+		return lipgloss.NewStyle().Foreground(lipgloss.Color("12")).Faint(true).Render(s)
+	}
 
 	lines.Add(m.currentLine())
 	lines.Add(help("Try typing something along the lines of:\n"))
-	lines.Add("  " + prompt + help("current_date = `date`\n"))
+	lines.Add("  " + prompt + code("current_date = `date`\n"))
 	lines.Add(help("A command should be triggered in your system. Then try printing the result of that command with:\n"))
-	lines.Add("  " + prompt + help("current_date\n"))
+	lines.Add("  " + prompt + code("current_date\n"))
 	lines.Add(help("Here some other valid examples of ABS code:\n"))
 
 	for i := 0; i < 5; i++ {
 		ix := mrand.Intn(len(exampleStatements))
-		lines.Add("  " + prompt + help(exampleStatements[ix]+"\n"))
+		lines.Add("  " + prompt + code(exampleStatements[ix]+"\n"))
 	}
 
 	m.in.Reset()
