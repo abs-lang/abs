@@ -69,8 +69,16 @@ func formatLivePrefix(prefix string) string {
 	return livePrefix
 }
 
-type Lines []tea.Cmd
+type Lines []string
 
-func (l *Lines) Add(msg string) {
-	*l = append(*l, tea.Println(msg))
+func (ls *Lines) Add(l string) {
+	*ls = append(*ls, l)
+}
+
+func (ls *Lines) Dump() tea.Cmd {
+	return tea.Println(ls.Join())
+}
+
+func (ls *Lines) Join() string {
+	return strings.Join(*ls, "\n")
 }
