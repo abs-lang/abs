@@ -2,7 +2,6 @@ package terminal
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -102,10 +101,10 @@ func addToHistory(history []string, maxLines int, line string) []string {
 }
 
 // saveHistory - save the local history containing maxLines to historyFile
-func saveHistory(historyFile string, maxLines int, history []string) {
+func saveHistory(historyFile string, maxLines int, history []string) error {
 	if maxLines == 0 {
 		// do not save a history file for zero max lines
-		return
+		return nil
 	}
 	if len(history) > maxLines {
 		// remove the excess lines from the front of the history slice
@@ -113,8 +112,5 @@ func saveHistory(historyFile string, maxLines int, history []string) {
 	}
 	// write the augmented local history back out to the file
 	historyStr := strings.Join(history, "\n")
-	err := ioutil.WriteFile(historyFile, []byte(historyStr), 0664)
-	if err != nil {
-		fmt.Printf("Cannot write to ABS history file: %s\nError: %s\n", historyFile, err.Error())
-	}
+	return os.WriteFile(historyFile, []byte(historyStr), 0664)
 }

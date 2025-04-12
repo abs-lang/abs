@@ -4,9 +4,12 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"maps"
 	"math/big"
 	mrand "math/rand"
+	"os"
 	"os/user"
+	"slices"
 	"strings"
 
 	"github.com/abs-lang/abs/object"
@@ -19,17 +22,13 @@ import (
 )
 
 // TODO
-// history
-// cursor up and down
 // autocompleter
-// navigate commands up
-// maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go
-// remove dependencies
+// maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go ?
 // worth renaming repl to runner? and maybe terminal back to repl
 // add prompt formatting tests
 // more example statements
-// suggestions
-// review entire code org
+
+var debug = os.Getenv("DEBUG") == "1"
 
 func NewTerminal(env *object.Environment, stdinRelay io.Writer) *tea.Program {
 	historyFile, maxLines := getHistoryConfiguration(env)
@@ -50,10 +49,9 @@ func NewTerminal(env *object.Environment, stdinRelay io.Writer) *tea.Program {
 		stdinRelay:      stdinRelay,
 		prompt:          prompt,
 		history:         history,
-		historyPoint:    len(history),
+		historyIndex:    len(history) - 1,
 		historyFile:     historyFile,
 		historyMaxLInes: maxLines,
-		dirty:           "",
 	}
 
 	p := tea.NewProgram(m)
@@ -85,11 +83,11 @@ type Model struct {
 	// is primarily used to make sure you can navigate
 	// to history and come back to the command you
 	// were about to type
-	dirty string
+	dirtyInput string
 	// input field to type all of ABS' goodness!
 	in              textinput.Model
 	history         []string
-	historyPoint    int
+	historyIndex    int
 	historyFile     string
 	historyMaxLInes int
 }
@@ -123,6 +121,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEsc, tea.KeyCtrlD:
 			return m.quit()
 		case tea.KeyCtrlC:
+			m = m.resetHistory()
 			return m.interrupt()
 		case tea.KeyEnter:
 			// Let's get rid of the placeholder
@@ -136,9 +135,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			// We have something submitted, let's add
-			// it to the history
-			m.history = append(m.history, m.in.Value())
-			m.historyPoint = len(m.history)
+			// it to the history, only if it's a duplicate
+			// of the last entry
+			if m.maxHistoryIndex() < 0 || m.history[m.historyIndex] != m.in.Value() {
+				m.history = append(m.history, m.in.Value())
+			}
+
+			m = m.resetHistory()
 
 			switch m.in.Value() {
 			case "quit":
@@ -157,33 +160,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlL:
 			return m.clear()
 		case tea.KeyUp:
-			// oly store dirty Model on first key up
-			if m.dirty == "" {
-				m.dirty = m.in.Value()
-			}
-
-			if m.historyPoint <= 0 {
-				break
-			}
-
-			newPoint := m.historyPoint - 1
-
-			if len(m.history) < newPoint {
-				break
-			}
-
-			m.historyPoint = newPoint
-			m.in.SetValue(m.history[m.historyPoint])
+			m = m.prevHistory()
 		case tea.KeyDown:
-			newPoint := m.historyPoint + 1
-
-			if newPoint <= len(m.history)-1 {
-				m.historyPoint = newPoint
-				m.in.SetValue(m.history[m.historyPoint])
-				break
-			}
-
-			m.in.SetValue(m.dirty)
+			m = m.nextHistory()
 		}
 
 	}
@@ -191,8 +170,77 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tiCmd
 }
 
+func (m Model) maxHistoryIndex() int {
+	return len(m.history) - 1
+}
+
+func (m Model) prevHistory() Model {
+	if m.historyIndex < 0 {
+		return m
+	}
+
+	// Only save dirty state on the first
+	// up press
+	if m.historyIndex == m.maxHistoryIndex() {
+		m.dirtyInput = m.in.Value()
+	}
+
+	m.in.SetValue(m.history[m.historyIndex])
+
+	ix := m.historyIndex - 1
+	m.historyIndex = ix
+
+	return m
+}
+
+func (m Model) nextHistory() Model {
+	newPoint := m.historyIndex + 1
+
+	if newPoint <= m.maxHistoryIndex() {
+		m.historyIndex = newPoint
+		m.in.SetValue(m.history[m.historyIndex])
+
+		return m
+	}
+
+	// We reached the end of history,
+	// if we had a dirty value, let's use it
+	m.in.SetValue(m.dirtyInput)
+	return m
+}
+
+func (m Model) resetHistory() Model {
+	m.dirtyInput = ""
+	m.historyIndex = m.maxHistoryIndex()
+
+	return m
+}
+
 func (m Model) View() string {
-	return m.in.View()
+	view := m.in.View()
+
+	if debug {
+		m := m.asMap()
+		view += "\n"
+		for _, k := range slices.Sorted(maps.Keys(m)) {
+			view += fmt.Sprintf(faintStyle("\n  %s: %v"), k, m[k])
+		}
+	}
+
+	return view
+}
+
+func (m Model) asMap() map[string]any {
+	return map[string]any{
+		"history_index":     m.historyIndex,
+		"max_history_index": m.maxHistoryIndex(),
+		"dirty_input":       m.dirtyInput,
+		"is_evaluating":     m.isEvaluating,
+	}
+}
+
+func faintStyle(s string) string {
+	return lipgloss.NewStyle().Faint(true).Render(s)
 }
 
 func (m Model) welcome() []tea.Cmd {
@@ -211,7 +259,7 @@ func (m Model) welcome() []tea.Cmd {
 	// to avoid too many hangups
 	if r, e := rand.Int(rand.Reader, big.NewInt(100)); e == nil && r.Int64() < 10 {
 		if newver, update := util.UpdateAvailable(m.env.Version); update {
-			lines.Add(lipgloss.NewStyle().Faint(true).Render(fmt.Sprintf(
+			lines.Add(faintStyle(fmt.Sprintf(
 				"\n*** Update available: %s (your version is %s) ***",
 				newver,
 				m.env.Version,
@@ -281,9 +329,20 @@ func (m Model) clear() (Model, tea.Cmd) {
 }
 
 func (m Model) quit() (Model, tea.Cmd) {
-	saveHistory(m.historyFile, m.historyMaxLInes, m.history)
+	cmds := []tea.Cmd{}
+	err := saveHistory(m.historyFile, m.historyMaxLInes, m.history)
 
-	return m, tea.Quit
+	if err != nil {
+		cmds = append(cmds, tea.Println(fmt.Sprintf(
+			"Cannot write to ABS history file (%s): %s",
+			m.historyFile,
+			err.Error(),
+		)))
+	}
+
+	cmds = append(cmds, tea.Quit)
+
+	return m, tea.Sequence(cmds...)
 }
 
 func (m Model) currentLine() string {
@@ -326,7 +385,6 @@ type doneEval struct {
 
 func (m Model) eval() (Model, tea.Cmd) {
 	m.isEvaluating = true
-	m.dirty = ""
 	done := make(chan doneEval)
 
 	go func() {
