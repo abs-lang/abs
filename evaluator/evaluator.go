@@ -30,7 +30,7 @@ var (
 var lex *lexer.Lexer
 
 func init() {
-	Fns = getFns()
+	Fns = GetFns()
 	if os.Getenv("ABS_COMMAND_EXECUTOR") == "" {
 		// Set the executor for system commands
 		// thanks to @haifenghuang
