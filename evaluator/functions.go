@@ -52,18 +52,21 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// rand(max:20)
 		"rand": &object.Builtin{
-			Types: []string{object.NUMBER_OBJ},
-			Fn:    randFn,
+			Types:      []string{object.NUMBER_OBJ},
+			Fn:         randFn,
+			Standalone: true,
 		},
 		// exit(code:0)
 		"exit": &object.Builtin{
-			Types: []string{object.NUMBER_OBJ},
-			Fn:    exitFn,
+			Types:      []string{object.NUMBER_OBJ},
+			Fn:         exitFn,
+			Standalone: true,
 		},
 		// flag("my-flag")
 		"flag": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    flagFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         flagFn,
+			Standalone: true,
 		},
 		// pwd()
 		"pwd": &object.Builtin{
@@ -152,13 +155,15 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// arg(position:1)
 		"arg": &object.Builtin{
-			Types: []string{object.NUMBER_OBJ},
-			Fn:    argFn,
+			Types:      []string{object.NUMBER_OBJ},
+			Fn:         argFn,
+			Standalone: true,
 		},
 		// args()
 		"args": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    argsFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         argsFn,
+			Standalone: true,
 		},
 		// type(variable:"hello")
 		"type": &object.Builtin{
@@ -338,8 +343,9 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// wait(`sleep 1 &`)
 		"wait": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    waitFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         waitFn,
+			Standalone: true,
 		},
 		"kill": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -423,8 +429,9 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// require("file.abs") -- require a file without giving it access to the global environment
 		"require": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    requireFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         requireFn,
+			Standalone: true,
 		},
 		// exec(command) -- execute command with interactive stdIO
 		"exec": &object.Builtin{
