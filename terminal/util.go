@@ -36,6 +36,18 @@ var exampleStatements = []string{
 	"[1, 2] + [3]",
 	"[{'name': 'Lebron', 'age': 40}, {'name': 'Michael', 'age': 'older...'}].tsv()",
 	"f greeter(greeting = 'hello'){ '%s world'.fmt(greeting) }",
+	"f increment(n, i = 1) {n+i}",
+	"for x in 1..100 { echo(x**2) }",
+	"`touch file.txt`.ok",
+	"'ach' in 'zachary'",
+	"'my_string'.camel()'",
+	"'myString'.kebab()'",
+	"x, y, z = [1, 2, 3]",
+	"[1.1, 2.2, 3.3].map(int)",
+	"f numargs() { return ....len() }; numargs(1,2,3,4)",
+	"sleep(1000)",
+	"exit(99)",
+	"u = require('@util'); @u.memoize(60) f slow() {sleep(1000)}; slow(); echo(1); slow(); echo(2)",
 }
 
 func getPrompt(env *object.Environment) string {
