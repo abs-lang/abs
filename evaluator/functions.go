@@ -67,8 +67,9 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// pwd()
 		"pwd": &object.Builtin{
-			Types: []string{},
-			Fn:    pwdFn,
+			Types:      []string{},
+			Fn:         pwdFn,
+			Standalone: true,
 		},
 		// camel("string")
 		"camel": &object.Builtin{
@@ -87,8 +88,9 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// cd() or cd(path)
 		"cd": &object.Builtin{
-			Types: []string{},
-			Fn:    cdFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         cdFn,
+			Standalone: true,
 		},
 		// clamp(num, min, max)
 		"clamp": &object.Builtin{
@@ -97,8 +99,9 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
-			Types: []string{},
-			Fn:    echoFn,
+			Types:      []string{},
+			Fn:         echoFn,
+			Standalone: true,
 		},
 		// int(string:"123")
 		// int(number:"123")
@@ -136,14 +139,16 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// stdin()
 		"stdin": &object.Builtin{
-			Next:  stdinNextFn,
-			Types: []string{},
-			Fn:    stdinFn,
+			Next:       stdinNextFn,
+			Types:      []string{},
+			Fn:         stdinFn,
+			Standalone: true,
 		},
 		// env(variable:"PWD") or env(string:"KEY", string:"VAL")
 		"env": &object.Builtin{
-			Types: []string{},
-			Fn:    envFn,
+			Types:      []string{},
+			Fn:         envFn,
+			Standalone: true,
 		},
 		// arg(position:1)
 		"arg": &object.Builtin{
@@ -438,8 +443,9 @@ func GetFns() map[string]*object.Builtin {
 		},
 		// unix_ms() -- returns the current unix epoch, in milliseconds
 		"unix_ms": &object.Builtin{
-			Types: []string{},
-			Fn:    unixMsFn,
+			Types:      []string{},
+			Fn:         unixMsFn,
+			Standalone: true,
 		},
 	}
 }
@@ -703,6 +709,10 @@ func cdFn(tok token.Token, env *object.Environment, args ...object.Object) objec
 	// Default: cd to user's homeDir
 	path := user.HomeDir
 	if len(args) == 1 {
+		err := validateArgs(tok, "cd", args, 1, [][]string{{object.STRING_OBJ}})
+		if err != nil {
+			return err
+		}
 		// arg: rawPath
 		pathStr := args[0].(*object.String)
 		rawPath := pathStr.Value

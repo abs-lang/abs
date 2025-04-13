@@ -310,6 +310,21 @@ type Builtin struct {
 	Next     func() (Object, Object)
 	Types    []string
 	Iterable bool
+	// Whether this builtin function
+	// is intended to be primarily used
+	// as a function or method:
+	//
+	// fn(something)
+	//
+	// something.fn()
+	//
+	// Eventually we should disable allowing
+	// standalone functions to be called as
+	// methods, but for BC we're keeping it here.
+	// It's still a useful flag as we won't show
+	// standalone functions as autocomplete
+	// options for types they accept.
+	Standalone bool
 }
 
 func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
