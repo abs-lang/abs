@@ -10,10 +10,15 @@ import (
 	"os"
 	"os/user"
 	"slices"
+	"sort"
 	"strings"
+	"unicode"
 
+	"github.com/abs-lang/abs/evaluator"
+	"github.com/abs-lang/abs/lexer"
 	"github.com/abs-lang/abs/object"
 	"github.com/abs-lang/abs/runner"
+	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -21,11 +26,15 @@ import (
 )
 
 // TODO
+// reverse search
+// unable to print literal tabs when using tab key?
 // autocompleter
+// up down change of direction messes history
+// more example statements
+// WONTFIXNOW
 // maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go ?
 // worth renaming repl to runner? and maybe terminal back to repl
 // add prompt formatting tests
-// more example statements
 
 var debug = os.Getenv("DEBUG") == "1"
 
@@ -43,14 +52,15 @@ func NewTerminal(env *object.Environment, stdinRelay io.Writer) *tea.Program {
 	in.Focus()
 
 	m := Model{
-		in:              in,
-		env:             env,
-		stdinRelay:      stdinRelay,
-		prompt:          prompt,
-		history:         history,
-		historyIndex:    len(history) - 1,
-		historyFile:     historyFile,
-		historyMaxLInes: maxLines,
+		in:               in,
+		env:              env,
+		stdinRelay:       stdinRelay,
+		prompt:           prompt,
+		history:          history,
+		historyIndex:     len(history) - 1,
+		historyFile:      historyFile,
+		historyMaxLInes:  maxLines,
+		suggestionsIndex: -1,
 	}
 
 	p := tea.NewProgram(m)
@@ -89,6 +99,10 @@ type Model struct {
 	historyIndex    int
 	historyFile     string
 	historyMaxLInes int
+	// autocomplete
+	suggestionsIndex int
+	suggestions      []string
+	suggestToken     string
 }
 
 func (m Model) Init() tea.Cmd {
@@ -97,6 +111,25 @@ func (m Model) Init() tea.Cmd {
 		textarea.Blink,
 		m.welcome(),
 	)
+}
+
+func (m Model) View() string {
+	view := m.in.View()
+
+	if m.IsSuggesting() {
+		view += "\n" + m.renderSuggestions()
+	}
+
+	if debug {
+		m := m.asMap()
+		wrapper := ""
+		for _, k := range slices.Sorted(maps.Keys(m)) {
+			wrapper += fmt.Sprintf(("\n%s: %v"), k, m[k])
+		}
+		view += styleNestedContainer.Render(styleDebug.Render(wrapper))
+	}
+
+	return view
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -116,11 +149,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.isEvaluating {
 			return m.interceptStdin(msg)
 		}
+
+		if m.IsSuggesting() {
+			switch msg.Type {
+			case tea.KeyEnter:
+				return m.selectSuggestion(), nil
+			case tea.KeyTab, tea.KeyDown:
+				return m.suggest(+1), nil
+			case tea.KeyUp:
+				return m.suggest(-1), nil
+			default:
+				return m.exitSuggestions(), nil
+			}
+		}
+
 		switch msg.Type {
 		case tea.KeyEsc, tea.KeyCtrlD:
 			return m.quit()
 		case tea.KeyCtrlC:
-			m = m.resetHistory()
+			m = m.resetInput()
 			return m.interrupt()
 		case tea.KeyEnter:
 			// Let's get rid of the placeholder
@@ -140,7 +187,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.history = append(m.history, m.in.Value())
 			}
 
-			m = m.resetHistory()
+			m = m.resetInput()
 
 			switch m.in.Value() {
 			case "quit":
@@ -153,9 +200,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyTab:
 			// If the placeholder code is shown,
 			// allow the user to run it by tabbing
-			if m.in.Placeholder != "" {
-				return m.engagePlaceholder()
+			if m.in.Value() == "" {
+				if m.in.Placeholder != "" {
+					return m.engagePlaceholder()
+				}
+
+				return m, nil
 			}
+
+			return m.suggest(0), nil
 		case tea.KeyCtrlL:
 			return m.clear()
 		case tea.KeyUp:
@@ -167,6 +220,98 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tiCmd
+}
+
+func (m Model) exitSuggestions() Model {
+	m.in.SetValue(m.dirtyInput)
+	return m.resetInput()
+}
+
+func (m Model) selectSuggestion() Model {
+	return m.resetInput()
+}
+
+func (m Model) IsSuggesting() bool {
+	return len(m.suggestions) > 0
+}
+
+func IsLetter(s string) bool {
+	return !strings.ContainsFunc(s, func(r rune) bool {
+		return !unicode.IsLetter(r)
+	})
+}
+
+func applySuggestion(s, suggestion string) string {
+	ix := strings.LastIndex(s, s)
+
+	return s[:ix] + suggestion
+}
+
+func (m Model) suggest(direction int) Model {
+	if m.IsSuggesting() {
+		m.suggestionsIndex += direction
+		m.suggestionsIndex %= len(m.suggestions)
+
+		if m.suggestionsIndex < 0 {
+			m.suggestionsIndex += len(m.suggestions)
+		}
+
+		m.in.SetValue(applySuggestion(m.dirtyInput, m.suggestions[m.suggestionsIndex]))
+		m.in.CursorEnd()
+	}
+
+	if !m.IsSuggesting() {
+		l := lexer.New(m.in.Value())
+		tokens := []token.Token{}
+		var done bool
+
+		for !done {
+			t := l.NextToken()
+			if t.Type == token.EOF {
+				done = true
+				break
+			}
+
+			tokens = append(tokens, t)
+		}
+
+		if len(tokens) == 0 {
+			return m
+		}
+
+		if tokens[len(tokens)-1].Type != token.IDENT {
+			return m
+		}
+
+		s := tokens[len(tokens)-1].Literal
+		m.dirtyInput = m.in.Value()
+		m.suggestToken = s
+		m.suggestions = m.getSuggestions(s)
+
+		if len(m.suggestions) == 1 {
+			m.in.SetValue(applySuggestion(m.dirtyInput, m.suggestions[0]))
+			return m.resetInput()
+		}
+	}
+
+	return m
+}
+
+func (m Model) renderSuggestions() string {
+	lines := Lines{}
+
+	for i, s := range m.suggestions {
+		prefix := "   "
+
+		if m.suggestionsIndex == i {
+			prefix = styleSelectedPrefix.Render(" → ")
+			s = styleSelectedSuggestion.Render(s)
+		}
+
+		lines.Add(prefix + s)
+	}
+
+	return styleSuggestion.Render(lines.Join())
 }
 
 func (m Model) maxHistoryIndex() int {
@@ -208,26 +353,14 @@ func (m Model) nextHistory() Model {
 	return m
 }
 
-func (m Model) resetHistory() Model {
+func (m Model) resetInput() Model {
 	m.dirtyInput = ""
 	m.historyIndex = m.maxHistoryIndex()
+	m.suggestionsIndex = -1
+	m.suggestions = []string{}
+	m.in.CursorEnd()
 
 	return m
-}
-
-func (m Model) View() string {
-	view := m.in.View()
-
-	if debug {
-		m := m.asMap()
-		wrapper := ""
-		for _, k := range slices.Sorted(maps.Keys(m)) {
-			wrapper += fmt.Sprintf(("\n%s: %v"), k, m[k])
-		}
-		view += styleNestedContainer.Render(styleDebug.Render(wrapper))
-	}
-
-	return view
 }
 
 func (m Model) asMap() map[string]any {
@@ -236,6 +369,7 @@ func (m Model) asMap() map[string]any {
 		"max_history_index": m.maxHistoryIndex(),
 		"dirty_input":       m.dirtyInput,
 		"is_evaluating":     m.isEvaluating,
+		"suggestions_index": m.suggestionsIndex,
 	}
 }
 
@@ -396,4 +530,27 @@ func (m Model) interrupt() (Model, tea.Cmd) {
 	m.in.Reset()
 
 	return m, tea.Println(l)
+}
+
+func (m Model) getSuggestions(s string) []string {
+	matches := []string{}
+
+	vars := m.env.GetKeys()
+	sort.Strings(vars)
+
+	for _, v := range vars {
+		if strings.HasPrefix(strings.ToLower(v), strings.ToLower(s)) {
+			matches = append(matches, v)
+		}
+	}
+
+	for _, f := range slices.Sorted(maps.Keys(evaluator.GetFns())) {
+		if strings.HasPrefix(strings.ToLower(f), strings.ToLower(s)) {
+			matches = append(matches, f)
+		}
+	}
+
+	sort.Strings(matches)
+
+	return matches
 }
