@@ -42,7 +42,8 @@ func init() {
 /*
 Here be the hairy map to all the Builtin Functions ... ARRRGH, matey
 */
-func getFns() map[string]*object.Builtin {
+// TODO these should just be module vars
+func GetFns() map[string]*object.Builtin {
 	return map[string]*object.Builtin{
 		// len(var:"hello")
 		"len": &object.Builtin{
@@ -952,6 +953,7 @@ func argFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	i := arg.Int()
 
 	if i > len(os.Args)-1 || i < 0 {
+		// TODO this should maybe return null
 		return &object.String{Token: tok, Value: ""}
 	}
 
