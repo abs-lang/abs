@@ -21,3 +21,17 @@ func TestAssignStatements(t *testing.T) {
 		}
 	}
 }
+
+func TestApplySuggestions(t *testing.T) {
+	tests := [][]string{
+		{"int", "int", "intersect", "intersect"},
+		{"f(input)", "input", "TTT", "f(TTT)"},
+	}
+	for _, tt := range tests {
+		res := applySuggestion(tt[0], tt[1], tt[2])
+
+		if res != tt[3] {
+			t.Fatalf("got %s exp %s", res, tt[3])
+		}
+	}
+}
