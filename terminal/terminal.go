@@ -14,11 +14,12 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/abs-lang/abs/ast"
 	"github.com/abs-lang/abs/evaluator"
 	"github.com/abs-lang/abs/lexer"
 	"github.com/abs-lang/abs/object"
+	"github.com/abs-lang/abs/parser"
 	"github.com/abs-lang/abs/runner"
-	"github.com/abs-lang/abs/token"
 	"github.com/abs-lang/abs/util"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -28,7 +29,6 @@ import (
 // TODO
 // reverse search
 // unable to print literal tabs when using tab key?
-// autocompleter
 // up down change of direction messes history
 // more example statements
 // WONTFIXNOW
@@ -101,8 +101,8 @@ type Model struct {
 	historyMaxLInes int
 	// autocomplete
 	suggestionsIndex int
-	suggestions      []string
-	suggestToken     string
+	suggestions      []Suggestion
+	textToReplace    string
 }
 
 func (m Model) Init() tea.Cmd {
@@ -241,12 +241,6 @@ func IsLetter(s string) bool {
 	})
 }
 
-func applySuggestion(s, suggestion string) string {
-	ix := strings.LastIndex(s, s)
-
-	return s[:ix] + suggestion
-}
-
 func (m Model) suggest(direction int) Model {
 	if m.IsSuggesting() {
 		m.suggestionsIndex += direction
@@ -256,40 +250,24 @@ func (m Model) suggest(direction int) Model {
 			m.suggestionsIndex += len(m.suggestions)
 		}
 
-		m.in.SetValue(applySuggestion(m.dirtyInput, m.suggestions[m.suggestionsIndex]))
+		m.in.SetValue(applySuggestion(m.dirtyInput, m.textToReplace, m.suggestions[m.suggestionsIndex].Value))
 		m.in.CursorEnd()
 	}
 
 	if !m.IsSuggesting() {
 		l := lexer.New(m.in.Value())
-		tokens := []token.Token{}
-		var done bool
+		p := parser.New(l)
+		p.ParseProgram()
 
-		for !done {
-			t := l.NextToken()
-			if t.Type == token.EOF {
-				done = true
-				break
-			}
-
-			tokens = append(tokens, t)
-		}
-
-		if len(tokens) == 0 {
+		if p.AutocompleteSubject == nil {
 			return m
 		}
 
-		if tokens[len(tokens)-1].Type != token.IDENT {
-			return m
-		}
-
-		s := tokens[len(tokens)-1].Literal
 		m.dirtyInput = m.in.Value()
-		m.suggestToken = s
-		m.suggestions = m.getSuggestions(s)
+		m.suggestions, m.textToReplace = m.getSuggestions(p.AutocompleteSubject)
 
 		if len(m.suggestions) == 1 {
-			m.in.SetValue(applySuggestion(m.dirtyInput, m.suggestions[0]))
+			m.in.SetValue(applySuggestion(m.dirtyInput, m.textToReplace, m.suggestions[0].Value))
 			return m.resetInput()
 		}
 	}
@@ -300,12 +278,17 @@ func (m Model) suggest(direction int) Model {
 func (m Model) renderSuggestions() string {
 	lines := Lines{}
 
-	for i, s := range m.suggestions {
+	for i, sugg := range m.suggestions {
+		s := styleSuggestions[sugg.Type].Render(sugg.Value)
 		prefix := "   "
 
 		if m.suggestionsIndex == i {
 			prefix = styleSelectedPrefix.Render(" → ")
-			s = styleSelectedSuggestion.Render(s)
+			s = styleSelectedSuggestion.Render(sugg.Value)
+
+			if sugg.Comment != "" {
+				s += m.in.PlaceholderStyle.Render(" # " + sugg.Comment)
+			}
 		}
 
 		lines.Add(prefix + s)
@@ -357,7 +340,7 @@ func (m Model) resetInput() Model {
 	m.dirtyInput = ""
 	m.historyIndex = m.maxHistoryIndex()
 	m.suggestionsIndex = -1
-	m.suggestions = []string{}
+	m.suggestions = []Suggestion{}
 	m.in.CursorEnd()
 
 	return m
@@ -532,25 +515,90 @@ func (m Model) interrupt() (Model, tea.Cmd) {
 	return m, tea.Println(l)
 }
 
-func (m Model) getSuggestions(s string) []string {
-	matches := []string{}
+type suggestionType int
 
-	vars := m.env.GetKeys()
-	sort.Strings(vars)
+const SUGGESTION_FUNCTION suggestionType = 0
+const SUGGESTION_IDENTIFIER suggestionType = 1
+const SUGGESTION_PROPERTY suggestionType = 2
 
-	for _, v := range vars {
-		if strings.HasPrefix(strings.ToLower(v), strings.ToLower(s)) {
-			matches = append(matches, v)
+type Suggestion struct {
+	Value   string
+	Comment string
+	Type    suggestionType
+}
+
+func NewSuggestion(v string, t suggestionType, c string) Suggestion {
+	return Suggestion{Value: v, Type: t, Comment: c}
+}
+
+func (m Model) getSuggestions(n ast.Node) ([]Suggestion, string) {
+	matches := []Suggestion{}
+	toReplace := ""
+
+	functions := evaluator.GetFns()
+
+	switch node := n.(type) {
+	case *ast.Identifier:
+		// We have an identitier. Suggest any function /  variable
+		// available in the environment.
+		//
+		// hell[TAB]
+		input := node.String()
+		toReplace = input
+		vars := m.env.GetKeys()
+		sort.Strings(vars)
+
+		for _, v := range vars {
+			if strings.HasPrefix(strings.ToLower(v), strings.ToLower(input)) {
+				matches = append(matches, NewSuggestion(v, SUGGESTION_IDENTIFIER, ""))
+			}
+		}
+
+		for _, f := range slices.Sorted(maps.Keys(functions)) {
+			if strings.HasPrefix(strings.ToLower(f), strings.ToLower(input)) {
+				matches = append(matches, NewSuggestion(f, SUGGESTION_FUNCTION, ""))
+			}
+		}
+	case *ast.PropertyExpression:
+		// We have a property / method call, suggest
+		// properties of the object or functions that
+		// can be called on it.
+		//
+		// "string".hell[TAB]
+		evaluated := evaluator.BeginEval(node.Object, m.env, lexer.New(node.Object.String()))
+		toReplace = node.Property.String()
+
+		// native functions that can be called on the subject
+		for _, f := range slices.Sorted(maps.Keys(functions)) {
+			if functions[f].Standalone || !evaluator.CanCallMethod(functions[f], evaluated) {
+				continue
+			}
+
+			if strings.HasPrefix(strings.ToLower(f), strings.ToLower(toReplace)) {
+				matches = append(matches, NewSuggestion(f, SUGGESTION_FUNCTION, ""))
+			}
+		}
+
+		// if the subject is a hash, we should also suggest its properties
+		hash, ok := evaluated.(*object.Hash)
+
+		if !ok {
+			break
+		}
+
+		for p := range hash.Pairs {
+			actualValue := hash.Pairs[p].Value.Inspect()
+
+			if len(actualValue) > 50 {
+				actualValue = actualValue[:50] + "..."
+			}
+			matches = append(matches, NewSuggestion(p.Value, SUGGESTION_PROPERTY, actualValue))
 		}
 	}
 
-	for _, f := range slices.Sorted(maps.Keys(evaluator.GetFns())) {
-		if strings.HasPrefix(strings.ToLower(f), strings.ToLower(s)) {
-			matches = append(matches, f)
-		}
-	}
+	sort.Slice(matches, func(i, j int) bool {
+		return matches[i].Type > matches[j].Type
+	})
 
-	sort.Strings(matches)
-
-	return matches
+	return matches, toReplace
 }

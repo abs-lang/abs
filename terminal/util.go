@@ -82,3 +82,16 @@ func (ls *Lines) Dump() tea.Cmd {
 func (ls *Lines) Join() string {
 	return strings.Join(*ls, "\n")
 }
+
+func applySuggestion(s, textToReplace, suggestion string) string {
+	wstart := strings.LastIndex(s, textToReplace)
+	wend := wstart + len(textToReplace) - 1
+	head := s[:wstart]
+	tail := ""
+
+	if len(s) > wend {
+		tail = s[wend+1:]
+	}
+
+	return head + suggestion + tail
+}

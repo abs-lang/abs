@@ -1267,13 +1267,21 @@ func applyMethod(tok token.Token, o object.Object, me *ast.MethodExpression, env
 	}
 
 	// Make sure the builtin function can be called on the given type
-	if !util.Contains(f.Types, string(o.Type())) && len(f.Types) != 0 {
+	if !CanCallMethod(f, o) {
 		return newError(tok, "cannot call method '%s()' on '%s'", method, o.Type())
 	}
 
 	// Magic!
 	args = append([]object.Object{o}, args...)
 	return f.Fn(tok, env, args...)
+}
+
+func CanCallMethod(f *object.Builtin, o object.Object) bool {
+	if len(f.Types) == 0 {
+		return true
+	}
+
+	return util.Contains(f.Types, string(o.Type()))
 }
 
 func extendFunctionEnv(

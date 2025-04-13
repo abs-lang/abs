@@ -85,6 +85,13 @@ type Parser struct {
 
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns  map[token.TokenType]infixParseFn
+	// Autocomplete subject is the latest node that
+	// we went through that's eligible for autocompletion,
+	// which is used on the REPL.
+	// There's only a handful of nodes that are eligible:
+	// * identifiers ie. suggest[PRESS TAB]
+	// * property expressions ie. object.suggest[PRESS TAB]
+	AutocompleteSubject ast.Expression
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -214,6 +221,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program.Statements = []ast.Statement{}
 
 	for !p.curTokenIs(token.EOF) {
+		p.AutocompleteSubject = nil
 		stmt := p.parseStatement()
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
@@ -424,7 +432,11 @@ func (p *Parser) curPrecedence() int {
 
 // var
 func (p *Parser) parseIdentifier() ast.Expression {
-	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	id := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	p.AutocompleteSubject = id
+
+	return id
 }
 
 // 1 or 1.1 or 1k
@@ -541,6 +553,7 @@ func (p *Parser) parseDottedExpression(object ast.Expression) ast.Expression {
 		// support assignment to hash property h.a = 1
 		exp := &ast.PropertyExpression{Token: t, Object: object}
 		exp.Property = p.parseIdentifier()
+		p.AutocompleteSubject = exp
 		p.prevPropertyExpression = exp
 		p.prevIndexExpression = nil
 		return exp
