@@ -24,6 +24,7 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // TODO
@@ -50,6 +51,11 @@ func NewTerminal(env *object.Environment, stdinRelay io.Writer) *tea.Program {
 	in.Placeholder = exampleStatements[mrand.Intn(len(exampleStatements))] + " # just something you can run... (tab + enter)"
 	in.Focus()
 
+	search := textinput.New()
+	search.Prompt = " search: "
+	search.PromptStyle = styleSearchPrompt
+	search.TextStyle = styleSearchText
+
 	m := Model{
 		in:               in,
 		env:              env,
@@ -60,6 +66,7 @@ func NewTerminal(env *object.Environment, stdinRelay io.Writer) *tea.Program {
 		historyFile:      historyFile,
 		historyMaxLInes:  maxLines,
 		suggestionsIndex: -1,
+		searchText:       search,
 	}
 
 	p := tea.NewProgram(m)
@@ -102,6 +109,11 @@ type Model struct {
 	suggestionsIndex int
 	suggestions      []Suggestion
 	textToReplace    string
+	// search
+	isSearching bool
+	// reverse search input
+	searchText     textinput.Model
+	searchPosition int
 }
 
 func (m Model) Init() tea.Cmd {
@@ -113,10 +125,14 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) View() string {
-	view := m.in.View()
+	components := []string{m.in.View()}
+
+	if m.isSearching {
+		components = append(components, styleSearch.Render(m.searchText.View()))
+	}
 
 	if m.IsSuggesting() {
-		view += "\n" + m.renderSuggestions()
+		components = append(components, m.renderSuggestions())
 	}
 
 	if debug {
@@ -125,10 +141,11 @@ func (m Model) View() string {
 		for _, k := range slices.Sorted(maps.Keys(m)) {
 			wrapper += fmt.Sprintf(("\n%s: %v"), k, m[k])
 		}
-		view += styleNestedContainer.Render(styleDebug.Render(wrapper))
+
+		components = append(components, styleNestedContainer.Render(styleDebug.Render(wrapper)))
 	}
 
-	return view
+	return lipgloss.JoinVertical(0, components...)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -136,7 +153,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		tiCmd tea.Cmd
 	)
 
-	m.in, tiCmd = m.in.Update(msg)
+	m.in, _ = m.in.Update(msg)
+	m.searchText, _ = m.searchText.Update(msg)
 
 	switch msg := msg.(type) {
 	case doneEval:
@@ -162,12 +180,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+		if m.isSearching {
+			// for every keyboard input let's restart
+			// our search -- but for ctrl+R, which should
+			// continue our search backwards
+			if msg.Type != tea.KeyCtrlR {
+				m.searchPosition = len(m.history) - 1
+			}
+
+			switch msg.Type {
+			case tea.KeyEnter:
+				return m.selectSearch(), nil
+			case tea.KeyCtrlR:
+				return m.advanceSearch(), nil
+			case tea.KeyCtrlC, tea.KeyCtrlD:
+				break
+			default:
+				return m.search(), nil
+			}
+		}
+
 		switch msg.Type {
 		case tea.KeyEsc, tea.KeyCtrlD:
 			return m.quit()
 		case tea.KeyCtrlC:
 			m = m.resetInput()
 			return m.interrupt()
+		case tea.KeyCtrlR:
+			return m.search(), nil
 		case tea.KeyEnter:
 			// Let's get rid of the placeholder
 			// first time user submits something
@@ -220,6 +260,62 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tiCmd
+}
+
+func (m Model) search() Model {
+	if !m.isSearching {
+		m.isSearching = true
+		m.searchText.SetValue("")
+		m.searchText.Focus()
+		m.in.Blur()
+
+		return m
+	}
+
+	if m.searchText.Value() == "" {
+		m.in.SetValue("")
+		return m
+	}
+
+	for i := m.searchPosition; i >= 0; i-- {
+		line := m.history[i]
+
+		if strings.Contains(line, m.searchText.Value()) {
+			m.in.SetValue(line)
+			m.searchPosition = i
+			return m
+		}
+	}
+
+	m.searchPosition = len(m.history) - 1
+
+	return m
+}
+
+func (m Model) advanceSearch() Model {
+	if !m.isSearching {
+		return m
+	}
+
+	if len(m.history) == 0 {
+		return m
+	}
+
+	m.searchPosition -= 1
+
+	return m.search()
+}
+
+func (m Model) selectSearch() Model {
+	if !m.isSearching {
+		return m
+	}
+
+	txt := m.in.Value()
+	m = m.resetInput()
+	m.in.SetValue(txt)
+
+	return m
 }
 
 func (m Model) exitSuggestions() Model {
@@ -342,6 +438,9 @@ func (m Model) resetInput() Model {
 	m.suggestionsIndex = -1
 	m.suggestions = []Suggestion{}
 	m.in.CursorEnd()
+	m.in.Focus()
+	m.isSearching = false
+	m.searchText.Blur()
 
 	return m
 }
@@ -353,6 +452,7 @@ func (m Model) asMap() map[string]any {
 		"dirty_input":       m.dirtyInput,
 		"is_evaluating":     m.isEvaluating,
 		"suggestions_index": m.suggestionsIndex,
+		"search_position":   m.searchPosition,
 	}
 }
 
