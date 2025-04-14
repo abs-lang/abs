@@ -27,15 +27,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// TODO
-// reverse search
-// WONTFIXNOW
-// maybe only save incrementally in history https://stackoverflow.com/questions/7151261/append-to-a-file-in-go ?
-// worth renaming repl to runner? and maybe terminal back to repl
-// add prompt formatting tests
-// up down change of direction messes history
-// unable to print literal tabs when using tab key?
-
 var debug = os.Getenv("DEBUG") == "1"
 
 func NewTerminal(env *object.Environment, stdinRelay io.Writer) *tea.Program {
