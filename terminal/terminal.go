@@ -179,12 +179,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Println(m.prompt())
 			}
 
+			// TODO this is breakig new installs (found via tapes)
 			// We have something submitted, let's add
-			// it to the history, only if it's a duplicate
+			// it to the history, only if it's not a duplicate
 			// of the last entry
-			if m.maxHistoryIndex() < 0 || m.history[m.historyIndex] != m.in.Value() {
-				m.history = append(m.history, m.in.Value())
-			}
+			// if m.maxHistoryIndex() > 0 || m.history[m.historyIndex] != m.in.Value() {
+			m.history = append(m.history, m.in.Value())
+			// }
 
 			m = m.resetInput()
 
