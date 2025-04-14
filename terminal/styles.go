@@ -11,7 +11,7 @@ var styleDebug = lipgloss.NewStyle().
 
 var styleFaint = lipgloss.NewStyle().Faint(true)
 
-var styleCode = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
+var styleCode = lipgloss.NewStyle().Foreground(lipgloss.Color("178"))
 
 var styleErr = lipgloss.NewStyle().Foreground(lipgloss.Color("#ed4747"))
 
@@ -25,3 +25,7 @@ var styleSuggestions = map[suggestionType]lipgloss.Style{
 }
 var styleSelectedSuggestion = lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Underline(true)
 var styleSelectedPrefix = styleSelectedSuggestion.Underline(false)
+
+var styleSearch = styleSuggestion
+var styleSearchPrompt = lipgloss.NewStyle().Foreground(lipgloss.Color("178")).Faint(true)
+var styleSearchText = styleCode
