@@ -8,12 +8,7 @@ Set Margin 10
 Set MarginFill "#a1a1a1"
 Set TypingSpeed 75ms
 
-Type "abs"
-Sleep 0.5
-Enter
-
-Wait+Screen /welcome/
-Sleep 0.5
+Source "/abs/docs/vhs/tapes/config.tape"
 
 Type "ip = `curl icanhazip.com`"
 Enter
