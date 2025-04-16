@@ -647,13 +647,14 @@ func (m Model) getSuggestions(n ast.Node) ([]Suggestion, string) {
 
 		for _, v := range vars {
 			if strings.HasPrefix(strings.ToLower(v), strings.ToLower(input)) {
-				matches = append(matches, NewSuggestion(v, SUGGESTION_IDENTIFIER, ""))
+				vv, _ := m.env.Get(v)
+				matches = append(matches, NewSuggestion(v, SUGGESTION_IDENTIFIER, vv.Inspect()))
 			}
 		}
 
 		for _, f := range slices.Sorted(maps.Keys(functions)) {
 			if strings.HasPrefix(strings.ToLower(f), strings.ToLower(input)) {
-				matches = append(matches, NewSuggestion(f, SUGGESTION_FUNCTION, ""))
+				matches = append(matches, NewSuggestion(f, SUGGESTION_FUNCTION, functions[f].Doc))
 			}
 		}
 	case *ast.PropertyExpression:
@@ -672,7 +673,7 @@ func (m Model) getSuggestions(n ast.Node) ([]Suggestion, string) {
 			}
 
 			if strings.HasPrefix(strings.ToLower(f), strings.ToLower(toReplace)) {
-				matches = append(matches, NewSuggestion(f, SUGGESTION_FUNCTION, ""))
+				matches = append(matches, NewSuggestion(f, SUGGESTION_FUNCTION, functions[f].Doc))
 			}
 		}
 
@@ -684,18 +685,19 @@ func (m Model) getSuggestions(n ast.Node) ([]Suggestion, string) {
 		}
 
 		for p := range hash.Pairs {
-			actualValue := hash.Pairs[p].Value.Inspect()
-
-			if len(actualValue) > 50 {
-				actualValue = actualValue[:50] + "..."
-			}
-			matches = append(matches, NewSuggestion(p.Value, SUGGESTION_PROPERTY, actualValue))
+			matches = append(matches, NewSuggestion(p.Value, SUGGESTION_PROPERTY, hash.Pairs[p].Value.Inspect()))
 		}
 	}
 
 	sort.Slice(matches, func(i, j int) bool {
 		return matches[i].Type > matches[j].Type
 	})
+
+	for k, v := range matches {
+		if len(v.Comment) > 50 {
+			matches[k].Comment = v.Comment[:50] + "..."
+		}
+	}
 
 	return matches, toReplace
 }

@@ -49,96 +49,113 @@ func GetFns() map[string]*object.Builtin {
 		"len": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.ARRAY_OBJ},
 			Fn:    lenFn,
+			Doc:   "returns the length of the given variable",
 		},
 		// rand(max:20)
 		"rand": &object.Builtin{
 			Types:      []string{object.NUMBER_OBJ},
 			Fn:         randFn,
 			Standalone: true,
+			Doc:        "generates a random number between 0 and max",
 		},
 		// exit(code:0)
 		"exit": &object.Builtin{
 			Types:      []string{object.NUMBER_OBJ},
 			Fn:         exitFn,
 			Standalone: true,
+			Doc:        "exists the current process",
 		},
 		// flag("my-flag")
 		"flag": &object.Builtin{
 			Types:      []string{object.STRING_OBJ},
 			Fn:         flagFn,
 			Standalone: true,
+			Doc:        "returns the value of a command line flag",
 		},
 		// pwd()
 		"pwd": &object.Builtin{
 			Types:      []string{},
 			Fn:         pwdFn,
 			Standalone: true,
+			Doc:        "returns the current working directory",
 		},
 		// camel("string")
 		"camel": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    camelFn,
+			Doc:   "converts a string to camel case",
 		},
 		// snake("string")
 		"snake": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    snakeFn,
+			Doc:   "converts a strig to snake case",
 		},
 		// kebab("string")
 		"kebab": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    kebabFn,
+			Doc:   "converts a string to kebab case",
 		},
 		// cd() or cd(path)
 		"cd": &object.Builtin{
 			Types:      []string{object.STRING_OBJ},
 			Fn:         cdFn,
 			Standalone: true,
+			Doc:        "changes the curret working directory",
 		},
 		// clamp(num, min, max)
 		"clamp": &object.Builtin{
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    clampFn,
+			Doc:   "limits the number in the range between min and max",
 		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
 			Types:      []string{},
 			Fn:         echoFn,
 			Standalone: true,
+			Doc:        "prints",
 		},
 		// int(string:"123")
 		// int(number:"123")
 		"int": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    intFn,
+			Doc:   "converts the given variable to an integer",
 		},
 		// round(string:"123.1")
 		// round(number:"123.1", 2)
 		"round": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    roundFn,
+			Doc:   "rounds the given variable with the given precision",
 		},
 		// floor(string:"123.1")
 		// floor(number:123.1)
 		"floor": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    floorFn,
+			Doc:   "rounds down the given number",
 		},
 		// ceil(string:"123.1")
 		// ceil(number:123.1)
 		"ceil": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    ceilFn,
+			Doc:   "rounds up the given number",
 		},
 		// number(string:"1.23456")
 		"number": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    numberFn,
+			Doc:   "converts the given variable to a number",
 		},
 		// is_number(string:"1.23456")
 		"is_number": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    isNumberFn,
+			Doc:   "checks whether the given variable is a number",
 		},
 		// stdin()
 		"stdin": &object.Builtin{
@@ -146,115 +163,137 @@ func GetFns() map[string]*object.Builtin {
 			Types:      []string{},
 			Fn:         stdinFn,
 			Standalone: true,
+			Doc:        "read input from stdin",
 		},
 		// env(variable:"PWD") or env(string:"KEY", string:"VAL")
 		"env": &object.Builtin{
 			Types:      []string{},
 			Fn:         envFn,
 			Standalone: true,
+			Doc:        "returns an environment variable",
 		},
 		// arg(position:1)
 		"arg": &object.Builtin{
 			Types:      []string{object.NUMBER_OBJ},
 			Fn:         argFn,
 			Standalone: true,
+			Doc:        "returns the argument at the given position used to run this process",
 		},
 		// args()
 		"args": &object.Builtin{
 			Types:      []string{object.STRING_OBJ},
 			Fn:         argsFn,
 			Standalone: true,
+			Doc:        "returns all arguments used to run this process",
 		},
 		// type(variable:"hello")
 		"type": &object.Builtin{
 			Types: []string{},
 			Fn:    typeFn,
+			Doc:   "returns the type of a variable",
 		},
 		// fn.call(args_array)
 		"call": &object.Builtin{
 			Types: []string{object.FUNCTION_OBJ, object.BUILTIN_OBJ},
 			Fn:    callFn,
+			Doc:   "calls a function programmatically with its arguments passed as an array",
 		},
 		// chnk([...], int:2)
 		"chunk": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    chunkFn,
+			Doc:   "chunks the given list",
 		},
 		// split(string:"hello")
 		"split": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    splitFn,
+			Doc:   "splits a string by a delimiter",
 		},
 		// lines(string:"a\nb")
 		"lines": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    linesFn,
+			Doc:   "splits a string by '\\n' and returns an array of lines",
 		},
 		// "{}".json()
 		// Converts a valid JSON document to an ABS hash.
 		"json": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    jsonFn,
+			Doc:   "converts a valid json document to a hash",
 		},
 		// "a %s".fmt(b)
 		"fmt": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    fmtFn,
+			Doc:   "formats a string with sprintf format",
 		},
 		// sum(array:[1, 2, 3])
 		"sum": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    sumFn,
+			Doc:   "returns the sum of all elements in an array",
 		},
 		// max(array:[1, 2, 3])
 		"max": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    maxFn,
+			Doc:   "returns the largest element in an array",
 		},
 		// min(array:[1, 2, 3])
 		"min": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    minFn,
+			Doc:   "returns the smallest element in an array",
 		},
 		// reduce(array:[1, 2, 3], f(){}, accumulator)
 		"reduce": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    reduceFn,
+			Doc:   "iterate through the array and reduce it to a value",
 		},
 		// sort(array:[1, 2, 3])
 		"sort": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    sortFn,
+			Doc:   "sort an array",
 		},
 		// intersect(array:[1, 2, 3], array:[1, 2, 3])
 		"intersect": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    intersectFn,
+			Doc:   "return the intersection between 2 arrays",
 		},
 		// diff(array:[1, 2, 3], array:[1, 2, 3])
 		"diff": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    diffFn,
+			Doc:   "returns an array with elements not found in either of the input arrays",
 		},
 		// union(array:[1, 2, 3], array:[1, 2, 3])
 		"union": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    unionFn,
+			Doc:   "returns the union of two arrays",
 		},
 		// diff_symmetric(array:[1, 2, 3], array:[1, 2, 3])
 		"diff_symmetric": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    diffSymmetricFn,
+			Doc:   "returns the symmetric diff between two arrays",
 		},
 		// flatten(array:[1, 2, 3])
 		"flatten": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    flattenFn,
+			Doc:   "flattens an array by one level",
 		},
 		// flatten(array:[1, 2, 3])
 		"flatten_deep": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    flattenDeepFn,
+			Doc:   "flattens an array",
 		},
 		// partition(array:[1, 2, 3])
 		"partition": &object.Builtin{
@@ -265,6 +304,7 @@ func GetFns() map[string]*object.Builtin {
 		"map": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    mapFn,
+			Doc:   "iterates through an array and applies a function to each element",
 		},
 		// some(array:[1, 2, 3], function:f(x) { x == 2 })
 		"some": &object.Builtin{
@@ -280,21 +320,25 @@ func GetFns() map[string]*object.Builtin {
 		"find": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    findFn,
+			Doc:   "returns the first element matching a condition wihin a array",
 		},
 		// filter(array:[1, 2, 3], function:f(x) { x == 2 })
 		"filter": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    filterFn,
+			Doc:   "filters an array and returns elements matching a function",
 		},
 		// unique(array:[1, 2, 3])
 		"unique": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    uniqueFn,
+			Doc:   "remove duplicate values from an array",
 		},
 		// str(1)
 		"str": &object.Builtin{
 			Types: []string{},
 			Fn:    strFn,
+			Doc:   "converts the given variable to a string",
 		},
 		// any("abc", "b")
 		"any": &object.Builtin{
@@ -305,21 +349,25 @@ func GetFns() map[string]*object.Builtin {
 		"between": &object.Builtin{
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    betweenFn,
+			Doc:   "returns wheher the given number is between a range",
 		},
 		// prefix("abc", "a")
 		"prefix": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    prefixFn,
+			Doc:   "checks whether the given string starts with a given prefix",
 		},
 		// suffix("abc", "a")
 		"suffix": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    suffixFn,
+			Doc:   "checks whether the given string starts with a given suffix",
 		},
 		// repeat("abc", 3)
 		"repeat": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    repeatFn,
+			Doc:   "",
 		},
 		// replace("abc", "b", "f", -1)
 		"replace": &object.Builtin{
@@ -330,22 +378,26 @@ func GetFns() map[string]*object.Builtin {
 		"title": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    titleFn,
+			Doc:   "converts a string to titlecase",
 		},
 		// lower("ABC")
 		"lower": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    lowerFn,
+			Doc:   "converts a string to lowercase",
 		},
 		// upper("abc")
 		"upper": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    upperFn,
+			Doc:   "converts a string to uppercase",
 		},
 		// wait(`sleep 1 &`)
 		"wait": &object.Builtin{
 			Types:      []string{object.STRING_OBJ},
 			Fn:         waitFn,
 			Standalone: true,
+			Doc:        "waits for a command o finish executing, blocking the entire program",
 		},
 		"kill": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -365,11 +417,13 @@ func GetFns() map[string]*object.Builtin {
 		"index": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    indexFn,
+			Doc:   "returns the first position at which a string is found within another string",
 		},
 		// last_index("abcc", "c")
 		"last_index": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    lastIndexFn,
+			Doc:   "returns the last position at which a string is found within another string",
 		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
@@ -380,16 +434,19 @@ func GetFns() map[string]*object.Builtin {
 		"reverse": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn:    reverseFn,
+			Doc:   "reverses the order of elements in an array",
 		},
 		// shuffle([1,2,3])
 		"shuffle": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    shuffleFn,
+			Doc:   "shuffles elements rnaodmly in an array",
 		},
 		// push([1,2,3], 4)
 		"push": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    pushFn,
+			Doc:   "adds an element to an array",
 		},
 		// pop([1,2,3], 4)
 		"pop": &object.Builtin{
@@ -422,37 +479,43 @@ func GetFns() map[string]*object.Builtin {
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    sleepFn,
 		},
-		// source("file.abs") -- soure a file, with access to the global environment
+		// source("file.abs") -- source a file, with access to the global environment
 		"source": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
+			Doc:   "source a file, with access to the global environment",
 		},
 		// require("file.abs") -- require a file without giving it access to the global environment
 		"require": &object.Builtin{
 			Types:      []string{object.STRING_OBJ},
 			Fn:         requireFn,
 			Standalone: true,
+			Doc:        "require a file without giving it access to the global environment",
 		},
-		// exec(command) -- execute command with interactive stdIO
+		// exec(command) -- execute command with interactive stdio
 		"exec": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    execFn,
+			Doc:   "execute command with interactive stdio",
 		},
 		// eval(code) -- evaluates code in the context of the current ABS environment
 		"eval": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    evalFn,
+			Doc:   "evaluates given code in the context of the current ABS environment",
 		},
 		// tsv([[1,2,3,4], [5,6,7,8]]) -- converts an array into a TSV string
 		"tsv": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    tsvFn,
+			Doc:   "converts an array into a TSV string",
 		},
 		// unix_ms() -- returns the current unix epoch, in milliseconds
 		"unix_ms": &object.Builtin{
 			Types:      []string{},
 			Fn:         unixMsFn,
 			Standalone: true,
+			Doc:        "returns the current unix epoch, in milliseconds",
 		},
 	}
 }
