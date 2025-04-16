@@ -325,6 +325,7 @@ type Builtin struct {
 	// standalone functions as autocomplete
 	// options for types they accept.
 	Standalone bool
+	Doc        string
 }
 
 func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
