@@ -11,4 +11,4 @@ permalink: /misc/credits
 ## What next?
 
 That's about it for ABS' documentation, you made it till the very end:
-get out there and start enjoying shell scripting like it's 2021!
+get out there and start enjoying shell scripting like it's 2025!
