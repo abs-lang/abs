@@ -4,7 +4,7 @@ heroImage: /abs-horizontal.png
 tagline: "Bring back the joy of shell scripting."
 actionText: Quick Start →
 actionLink: /quickstart/
-footer: "©️ 2021 -- No developers were harmed in the making of this language"
+footer: "©️ 2025 -- No developers were harmed in the making of this language"
 ---
 
 ::: slot sample-code
