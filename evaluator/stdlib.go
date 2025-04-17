@@ -114,7 +114,7 @@ func stdlibRuntimeIndexAbs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/runtime/index.abs", size: 94, mode: os.FileMode(436), modTime: time.Unix(1744888484, 0)}
+	info := bindataFileInfo{name: "stdlib/runtime/index.abs", size: 94, mode: os.FileMode(436), modTime: time.Unix(1744912536, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
