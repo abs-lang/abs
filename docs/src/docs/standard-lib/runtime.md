@@ -28,3 +28,11 @@ Returns the name of the runtime:
 ```py
 runtime.name # "abs"
 ```
+
+### @runtime.interactive
+
+Returns whether abs is running in interactive mode (eg. repl):
+
+```py
+runtime.interactive # "true"
+```

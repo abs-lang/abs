@@ -1,4 +1,5 @@
 return {
     "name": "abs",
     "version": ABS_VERSION,
+    "interactive": ABS_INTERACTIVE,
 }
