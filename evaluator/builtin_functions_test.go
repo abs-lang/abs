@@ -168,6 +168,7 @@ func TestSplit(t *testing.T) {
 		{`split("a\"b\"c", "\"")`, []string{"a", "b", "c"}},
 		{`split("a b c", " ")`, []string{"a", "b", "c"}},
 		{`split("a b c")`, []string{"a", "b", "c"}},
+		{`split("\na\tb\rc")`, []string{"a", "b", "c"}},
 	}
 
 	testBuiltinFunction(tests, t)
