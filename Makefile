@@ -17,7 +17,7 @@ test_verbose:
 repl:
 	go run main.go
 build_simple:
-	go build -o builds/abs main.go
+	CGO_ENABLED=0 go build -o builds/abs main.go
 release: build_simple
 	./builds/abs ./scripts/release.abs
 docs:
