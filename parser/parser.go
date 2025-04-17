@@ -711,7 +711,7 @@ func (p *Parser) parseForExpression() ast.Expression {
 	}
 	p.nextToken()
 	p.nextToken()
-	expression.Closer = p.parseAssignStatement()
+	expression.Closer = p.parseStatement()
 	if expression.Closer == nil {
 		return nil
 	}
