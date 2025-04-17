@@ -796,13 +796,13 @@ while (x > y) {
 		return
 	}
 
-	if len(exp.Consequence.Statements) != 1 {
-		t.Errorf("consequence is not 1 statements. got=%d\n", len(exp.Consequence.Statements))
+	if len(exp.Block.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n", len(exp.Block.Statements))
 	}
 
-	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	consequence, ok := exp.Block.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Consequence.Statements[0])
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T", exp.Block.Statements[0])
 	}
 
 	if !testIdentifier(t, consequence.Expression, "x") {

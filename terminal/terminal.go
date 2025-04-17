@@ -346,6 +346,10 @@ func (m Model) suggest(direction int) Model {
 		p := parser.New(l)
 		p.ParseProgram()
 
+		if len(p.Errors()) != 0 {
+			return m
+		}
+
 		if p.AutocompleteSubject == nil {
 			return m
 		}

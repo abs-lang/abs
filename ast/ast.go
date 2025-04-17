@@ -358,9 +358,9 @@ func (ie *IfExpression) String() string {
 }
 
 type WhileExpression struct {
-	Token       token.Token // The 'while' token
-	Condition   Expression
-	Consequence *BlockStatement
+	Token     token.Token // The 'while' token
+	Condition Expression
+	Block     *BlockStatement
 }
 
 func (ie *WhileExpression) expressionNode()      {}
@@ -371,7 +371,7 @@ func (ie *WhileExpression) String() string {
 	out.WriteString("while")
 	out.WriteString(ie.Condition.String())
 	out.WriteString(" ")
-	out.WriteString(ie.Consequence.String())
+	out.WriteString(ie.Block.String())
 
 	return out.String()
 }

@@ -537,6 +537,8 @@ func TestWhileExpressions(t *testing.T) {
 		{"while true { echo x }", "identifier not found: x"},
 		{"a = 0; while (a < 10) { a = a + 1 }; a", 10},
 		{`a = ""; while (len(a) < 3) { a = a + "a" }; a`, "aaa"},
+		{`a = ""; while (len(a) < 3) { if a == "" {break}; a = a + "a" }; a`, ""},
+		{`a = 0; b = 0; while a < 100 { if a % 2 == 0 {b += 1; a += 1; continue}; a += 2 }; a.str()`, "101"},
 	}
 
 	for _, tt := range tests {

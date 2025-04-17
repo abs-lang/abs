@@ -679,7 +679,7 @@ func (p *Parser) parseWhileExpression() ast.Expression {
 		return nil
 	}
 
-	expression.Consequence = p.parseBlockStatement()
+	expression.Block = p.parseBlockStatement()
 	return expression
 }
 

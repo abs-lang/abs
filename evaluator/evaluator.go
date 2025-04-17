@@ -911,21 +911,7 @@ func evalWhileExpression(
 	we *ast.WhileExpression,
 	env *object.Environment,
 ) object.Object {
-	condition := Eval(we.Condition, env)
-	if isError(condition) {
-		return condition
-	}
-
-	if isTruthy(condition) {
-		evaluated := Eval(we.Consequence, env)
-
-		if isError(evaluated) {
-			return evaluated
-		}
-
-		evalWhileExpression(we, env)
-	}
-	return NULL
+	return evalLoop(we.Condition, env, we.Block, nil)
 }
 
 // for x = 0; x < 10; x++ {x}
@@ -943,9 +929,6 @@ func evalForExpression(
 		return err
 	}
 
-	// This represents whether the for condition holds true
-	holds := true
-
 	// Final cleanup: we remove the x from the environment. If
 	// it was already declared before the foor loop, we restore
 	// it to its original value
@@ -957,17 +940,20 @@ func evalForExpression(
 		}
 	}()
 
-	// When for is while...
-	for holds {
+	return evalLoop(fe.Condition, env, fe.Block, fe.Closer)
+}
+
+func evalLoop(condition ast.Expression, env *object.Environment, block *ast.BlockStatement, closer ast.Statement) object.Object {
+	for {
 		// Evaluate the for condition
-		evaluated := Eval(fe.Condition, env)
+		evaluated := Eval(condition, env)
 		if isError(evaluated) {
 			return evaluated
 		}
 
 		// If truthy, execute the block and the closer
 		if isTruthy(evaluated) {
-			res := Eval(fe.Block, env)
+			res := Eval(block, env)
 			if isError(res) {
 				// If we have an error it could be:
 				// * a break, so we get out of the loop
@@ -991,19 +977,18 @@ func evalForExpression(
 				// do nothing
 			}
 
-			err = Eval(fe.Closer, env)
-			if isError(err) {
-				return err
+			if closer != nil {
+				err := Eval(closer, env)
+				if isError(err) {
+					return err
+				}
 			}
 
 			continue
 		}
 
-		// If not, let's break out of the loop
-		holds = false
+		return object.NULL
 	}
-
-	return NULL
 }
 
 // for k,v in 1..10 {v}
