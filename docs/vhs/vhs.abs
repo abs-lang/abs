@@ -1,0 +1,14 @@
+for tape in `ls /abs/docs/vhs/tapes`.lines() {
+    if tape == "config.tape" {
+        continue
+    }
+    
+    echo("running tape %s", tape)
+    res = `vhs /abs/docs/vhs/tapes/$tape`
+
+    if !res.ok {
+        exit(99, res)
+    }
+
+    echo(res)
+}

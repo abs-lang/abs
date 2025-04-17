@@ -6,7 +6,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"math/big"
 	mrand "math/rand"
@@ -34,6 +33,8 @@ var scannerPosition int
 var requireCache map[string]object.Object
 
 func init() {
+	// TODO this sucks and I should be ashamed
+	// but let's worry about it another day...
 	scanner = bufio.NewScanner(os.Stdin)
 	requireCache = make(map[string]object.Object)
 }
@@ -41,208 +42,258 @@ func init() {
 /*
 Here be the hairy map to all the Builtin Functions ... ARRRGH, matey
 */
-func getFns() map[string]*object.Builtin {
+// TODO these should just be module vars
+func GetFns() map[string]*object.Builtin {
 	return map[string]*object.Builtin{
 		// len(var:"hello")
 		"len": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.ARRAY_OBJ},
 			Fn:    lenFn,
+			Doc:   "returns the length of the given variable",
 		},
 		// rand(max:20)
 		"rand": &object.Builtin{
-			Types: []string{object.NUMBER_OBJ},
-			Fn:    randFn,
+			Types:      []string{object.NUMBER_OBJ},
+			Fn:         randFn,
+			Standalone: true,
+			Doc:        "generates a random number between 0 and max",
 		},
 		// exit(code:0)
 		"exit": &object.Builtin{
-			Types: []string{object.NUMBER_OBJ},
-			Fn:    exitFn,
+			Types:      []string{object.NUMBER_OBJ},
+			Fn:         exitFn,
+			Standalone: true,
+			Doc:        "exists the current process",
 		},
 		// flag("my-flag")
 		"flag": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    flagFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         flagFn,
+			Standalone: true,
+			Doc:        "returns the value of a command line flag",
 		},
 		// pwd()
 		"pwd": &object.Builtin{
-			Types: []string{},
-			Fn:    pwdFn,
+			Types:      []string{},
+			Fn:         pwdFn,
+			Standalone: true,
+			Doc:        "returns the current working directory",
 		},
 		// camel("string")
 		"camel": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    camelFn,
+			Doc:   "converts a string to camel case",
 		},
 		// snake("string")
 		"snake": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    snakeFn,
+			Doc:   "converts a strig to snake case",
 		},
 		// kebab("string")
 		"kebab": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    kebabFn,
+			Doc:   "converts a string to kebab case",
 		},
 		// cd() or cd(path)
 		"cd": &object.Builtin{
-			Types: []string{},
-			Fn:    cdFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         cdFn,
+			Standalone: true,
+			Doc:        "changes the curret working directory",
 		},
 		// clamp(num, min, max)
 		"clamp": &object.Builtin{
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    clampFn,
+			Doc:   "limits the number in the range between min and max",
 		},
 		// echo(arg:"hello")
 		"echo": &object.Builtin{
-			Types: []string{},
-			Fn:    echoFn,
+			Types:      []string{},
+			Fn:         echoFn,
+			Standalone: true,
+			Doc:        "prints",
 		},
 		// int(string:"123")
 		// int(number:"123")
 		"int": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    intFn,
+			Doc:   "converts the given variable to an integer",
 		},
 		// round(string:"123.1")
 		// round(number:"123.1", 2)
 		"round": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    roundFn,
+			Doc:   "rounds the given variable with the given precision",
 		},
 		// floor(string:"123.1")
 		// floor(number:123.1)
 		"floor": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    floorFn,
+			Doc:   "rounds down the given number",
 		},
 		// ceil(string:"123.1")
 		// ceil(number:123.1)
 		"ceil": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    ceilFn,
+			Doc:   "rounds up the given number",
 		},
 		// number(string:"1.23456")
 		"number": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    numberFn,
+			Doc:   "converts the given variable to a number",
 		},
 		// is_number(string:"1.23456")
 		"is_number": &object.Builtin{
 			Types: []string{object.STRING_OBJ, object.NUMBER_OBJ},
 			Fn:    isNumberFn,
+			Doc:   "checks whether the given variable is a number",
 		},
 		// stdin()
 		"stdin": &object.Builtin{
-			Next:  stdinNextFn,
-			Types: []string{},
-			Fn:    stdinFn,
+			Next:       stdinNextFn,
+			Types:      []string{},
+			Fn:         stdinFn,
+			Standalone: true,
+			Doc:        "read input from stdin",
 		},
 		// env(variable:"PWD") or env(string:"KEY", string:"VAL")
 		"env": &object.Builtin{
-			Types: []string{},
-			Fn:    envFn,
+			Types:      []string{},
+			Fn:         envFn,
+			Standalone: true,
+			Doc:        "returns an environment variable",
 		},
 		// arg(position:1)
 		"arg": &object.Builtin{
-			Types: []string{object.NUMBER_OBJ},
-			Fn:    argFn,
+			Types:      []string{object.NUMBER_OBJ},
+			Fn:         argFn,
+			Standalone: true,
+			Doc:        "returns the argument at the given position used to run this process",
 		},
 		// args()
 		"args": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    argsFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         argsFn,
+			Standalone: true,
+			Doc:        "returns all arguments used to run this process",
 		},
 		// type(variable:"hello")
 		"type": &object.Builtin{
 			Types: []string{},
 			Fn:    typeFn,
+			Doc:   "returns the type of a variable",
 		},
 		// fn.call(args_array)
 		"call": &object.Builtin{
 			Types: []string{object.FUNCTION_OBJ, object.BUILTIN_OBJ},
 			Fn:    callFn,
+			Doc:   "calls a function programmatically with its arguments passed as an array",
 		},
 		// chnk([...], int:2)
 		"chunk": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    chunkFn,
+			Doc:   "chunks the given list",
 		},
 		// split(string:"hello")
 		"split": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    splitFn,
+			Doc:   "splits a string by a delimiter",
 		},
 		// lines(string:"a\nb")
 		"lines": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    linesFn,
+			Doc:   "splits a string by '\\n' and returns an array of lines",
 		},
 		// "{}".json()
 		// Converts a valid JSON document to an ABS hash.
 		"json": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    jsonFn,
+			Doc:   "converts a valid json document to a hash",
 		},
 		// "a %s".fmt(b)
 		"fmt": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    fmtFn,
+			Doc:   "formats a string with sprintf format",
 		},
 		// sum(array:[1, 2, 3])
 		"sum": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    sumFn,
+			Doc:   "returns the sum of all elements in an array",
 		},
 		// max(array:[1, 2, 3])
 		"max": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    maxFn,
+			Doc:   "returns the largest element in an array",
 		},
 		// min(array:[1, 2, 3])
 		"min": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    minFn,
+			Doc:   "returns the smallest element in an array",
 		},
 		// reduce(array:[1, 2, 3], f(){}, accumulator)
 		"reduce": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    reduceFn,
+			Doc:   "iterate through the array and reduce it to a value",
 		},
 		// sort(array:[1, 2, 3])
 		"sort": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    sortFn,
+			Doc:   "sort an array",
 		},
 		// intersect(array:[1, 2, 3], array:[1, 2, 3])
 		"intersect": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    intersectFn,
+			Doc:   "return the intersection between 2 arrays",
 		},
 		// diff(array:[1, 2, 3], array:[1, 2, 3])
 		"diff": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    diffFn,
+			Doc:   "returns an array with elements not found in either of the input arrays",
 		},
 		// union(array:[1, 2, 3], array:[1, 2, 3])
 		"union": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    unionFn,
+			Doc:   "returns the union of two arrays",
 		},
 		// diff_symmetric(array:[1, 2, 3], array:[1, 2, 3])
 		"diff_symmetric": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    diffSymmetricFn,
+			Doc:   "returns the symmetric diff between two arrays",
 		},
 		// flatten(array:[1, 2, 3])
 		"flatten": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    flattenFn,
+			Doc:   "flattens an array by one level",
 		},
 		// flatten(array:[1, 2, 3])
 		"flatten_deep": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    flattenDeepFn,
+			Doc:   "flattens an array",
 		},
 		// partition(array:[1, 2, 3])
 		"partition": &object.Builtin{
@@ -253,6 +304,7 @@ func getFns() map[string]*object.Builtin {
 		"map": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    mapFn,
+			Doc:   "iterates through an array and applies a function to each element",
 		},
 		// some(array:[1, 2, 3], function:f(x) { x == 2 })
 		"some": &object.Builtin{
@@ -268,21 +320,25 @@ func getFns() map[string]*object.Builtin {
 		"find": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    findFn,
+			Doc:   "returns the first element matching a condition wihin a array",
 		},
 		// filter(array:[1, 2, 3], function:f(x) { x == 2 })
 		"filter": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    filterFn,
+			Doc:   "filters an array and returns elements matching a function",
 		},
 		// unique(array:[1, 2, 3])
 		"unique": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    uniqueFn,
+			Doc:   "remove duplicate values from an array",
 		},
 		// str(1)
 		"str": &object.Builtin{
 			Types: []string{},
 			Fn:    strFn,
+			Doc:   "converts the given variable to a string",
 		},
 		// any("abc", "b")
 		"any": &object.Builtin{
@@ -293,21 +349,25 @@ func getFns() map[string]*object.Builtin {
 		"between": &object.Builtin{
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    betweenFn,
+			Doc:   "returns wheher the given number is between a range",
 		},
 		// prefix("abc", "a")
 		"prefix": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    prefixFn,
+			Doc:   "checks whether the given string starts with a given prefix",
 		},
 		// suffix("abc", "a")
 		"suffix": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    suffixFn,
+			Doc:   "checks whether the given string starts with a given suffix",
 		},
 		// repeat("abc", 3)
 		"repeat": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    repeatFn,
+			Doc:   "",
 		},
 		// replace("abc", "b", "f", -1)
 		"replace": &object.Builtin{
@@ -318,21 +378,26 @@ func getFns() map[string]*object.Builtin {
 		"title": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    titleFn,
+			Doc:   "converts a string to titlecase",
 		},
 		// lower("ABC")
 		"lower": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    lowerFn,
+			Doc:   "converts a string to lowercase",
 		},
 		// upper("abc")
 		"upper": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    upperFn,
+			Doc:   "converts a string to uppercase",
 		},
 		// wait(`sleep 1 &`)
 		"wait": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    waitFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         waitFn,
+			Standalone: true,
+			Doc:        "waits for a command o finish executing, blocking the entire program",
 		},
 		"kill": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
@@ -352,11 +417,13 @@ func getFns() map[string]*object.Builtin {
 		"index": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    indexFn,
+			Doc:   "returns the first position at which a string is found within another string",
 		},
 		// last_index("abcc", "c")
 		"last_index": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    lastIndexFn,
+			Doc:   "returns the last position at which a string is found within another string",
 		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
@@ -367,16 +434,19 @@ func getFns() map[string]*object.Builtin {
 		"reverse": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ, object.STRING_OBJ},
 			Fn:    reverseFn,
+			Doc:   "reverses the order of elements in an array",
 		},
 		// shuffle([1,2,3])
 		"shuffle": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    shuffleFn,
+			Doc:   "shuffles elements rnaodmly in an array",
 		},
 		// push([1,2,3], 4)
 		"push": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    pushFn,
+			Doc:   "adds an element to an array",
 		},
 		// pop([1,2,3], 4)
 		"pop": &object.Builtin{
@@ -409,35 +479,43 @@ func getFns() map[string]*object.Builtin {
 			Types: []string{object.NUMBER_OBJ},
 			Fn:    sleepFn,
 		},
-		// source("file.abs") -- soure a file, with access to the global environment
+		// source("file.abs") -- source a file, with access to the global environment
 		"source": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    sourceFn,
+			Doc:   "source a file, with access to the global environment",
 		},
 		// require("file.abs") -- require a file without giving it access to the global environment
 		"require": &object.Builtin{
-			Types: []string{object.STRING_OBJ},
-			Fn:    requireFn,
+			Types:      []string{object.STRING_OBJ},
+			Fn:         requireFn,
+			Standalone: true,
+			Doc:        "require a file without giving it access to the global environment",
 		},
-		// exec(command) -- execute command with interactive stdIO
+		// exec(command) -- execute command with interactive stdio
 		"exec": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    execFn,
+			Doc:   "execute command with interactive stdio",
 		},
 		// eval(code) -- evaluates code in the context of the current ABS environment
 		"eval": &object.Builtin{
 			Types: []string{object.STRING_OBJ},
 			Fn:    evalFn,
+			Doc:   "evaluates given code in the context of the current ABS environment",
 		},
 		// tsv([[1,2,3,4], [5,6,7,8]]) -- converts an array into a TSV string
 		"tsv": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
 			Fn:    tsvFn,
+			Doc:   "converts an array into a TSV string",
 		},
 		// unix_ms() -- returns the current unix epoch, in milliseconds
 		"unix_ms": &object.Builtin{
-			Types: []string{},
-			Fn:    unixMsFn,
+			Types:      []string{},
+			Fn:         unixMsFn,
+			Standalone: true,
+			Doc:        "returns the current unix epoch, in milliseconds",
 		},
 	}
 }
@@ -460,15 +538,15 @@ func validateArgs(tok token.Token, name string, args []object.Object, size int, 
 	return nil
 }
 
-// spec is an array of {
-//   {															// signature: func(num|str, arr)
-//     { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
-//     { ARRAY_OBJ},								// type options for arg 1
-//   },
-//   {															// signature: func(num|str)
-//     { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
-//   },
-// }
+//	spec is an array of {
+//	  {															// signature: func(num|str, arr)
+//	    { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
+//	    { ARRAY_OBJ},								// type options for arg 1
+//	  },
+//	  {															// signature: func(num|str)
+//	    { NUMBER_OBJ, STRING_OBJ },	// type options for arg 0
+//	  },
+//	}
 func validateVarArgs(tok token.Token, name string, args []object.Object, specs [][][]string) (object.Object, int) {
 	required := -1
 	max := 0
@@ -511,7 +589,7 @@ func validateVarArgs(tok token.Token, name string, args []object.Object, specs [
 	}
 
 	// no signature specs matched
-	return newError(tok, usageVarArgs(name, specs)), -1
+	return newError(tok, "%s", usageVarArgs(name, specs)), -1
 }
 
 func usageVarArgs(name string, specs [][][]string) string {
@@ -582,7 +660,7 @@ func exitFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	if message != "" {
-		fmt.Fprintf(env.Writer, message)
+		fmt.Fprint(env.Stdio.Stdout, message)
 	}
 
 	arg := args[0].(*object.Number)
@@ -663,7 +741,7 @@ func flagFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 func pwdFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	dir, err := os.Getwd()
 	if err != nil {
-		return newError(tok, err.Error())
+		return newError(tok, "%s", err.Error())
 	}
 	return &object.String{Token: tok, Value: dir}
 }
@@ -696,11 +774,15 @@ func applyStringCase(fnName string, fn func(string) string, tok token.Token, env
 func cdFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	user, ok := user.Current()
 	if ok != nil {
-		return newError(tok, ok.Error())
+		return newError(tok, "%s", ok.Error())
 	}
 	// Default: cd to user's homeDir
 	path := user.HomeDir
 	if len(args) == 1 {
+		err := validateArgs(tok, "cd", args, 1, [][]string{{object.STRING_OBJ}})
+		if err != nil {
+			return err
+		}
 		// arg: rawPath
 		pathStr := args[0].(*object.String)
 		rawPath := pathStr.Value
@@ -750,7 +832,7 @@ func clampFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 func echoFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	if len(args) == 0 {
 		// allow echo() without crashing
-		fmt.Fprintln(env.Writer, "")
+		fmt.Fprintln(env.Stdio.Stdout, "")
 		return NULL
 	}
 	var arguments []interface{} = make([]interface{}, len(args)-1)
@@ -760,8 +842,8 @@ func echoFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 		}
 	}
 
-	fmt.Fprintf(env.Writer, args[0].Inspect(), arguments...)
-	fmt.Fprintln(env.Writer, "")
+	fmt.Fprintf(env.Stdio.Stdout, args[0].Inspect(), arguments...)
+	fmt.Fprintln(env.Stdio.Stdout, "")
 
 	return NULL
 }
@@ -896,6 +978,7 @@ func isNumberFn(tok token.Token, env *object.Environment, args ...object.Object)
 
 // stdin() -- implemented with 2 functions
 func stdinFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	scanner := bufio.NewScanner(env.Stdio.Stdin)
 	v := scanner.Scan()
 
 	if !v {
@@ -907,14 +990,15 @@ func stdinFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 func stdinNextFn() (object.Object, object.Object) {
 	v := scanner.Scan()
 
-	if !v {
+	if !v || scanner.Text() == "" {
+		scannerPosition = 0
 		return nil, EOF
 	}
 
-	defer func() {
-		scannerPosition += 1
-	}()
-	return &object.Number{Value: float64(scannerPosition)}, &object.String{Token: tok, Value: scanner.Text()}
+	currentPosition := scannerPosition
+	scannerPosition += 1
+
+	return &object.Number{Value: float64(currentPosition)}, &object.String{Token: tok, Value: scanner.Text()}
 }
 
 // env(variable:"PWD") or env(string:"KEY", string:"VAL")
@@ -949,6 +1033,7 @@ func argFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 	i := arg.Int()
 
 	if i > len(os.Args)-1 || i < 0 {
+		// TODO this should maybe return null
 		return &object.String{Token: tok, Value: ""}
 	}
 
@@ -1088,7 +1173,7 @@ func jsonFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 
 	s := args[0].(*object.String)
 	str := strings.TrimSpace(s.Value)
-	env = object.NewEnvironment(env.Writer, env.Dir, env.Version)
+	env = object.NewEnvironment(object.SystemStdio, env.Dir, env.Version, env.Interactive)
 	l := lexer.New(str)
 	p := parser.New(l)
 	var node ast.Node
@@ -2149,7 +2234,7 @@ var packageAliasesLoaded bool
 
 func requireFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	if !packageAliasesLoaded {
-		a, err := ioutil.ReadFile("./packages.abs.json")
+		a, err := os.ReadFile("./packages.abs.json")
 
 		// We couldn't open the packages, file, possibly doesn't exists
 		// and the code shouldn't fail
@@ -2173,7 +2258,7 @@ func requireFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		return evaluated
 	}
 
-	e := object.NewEnvironment(env.Writer, filepath.Dir(file), env.Version)
+	e := object.NewEnvironment(object.SystemStdio, filepath.Dir(file), env.Version, env.Interactive)
 	evaluated := doSource(tok, e, file, args...)
 
 	// If a module fails to be imported, let's
@@ -2221,7 +2306,7 @@ func doSource(tok token.Token, env *object.Environment, fileName string, args ..
 		code, error = Asset("stdlib/" + fileName[1:])
 	} else {
 		// load the source file
-		code, error = ioutil.ReadFile(fileName)
+		code, error = os.ReadFile(fileName)
 	}
 
 	if error != nil {
@@ -2382,7 +2467,7 @@ func tsvFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 		err := tsv.Write(header)
 
 		if err != nil {
-			return newError(tok, err.Error())
+			return newError(tok, "%s", err.Error())
 		}
 	}
 
@@ -2423,7 +2508,7 @@ func tsvFn(tok token.Token, env *object.Environment, args ...object.Object) obje
 		err := tsv.Write(values)
 
 		if err != nil {
-			return newError(tok, err.Error())
+			return newError(tok, "%s", err.Error())
 		}
 	}
 
@@ -2446,9 +2531,9 @@ func execFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	parts := strings.Split(os.Getenv("ABS_COMMAND_EXECUTOR"), " ")
 	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	c.Stdin = env.Stdio.Stdin
+	c.Stdout = env.Stdio.Stdout
+	c.Stderr = env.Stdio.Stderr
 
 	// N.B. that a bash command may end with '&' --
 	// in this case bash will launch it as a daemon process and then exit c.Run() immediately

@@ -30,7 +30,7 @@ var (
 var lex *lexer.Lexer
 
 func init() {
-	Fns = getFns()
+	Fns = GetFns()
 	if os.Getenv("ABS_COMMAND_EXECUTOR") == "" {
 		// Set the executor for system commands
 		// thanks to @haifenghuang
@@ -911,21 +911,7 @@ func evalWhileExpression(
 	we *ast.WhileExpression,
 	env *object.Environment,
 ) object.Object {
-	condition := Eval(we.Condition, env)
-	if isError(condition) {
-		return condition
-	}
-
-	if isTruthy(condition) {
-		evaluated := Eval(we.Consequence, env)
-
-		if isError(evaluated) {
-			return evaluated
-		}
-
-		evalWhileExpression(we, env)
-	}
-	return NULL
+	return evalLoop(we.Condition, env, we.Block, nil)
 }
 
 // for x = 0; x < 10; x++ {x}
@@ -943,9 +929,6 @@ func evalForExpression(
 		return err
 	}
 
-	// This represents whether the for condition holds true
-	holds := true
-
 	// Final cleanup: we remove the x from the environment. If
 	// it was already declared before the foor loop, we restore
 	// it to its original value
@@ -957,17 +940,20 @@ func evalForExpression(
 		}
 	}()
 
-	// When for is while...
-	for holds {
+	return evalLoop(fe.Condition, env, fe.Block, fe.Closer)
+}
+
+func evalLoop(condition ast.Expression, env *object.Environment, block *ast.BlockStatement, closer ast.Statement) object.Object {
+	for {
 		// Evaluate the for condition
-		evaluated := Eval(fe.Condition, env)
+		evaluated := Eval(condition, env)
 		if isError(evaluated) {
 			return evaluated
 		}
 
 		// If truthy, execute the block and the closer
 		if isTruthy(evaluated) {
-			res := Eval(fe.Block, env)
+			res := Eval(block, env)
 			if isError(res) {
 				// If we have an error it could be:
 				// * a break, so we get out of the loop
@@ -991,19 +977,18 @@ func evalForExpression(
 				// do nothing
 			}
 
-			err = Eval(fe.Closer, env)
-			if isError(err) {
-				return err
+			if closer != nil {
+				err := Eval(closer, env)
+				if isError(err) {
+					return err
+				}
 			}
 
 			continue
 		}
 
-		// If not, let's break out of the loop
-		holds = false
+		return object.NULL
 	}
-
-	return NULL
 }
 
 // for k,v in 1..10 {v}
@@ -1121,7 +1106,7 @@ func evalIdentifier(
 		return builtin
 	}
 
-	return newError(node.Token, "identifier not found: "+node.Value)
+	return newError(node.Token, "identifier not found: %s", node.Value)
 }
 
 // This is the core of ABS's logical
@@ -1267,13 +1252,21 @@ func applyMethod(tok token.Token, o object.Object, me *ast.MethodExpression, env
 	}
 
 	// Make sure the builtin function can be called on the given type
-	if !util.Contains(f.Types, string(o.Type())) && len(f.Types) != 0 {
+	if !CanCallMethod(f, o) {
 		return newError(tok, "cannot call method '%s()' on '%s'", method, o.Type())
 	}
 
 	// Magic!
 	args = append([]object.Object{o}, args...)
 	return f.Fn(tok, env, args...)
+}
+
+func CanCallMethod(f *object.Builtin, o object.Object) bool {
+	if len(f.Types) == 0 {
+		return true
+	}
+
+	return util.Contains(f.Types, string(o.Type()))
 }
 
 func extendFunctionEnv(
@@ -1525,7 +1518,7 @@ func evalCommandExpression(tok token.Token, cmd string, env *object.Environment)
 	parts := strings.Split(os.Getenv("ABS_COMMAND_EXECUTOR"), " ")
 	c := exec.Command(parts[0], append(parts[1:], cmd)...)
 	c.Env = os.Environ()
-	c.Stdin = os.Stdin
+	c.Stdin = env.Stdio.Stdin
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	c.Stdout = &stdout

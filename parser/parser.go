@@ -85,6 +85,13 @@ type Parser struct {
 
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns  map[token.TokenType]infixParseFn
+	// Autocomplete subject is the latest node that
+	// we went through that's eligible for autocompletion,
+	// which is used on the REPL.
+	// There's only a handful of nodes that are eligible:
+	// * identifiers ie. suggest[PRESS TAB]
+	// * property expressions ie. object.suggest[PRESS TAB]
+	AutocompleteSubject ast.Expression
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -214,6 +221,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program.Statements = []ast.Statement{}
 
 	for !p.curTokenIs(token.EOF) {
+		p.AutocompleteSubject = nil
 		stmt := p.parseStatement()
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
@@ -424,7 +432,11 @@ func (p *Parser) curPrecedence() int {
 
 // var
 func (p *Parser) parseIdentifier() ast.Expression {
-	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	id := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	p.AutocompleteSubject = id
+
+	return id
 }
 
 // 1 or 1.1 or 1k
@@ -541,6 +553,7 @@ func (p *Parser) parseDottedExpression(object ast.Expression) ast.Expression {
 		// support assignment to hash property h.a = 1
 		exp := &ast.PropertyExpression{Token: t, Object: object}
 		exp.Property = p.parseIdentifier()
+		p.AutocompleteSubject = exp
 		p.prevPropertyExpression = exp
 		p.prevIndexExpression = nil
 		return exp
@@ -594,13 +607,15 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
-// if x {
-//   return x
-// } else if y {
-//   return y
-// } else {
-//   return z
-// }
+//	if x {
+//	  return x
+//	} else if y {
+//
+//	  return y
+//	} else {
+//
+//	  return z
+//	}
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
 	scenarios := []*ast.Scenario{}
@@ -651,9 +666,9 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	return expression
 }
 
-// while true {
-// 	echo("true")
-// }
+//	while true {
+//		echo("true")
+//	}
 func (p *Parser) parseWhileExpression() ast.Expression {
 	expression := &ast.WhileExpression{Token: p.curToken}
 
@@ -664,7 +679,7 @@ func (p *Parser) parseWhileExpression() ast.Expression {
 		return nil
 	}
 
-	expression.Consequence = p.parseBlockStatement()
+	expression.Block = p.parseBlockStatement()
 	return expression
 }
 
@@ -696,7 +711,7 @@ func (p *Parser) parseForExpression() ast.Expression {
 	}
 	p.nextToken()
 	p.nextToken()
-	expression.Closer = p.parseAssignStatement()
+	expression.Closer = p.parseStatement()
 	if expression.Closer == nil {
 		return nil
 	}
@@ -709,9 +724,9 @@ func (p *Parser) parseForExpression() ast.Expression {
 	return expression
 }
 
-// for x in [1,2,3] {
-// 	echo("true")
-// }
+//	for x in [1,2,3] {
+//		echo("true")
+//	}
 func (p *Parser) parseForInExpression(initialExpression *ast.ForExpression) ast.Expression {
 	expression := &ast.ForInExpression{Token: initialExpression.Token}
 
@@ -787,9 +802,9 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
-// f() {
-//   return 1
-// }
+//	f() {
+//	  return 1
+//	}
 func (p *Parser) parseFunctionLiteral() ast.Expression {
 	lit := &ast.FunctionLiteral{Token: p.curToken}
 

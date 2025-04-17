@@ -23,23 +23,24 @@ var Version = "dev"
 // form of {out, result}.
 func runCode(this js.Value, i []js.Value) interface{} {
 	m := make(map[string]interface{})
-	var buf bytes.Buffer
+	var stdio bytes.Buffer
+	var stdin bytes.Buffer
 	// the first argument to our function
 	code := i[0].String()
-	env := object.NewEnvironment(&buf, "", Version)
+	env := object.NewEnvironment(&object.Stdio{&stdin, &stdio, &stdio}, "", Version, true)
 	lex := lexer.New(code)
 	p := parser.New(lex)
 
 	program := p.ParseProgram()
 
 	if len(p.Errors()) != 0 {
-		printParserErrors(p.Errors(), buf)
-		m["out"] = buf.String()
+		printParserErrors(p.Errors(), stdio)
+		m["out"] = stdio.String()
 		return js.ValueOf(m)
 	}
 
 	result := evaluator.BeginEval(program, env, lex)
-	m["out"] = buf.String()
+	m["out"] = stdio.String()
 	m["result"] = result.Inspect()
 
 	return js.ValueOf(m)

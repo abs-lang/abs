@@ -90,7 +90,7 @@ for platform in platforms {
     }
 
     echo("Building %s %s", goos, goarch)
-    build = `GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w -X 'main.Version=$version'" -o $output_name $entry_point`
+    build = `CGO_ENABLED=0 GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w -X 'main.Version=$version'" -o $output_name $entry_point`
 
     if !build.ok {
         exit(1, "error: " + build)
@@ -98,7 +98,7 @@ for platform in platforms {
 }
 
 echo("building docs")
-docs = `make build_docs`
+docs = `NODE_OPTIONS=--openssl-legacy-provider make build_docs`
 
 if !docs.ok {
     exit(1, docs)
