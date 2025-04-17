@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/abs-lang/abs/ast"
 	"github.com/abs-lang/abs/lexer"
@@ -1115,14 +1116,22 @@ func splitFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 
 	s := args[0].(*object.String)
 
-	sep := " "
+	var sep string
+
 	if spec == 0 {
 		sep = args[1].(*object.String).Value
 	}
 
-	parts := strings.Split(s.Value, sep)
+	parts := strings.FieldsFunc(s.Value, func(r rune) bool {
+		if spec == 1 {
+			return unicode.IsSpace(r)
+		}
+
+		return sep == string(r)
+	})
+
 	length := len(parts)
-	elements := make([]object.Object, length, length)
+	elements := make([]object.Object, length)
 
 	for k, v := range parts {
 		elements[k] = &object.String{Token: tok, Value: v}

@@ -435,11 +435,13 @@ Converts the string to snake_case:
 
 ### split(separator)
 
-Splits a string by `separator`, defaulting to a single space:
+Splits a string by `separator`. If the separator is not provided, it defaults
+to a [unicode whitespace](https://pkg.go.dev/unicode#IsSpace):
 
 ```bash
-"1.2.3.4".split(".") # ["1", "2", "3", "4"]
-"1 2 3 4".split()    # ["1", "2", "3", "4"]
+"1.2.3.4".split(".")        # ["1", "2", "3", "4"]
+"1 2 3 4".split()           # ["1", "2", "3", "4"]
+"Hello\nworld!".split()     # ["Hello", "world!"]
 ```
 
 ### str()
