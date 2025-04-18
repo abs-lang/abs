@@ -1,8 +1,4 @@
-for tape in `ls /abs/docs/vhs/tapes`.lines() {
-    if tape == "config.tape" {
-        continue
-    }
-    
+f run_tape(t) {
     echo("running tape %s", tape)
     res = `vhs /abs/docs/vhs/tapes/$tape`
 
@@ -10,5 +6,20 @@ for tape in `ls /abs/docs/vhs/tapes`.lines() {
         exit(99, res)
     }
 
-    echo(res)
+    echo(res)   
+}
+
+t = env("TAPE") 
+
+if t {
+    run_tape(t)
+    return
+}
+
+for tape in `ls /abs/docs/vhs/tapes`.lines() {
+    if tape == "config.tape" {
+        continue
+    }
+    
+    run_tape(tape)
 }
