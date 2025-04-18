@@ -4,7 +4,7 @@ module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
-  title: 'The ABS programing language',
+  title: 'The ABS programming language',
   port: 4000,
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
