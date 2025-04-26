@@ -28,4 +28,4 @@ wasm:
 	GOOS=js GOARCH=wasm go build -o docs/abs.wasm js/js.go
 tapes: build_simple
 	docker build -t abs-tapes docs/vhs
-	docker run -ti -v $$(pwd)/builds/abs:/usr/bin/abs -v $$(pwd):/abs abs-tapes
+	docker run -ti -v $$(pwd)/builds/abs:/usr/bin/abs -v $$(pwd):/abs -e TAPE=$(tape) abs-tapes

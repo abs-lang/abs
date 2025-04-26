@@ -1,6 +1,7 @@
 package terminal
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -82,6 +83,7 @@ type Model struct {
 	// to determine that while ABS is executing,
 	// we should relay stdin from the terminal
 	isEvaluating bool
+	cancelEval   context.CancelFunc
 	// function to print the prompt 'prefix'
 	prompt func() string
 	// dirty input -- input I may have typed on
@@ -155,7 +157,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// so if we type during this time,
 		// we should forward this to ABS' stdin
 		if m.isEvaluating {
-			return m.interceptStdin(msg)
+			switch msg.Type {
+			case tea.KeyCtrlC:
+				return m.abortEval()
+			default:
+				return m.interceptStdin(msg)
+			}
 		}
 
 		if m.IsSuggesting() {
@@ -251,6 +258,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tiCmd
+}
+
+func (m Model) abortEval() (tea.Model, tea.Cmd) {
+	return m, func() tea.Msg {
+		// *if* a command was running, let's
+		// notify it that it should be canceled
+		if m.cancelEval != nil {
+			m.cancelEval()
+		}
+
+		// 'fake' a command being done
+		return doneEval{
+			out: object.NULL,
+			ok:  false,
+		}
+	}
 }
 
 func (m Model) search() Model {
@@ -597,10 +620,27 @@ type doneEval struct {
 
 func (m Model) eval() (Model, tea.Cmd) {
 	m.isEvaluating = true
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancelEval = cancel
+
 	done := make(chan doneEval)
 
 	go func() {
+		defer m.cancelEval()
+		// obviously we should pass the context to the runner
+		// but this is for another day. The current implementation
+		// makes it so that the command will keep running in background,
+		// but we'll give the user the impression the command is
+		// terminated (which is bad). Again, I think the real solution
+		// over time is to introduce a CancelContext to the runner
+		// that gets passed down all the way to running the commands.
 		out, ok, parseErrors := runner.Run(m.in.Value(), m.env)
+
+		// someone cancelled the eval operation
+		if err := ctx.Err(); err != nil {
+			return
+		}
+
 		done <- doneEval{out, ok, parseErrors}
 	}()
 
