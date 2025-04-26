@@ -1,6 +1,6 @@
 f run_tape(t) {
-    echo("running tape %s", tape)
-    res = `vhs /abs/docs/vhs/tapes/$tape`
+    echo("running tape %s", t)
+    res = `vhs /abs/docs/vhs/tapes/$t`
 
     if !res.ok {
         exit(99, res)
