@@ -17,7 +17,7 @@
 # "android/arm"
 # "solaris/amd64"
 
-# freebsd and netbsd can be easily
+# can be easily
 # built, but we opt to keep them
 # out as the userbase doesn't seem
 # to be there.
@@ -28,6 +28,8 @@
 # "netbsd/386",
 # "netbsd/amd64",
 # "netbsd/arm"
+# "linux/ppc64",
+# "linux/ppc64le",
 #
 # dropped by Go
 # "darwin/386",
@@ -37,13 +39,14 @@ platforms = [
     "linux/amd64",
     "linux/arm",
     "linux/arm64",
-    "linux/ppc64",
-    "linux/ppc64le",
     "linux/arm",
     "linux/arm64",
     "windows/amd64",
     "windows/386",
+    "windows/amd64",
+    "windows/arm",
     "darwin/amd64",
+    "darwin/arm64",
     "js/wasm"
 ]
 
