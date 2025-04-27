@@ -93,7 +93,7 @@ f return_random_number_after_sleeping(seconds) {
 
 and we can test our decorator has taken the stage:
 
-```console
+```bash
 ⧐  return_random_number_after_sleeping(0)
 493
 ⧐  return_random_number_after_sleeping(1)
