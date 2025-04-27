@@ -181,6 +181,30 @@ Type 'quit' when you're done, 'help' if you get lost!
 STRING
 ```
 
+ABS does not (currently) support passing multiple values
+for a flag, and will instead select the very first value
+it encounters:
+
+```bash
+$ abs -f 1 -f 2
+Hello user, welcome to the ABS programming language!
+Type 'quit' when you're done, 'help' if you get lost!
+> flag("f")
+1
+```
+
+In case you need to support passing a 'list' of arguments
+for a flag, we recommend using a comma-separated string,
+and doing something like:
+
+```bash
+abs -f 1,2
+Hello user, welcome to the ABS programming language!
+Type 'quit' when you're done, 'help' if you get lost!
+> flag("f").split(",")
+["1", "2"]
+```
+
 ### pwd()
 
 Returns the path to the current working directory -- equivalent
