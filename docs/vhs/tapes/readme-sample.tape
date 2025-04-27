@@ -21,18 +21,18 @@ Sleep 0.5
 Type "i"
 Sleep 0.25
 Type "tz = `cat /etc/timezone`"
-Sleep 0.5
+Sleep 0.25
 Enter
 Type "continent, city = tz.split('/')"
-Sleep 0.5
+Sleep 0.25
 Enter
 Enter
 Type "echo('Best city in the world?')"
-Sleep 0.5
+Sleep 0.25
 Enter
 Enter
 Type "selection = stdin()"
-Sleep 0.5
+Sleep 0.25
 Enter
 Enter
 Type "if selection ~ city {"
