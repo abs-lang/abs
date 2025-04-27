@@ -26,7 +26,7 @@ Note that ABS_HISTORY_FILE and ABS_MAX_HISTORY_LINES variables may come from the
 
 const (
 	ABS_HISTORY_FILE      = "~/.abs_history"
-	ABS_MAX_HISTORY_LINES = "1000"
+	ABS_MAX_HISTORY_LINES = "10000"
 )
 
 // Expand full path to ABS_HISTORY_FILE for current user and get ABS_MAX_HISTORY_LINES
