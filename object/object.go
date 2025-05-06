@@ -57,6 +57,7 @@ type Object interface {
 	Type() ObjectType
 	Inspect() string
 	Json() string
+	Raw() interface{}
 }
 
 // GenerateEqualityString is used to compare
@@ -106,6 +107,13 @@ func (n *Number) IsInt() bool {
 func (n *Number) Json() string       { return n.Inspect() }
 func (n *Number) ZeroValue() float64 { return float64(0) }
 func (n *Number) Int() int           { return int(n.Value) }
+func (n *Number) Raw() interface{} {
+	if n.IsInt() {
+		return int(n.Value)
+	} else {
+		return n.Value
+	}
+}
 
 type Boolean struct {
 	Token token.Token
@@ -115,6 +123,7 @@ type Boolean struct {
 func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
 func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
 func (b *Boolean) Json() string     { return b.Inspect() }
+func (b *Boolean) Raw() interface{} { return b.Value }
 
 type Null struct {
 	Token token.Token
@@ -123,6 +132,7 @@ type Null struct {
 func (n *Null) Type() ObjectType { return NULL_OBJ }
 func (n *Null) Inspect() string  { return "null" }
 func (n *Null) Json() string     { return n.Inspect() }
+func (n *Null) Raw() interface{} { return nil }
 
 type ReturnValue struct {
 	Token token.Token
@@ -132,6 +142,7 @@ type ReturnValue struct {
 func (rv *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
 func (rv *ReturnValue) Inspect() string  { return rv.Value.Inspect() }
 func (rv *ReturnValue) Json() string     { return rv.Inspect() }
+func (rv *ReturnValue) Raw() interface{} { return rv.Value.Raw() }
 
 type Error struct {
 	Message string
@@ -140,6 +151,7 @@ type Error struct {
 func (e *Error) Type() ObjectType { return ERROR_OBJ }
 func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
 func (e *Error) Json() string     { return e.Inspect() }
+func (e *Error) Raw() interface{} { return e.Message }
 
 type BreakError struct {
 	Error
@@ -182,7 +194,8 @@ func (f *Function) Inspect() string {
 	return out.String()
 }
 
-func (f *Function) Json() string { return f.Inspect() }
+func (f *Function) Json() string     { return f.Inspect() }
+func (f *Function) Raw() interface{} { return f.Inspect() }
 
 // The String is a special fella.
 //
@@ -224,6 +237,7 @@ type String struct {
 func (s *String) Type() ObjectType  { return STRING_OBJ }
 func (s *String) Inspect() string   { return s.Value }
 func (s *String) Json() string      { return `"` + strings.ReplaceAll(s.Inspect(), `"`, `\"`) + `"` }
+func (s *String) Raw() interface{}  { return s.Value }
 func (s *String) ZeroValue() string { return "" }
 func (s *String) HashKey() HashKey {
 	return HashKey{Type: s.Type(), Value: s.Value}
@@ -331,6 +345,7 @@ type Builtin struct {
 func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
 func (b *Builtin) Inspect() string  { return "builtin function" }
 func (b *Builtin) Json() string     { return b.Inspect() }
+func (b *Builtin) Raw() interface{} { return b.Inspect() }
 
 type Array struct {
 	Token    token.Token
@@ -397,7 +412,8 @@ func (ao *Array) Inspect() string {
 	return out.String()
 }
 
-func (ao *Array) Json() string { return ao.Inspect() }
+func (ao *Array) Json() string     { return ao.Inspect() }
+func (ao *Array) Raw() interface{} { return ao.Inspect() }
 
 type HashPair struct {
 	Key   Object
@@ -445,7 +461,8 @@ func (h *Hash) Inspect() string {
 
 	return out.String()
 }
-func (h *Hash) Json() string { return h.Inspect() }
+func (h *Hash) Json() string     { return h.Inspect() }
+func (h *Hash) Raw() interface{} { return h.Inspect() }
 
 // Pretty convoluted logic here we could
 // refactor.

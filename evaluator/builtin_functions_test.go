@@ -178,8 +178,12 @@ func TestFmt(t *testing.T) {
 	tests := []Tests{
 		{`"hello %s".fmt("world")`, "hello world"},
 		{`"hello %s".fmt()`, "hello %!s(MISSING)"},
-		{`"hello %s".fmt(1)`, "hello 1"},
+		{`"hello %s".fmt(1)`, "hello %!s(int=1)"},
 		{`"hello %s".fmt({})`, "hello {}"},
+		{`"hello %d".fmt(1)`, "hello 1"},
+		{`"hello %d".fmt(1.5)`, "hello %!d(float64=1.5)"},
+		{`"hello %f".fmt(1.5)`, "hello 1.500000"},
+		{`"hello %.3f".fmt(1.5)`, "hello 1.500"},
 	}
 
 	testBuiltinFunction(tests, t)
