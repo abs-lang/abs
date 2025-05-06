@@ -199,6 +199,11 @@ func GetFns() map[string]*object.Builtin {
 			Fn:    callFn,
 			Doc:   "calls a function programmatically with its arguments passed as an array",
 		},
+		// fn.go(args_array)
+		"go": &object.Builtin{
+			Types: []string{object.FUNCTION_OBJ, object.BUILTIN_OBJ},
+			Fn:    callGo,
+		},
 		// chnk([...], int:2)
 		"chunk": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -1071,6 +1076,18 @@ func callFn(tok token.Token, env *object.Environment, args ...object.Object) obj
 	}
 
 	return applyFunction(tok, args[0], env, args[1].(*object.Array).Elements)
+}
+
+// fn.go(args_array)
+func callGo(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "call", args, 2, [][]string{{object.FUNCTION_OBJ, object.BUILTIN_OBJ}, {object.ARRAY_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	go applyFunction(tok, args[0], env, args[1].(*object.Array).Elements)
+
+	return NULL
 }
 
 // chunk([...], integer:2)
