@@ -736,6 +736,17 @@ func TestPartition(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestRegex(t *testing.T) {
+	tests := []Tests{
+		{`r = regex(""); r.str()`, ""},
+		{`regex("a").str()`, "a"},
+		{`r = regex("a(x+)b"); r.str()`, "a(x+)b"},
+		{`regex("won't(work")`, ""}
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func TestMatches(t *testing.T) {
 	tests := []Tests{
 		{`r = regex(""); r.matches("")`, true},
@@ -769,6 +780,18 @@ func TestMatchAll(t *testing.T) {
 		{`"a(x*)b".match_all("a ab ax xb axb").len()`, 2},
 		{`"a(x*)b".match_all("a ab ax xb axb")[0]`, []string{"ab", ""}},
 		{`"a(x*)b".match_all("a ab ax xb axb")[1]`, []string{"axb", "x"}},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestReplaceMatch(t *testing.T) {
+	tests := []Tests{
+		{`".".replace_match("xyz", ".")`, "..."},
+		{`r = regex("x+"); r.replace_match("x xx xxx", f(x) { x.len() })`, "1 2 3"},
+		{`".".replace_match("a", f(x) {})`, ""},
+		{`r = regex("a(x*)b"); r.replace_match("a ab axb axxxb", ".")`, "a . . ."},
+		{`"a(x*)b".replace_match("a ab axb axxxb", f(x) {x.len()})`, "a 2 3 5"},
 	}
 
 	testBuiltinFunction(tests, t)

@@ -451,6 +451,12 @@ func GetFns() map[string]*object.Builtin {
 			Fn:    match_allFn,
 			Doc:   "match a pattern against a string and return the all matches and their submatches",
 		},
+		// replace_match(pattern, "abc", "repl") or replace_match(pattern, "abc", fn)
+		"replace_match": &object.Builtin {
+			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+			Fn:    replace_matchFn,
+			Doc:   "replace all matches of a pattern in a string",
+		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -2103,6 +2109,38 @@ func match_allFn(tok token.Token, env *object.Environment, args ...object.Object
 	}
 
 	return &object.Array{Token: tok, Elements: newMatches}
+}
+
+// replace_match(pattern, "abc", "repl") or replace_match(pattern, "abc", fn)
+func replace_matchFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "last_index", args, 3, [][]string{{object.STRING_OBJ, object.REGEX_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ, object.FUNCTION_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	re := getRegexpObj(args[0])
+	if re.Type() == object.ERROR_OBJ {
+		return err;
+	}
+
+	var s string;
+	if args[2].Type() == object.STRING_OBJ {
+		s = re.(*object.Regex).Value.ReplaceAllString(args[1].(*object.String).Value, args[2].(*object.String).Value)
+	} else {
+		replacefn := func(m string) string {
+			cargs := make([]object.Object, 1, 1)
+			cargs[0] = &object.String{Token: tok, Value: m}
+			r := applyFunction(tok, args[2], env, cargs)
+			if r != nil {
+				return r.Inspect()
+			}
+			return ""
+		}
+
+		s = re.(*object.Regex).Value.ReplaceAllStringFunc(args[1].(*object.String).Value, replacefn)
+	}
+
+	return &object.String{Token: tok, Value: s}
 }
 
 // Clamps start and end arguments to the slice
