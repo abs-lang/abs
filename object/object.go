@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"regexp"
 	"sync"
 
 	"github.com/abs-lang/abs/ast"
@@ -25,7 +25,7 @@ const (
 	NUMBER_OBJ  = "NUMBER"
 	BOOLEAN_OBJ = "BOOLEAN"
 	STRING_OBJ  = "STRING"
-	REGEX_OBJ  = "REGEX"
+	REGEX_OBJ   = "REGEX"
 
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 
@@ -232,14 +232,14 @@ func (s *String) HashKey() HashKey {
 }
 
 type Regex struct {
-	Token token.Token
-	Value *regexp.Regexp
+	Token  token.Token
+	Value  *regexp.Regexp
 	Source string
 }
 
 func (r *Regex) Type() ObjectType { return REGEX_OBJ }
-func (r *Regex) Inspect() string { return r.Source }
-func (r *Regex) Json() string  { return `"` + strings.ReplaceAll(r.Inspect(), `"`, `\"`) + `"` }
+func (r *Regex) Inspect() string  { return r.Source }
+func (r *Regex) Json() string     { return `"` + strings.ReplaceAll(r.Inspect(), `"`, `\"`) + `"` }
 
 // Function that ensure a mutex
 // instance is created on the

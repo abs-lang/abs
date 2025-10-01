@@ -13,10 +13,10 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"regexp"
 	"time"
 	"unicode"
 
@@ -434,26 +434,26 @@ func GetFns() map[string]*object.Builtin {
 			Doc:   "returns a string compiled to a regular expression",
 		},
 		// matches(pattern, "abc")
-		"matches": &object.Builtin {
-			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+		"matches": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.REGEX_OBJ},
 			Fn:    matchesFn,
 			Doc:   "checks whether a string matches a pattern",
 		},
 		// match(pattern, "abc")
-		"match": &object.Builtin {
-			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+		"match": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.REGEX_OBJ},
 			Fn:    matchFn,
 			Doc:   "match a pattern against a string and return the first match and all submatches",
 		},
 		// match_all(pattern, "abc")
-		"match_all": &object.Builtin {
-			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+		"match_all": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.REGEX_OBJ},
 			Fn:    match_allFn,
 			Doc:   "match a pattern against a string and return the all matches and their submatches",
 		},
 		// replace_match(pattern, "abc", "repl") or replace_match(pattern, "abc", fn)
-		"replace_match": &object.Builtin {
-			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+		"replace_match": &object.Builtin{
+			Types: []string{object.STRING_OBJ, object.REGEX_OBJ},
 			Fn:    replace_matchFn,
 			Doc:   "replace all matches of a pattern in a string",
 		},
@@ -2019,17 +2019,17 @@ func regexFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 }
 
 func getRegexpObj(obj object.Object) object.Object {
-	switch (obj.Type()) {
-		case object.REGEX_OBJ:
-			return obj
-		case object.STRING_OBJ:
-			re, err := regexp.Compile(obj.(*object.String).Value)
-			if err != nil {
-				return newError(tok, "%s", err)
-			}
-			return &object.Regex{Token: tok, Value: re, Source: obj.(*object.String).Value}
-		default:
-			return newError(tok, "invalid argument type"); // should not get here
+	switch obj.Type() {
+	case object.REGEX_OBJ:
+		return obj
+	case object.STRING_OBJ:
+		re, err := regexp.Compile(obj.(*object.String).Value)
+		if err != nil {
+			return newError(tok, "%s", err)
+		}
+		return &object.Regex{Token: tok, Value: re, Source: obj.(*object.String).Value}
+	default:
+		return newError(tok, "invalid argument type") // should not get here
 	}
 }
 
@@ -2042,7 +2042,7 @@ func matchesFn(tok token.Token, env *object.Environment, args ...object.Object) 
 
 	re := getRegexpObj(args[0])
 	if isError(re) {
-		return re;
+		return re
 	}
 
 	m := re.(*object.Regex).Value.MatchString(args[1].(*object.String).Value)
@@ -2059,18 +2059,18 @@ func matchFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 
 	re := getRegexpObj(args[0])
 	if isError(re) {
-		return re;
+		return re
 	}
 
 	match := re.(*object.Regex).Value.FindStringSubmatch(args[1].(*object.String).Value)
 
 	length := len(match)
 	if length == 0 {
-		return NULL;
+		return NULL
 	}
 	newElements := make([]object.Object, length, length)
 
-	for i, s := range(match) {
+	for i, s := range match {
 		newElements[i] = &object.String{Token: tok, Value: s}
 	}
 
@@ -2086,22 +2086,22 @@ func match_allFn(tok token.Token, env *object.Environment, args ...object.Object
 
 	re := getRegexpObj(args[0])
 	if isError(re) {
-		return re;
+		return re
 	}
 
 	allMatches := re.(*object.Regex).Value.FindAllStringSubmatch(args[1].(*object.String).Value, -1)
 
 	length := len(allMatches)
 	if length == 0 {
-		return NULL;
+		return NULL
 	}
 	newMatches := make([]object.Object, length, length)
 
-	for i, match := range(allMatches) {
+	for i, match := range allMatches {
 		length := len(match)
 		newElements := make([]object.Object, length, length)
 
-		for j, s := range(match) {
+		for j, s := range match {
 			newElements[j] = &object.String{Token: tok, Value: s}
 		}
 
@@ -2120,10 +2120,10 @@ func replace_matchFn(tok token.Token, env *object.Environment, args ...object.Ob
 
 	re := getRegexpObj(args[0])
 	if isError(re) {
-		return re;
+		return re
 	}
 
-	var s string;
+	var s string
 	if args[2].Type() == object.STRING_OBJ {
 		s = re.(*object.Regex).Value.ReplaceAllString(args[1].(*object.String).Value, args[2].(*object.String).Value)
 	} else {
