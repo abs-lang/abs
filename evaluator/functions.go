@@ -445,6 +445,12 @@ func GetFns() map[string]*object.Builtin {
 			Fn:    matchFn,
 			Doc:   "match a pattern against a string and return the first match and all submatches",
 		},
+		// match_all(pattern, "abc")
+		"match_all": &object.Builtin {
+			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+			Fn:    match_allFn,
+			Doc:   "match a pattern against a string and return the all matches and their submatches",
+		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -2063,6 +2069,40 @@ func matchFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 	}
 
 	return &object.Array{Token: tok, Elements: newElements}
+}
+
+// match_all(pattern, "abc")
+func match_allFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "last_index", args, 2, [][]string{{object.STRING_OBJ, object.REGEX_OBJ}, {object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	re := getRegexpObj(args[0])
+	if re.Type() == object.ERROR_OBJ {
+		return err;
+	}
+
+	allMatches := re.(*object.Regex).Value.FindAllStringSubmatch(args[1].(*object.String).Value, -1)
+
+	length := len(allMatches)
+	if length == 0 {
+		return NULL;
+	}
+	newMatches := make([]object.Object, length, length)
+
+	for i, match := range(allMatches) {
+		length := len(match)
+		newElements := make([]object.Object, length, length)
+
+		for j, s := range(match) {
+			newElements[j] = &object.String{Token: tok, Value: s}
+		}
+
+		newMatches[i] = &object.Array{Token: tok, Elements: newElements}
+	}
+
+	return &object.Array{Token: tok, Elements: newMatches}
 }
 
 // Clamps start and end arguments to the slice
