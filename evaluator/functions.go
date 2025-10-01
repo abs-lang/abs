@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"regexp"
 	"time"
 	"unicode"
 
@@ -425,6 +426,12 @@ func GetFns() map[string]*object.Builtin {
 			Types: []string{object.STRING_OBJ},
 			Fn:    lastIndexFn,
 			Doc:   "returns the last position at which a string is found within another string",
+		},
+		// regex("ax+b")
+		"regex": &object.Builtin{
+			Types: []string{object.STRING_OBJ},
+			Fn:    regexFn,
+			Doc:   "returns a string compiled to a regular expression",
 		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
@@ -1969,6 +1976,22 @@ func lastIndexFn(tok token.Token, env *object.Environment, args ...object.Object
 	}
 
 	return &object.Number{Token: tok, Value: float64(i)}
+}
+
+// regex("ax+b")
+func regexFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "regex", args, 1, [][]string{{object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	re, nok := regexp.Compile(args[0].(*object.String).Value)
+
+	if nok != nil {
+		return newError(tok, "invalid regular expression \"%s\"", nok.Error())
+	}
+
+	return &object.Regex{Token: tok, Value: re, Source: args[0].(*object.String).Value}
 }
 
 // Clamps start and end arguments to the slice
