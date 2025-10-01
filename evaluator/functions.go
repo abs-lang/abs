@@ -2113,7 +2113,7 @@ func match_allFn(tok token.Token, env *object.Environment, args ...object.Object
 
 // replace_match(pattern, "abc", "repl") or replace_match(pattern, "abc", fn)
 func replace_matchFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
-	err := validateArgs(tok, "last_index", args, 3, [][]string{{object.STRING_OBJ, object.REGEX_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ, object.FUNCTION_OBJ}})
+	err := validateArgs(tok, "last_index", args, 3, [][]string{{object.STRING_OBJ, object.REGEX_OBJ}, {object.STRING_OBJ}, {object.STRING_OBJ, object.FUNCTION_OBJ, object.BUILTIN_OBJ}})
 	if err != nil {
 		return err
 	}

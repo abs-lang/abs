@@ -738,7 +738,7 @@ func TestPartition(t *testing.T) {
 
 func TestRegex(t *testing.T) {
 	tests := []Tests{
-		{`r = regex(""); r.str()`, ""},
+		{`r = regex(""); r.type()`, "REGEX"},
 		{`regex("a").str()`, "a"},
 		{`r = regex("a(x+)b"); r.str()`, "a(x+)b"},
 		{`regex(")")`, "error parsing regexp: unexpected ): `)`"},
@@ -795,6 +795,7 @@ func TestReplaceMatch(t *testing.T) {
 		{`".".replace_match("a", f(x) {})`, ""},
 		{`r = regex("a(x*)b"); r.replace_match("a ab axb axxxb", ".")`, "a . . ."},
 		{`"a(x*)b".replace_match("a ab axb axxxb", f(x) {x.len()})`, "a 2 3 5"},
+		{`"a(x*)b".replace_match("a ab axb axxxb", len)`, "a 2 3 5"},
 		{`"a(x*)b".replace_match("a ab axb axxxb", "\$1")`, "a  x xxx"},
 		{`")".replace_match("x", ".")`, "error parsing regexp: unexpected ): `)`"},
 	}
