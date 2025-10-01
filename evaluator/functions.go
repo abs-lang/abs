@@ -439,6 +439,12 @@ func GetFns() map[string]*object.Builtin {
 			Fn:    matchesFn,
 			Doc:   "checks whether a string matches a pattern",
 		},
+		// match(pattern, "abc")
+		"match": &object.Builtin {
+			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+			Fn:    matchFn,
+			Doc:   "match a pattern against a string and return the first match and all submatches",
+		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -2000,6 +2006,21 @@ func regexFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 	return &object.Regex{Token: tok, Value: re, Source: args[0].(*object.String).Value}
 }
 
+func getRegexpObj(obj object.Object) object.Object {
+	switch (obj.Type()) {
+		case object.REGEX_OBJ:
+			return obj
+		case object.STRING_OBJ:
+			re, err := regexp.Compile(obj.(*object.String).Value)
+			if err != nil {
+				return newError(tok, "%s", err)
+			}
+			return &object.Regex{Token: tok, Value: re, Source: obj.(*object.String).Value}
+		default:
+			return newError(tok, "invalid argument type"); // should not get here
+	}
+}
+
 // matches(pattern, "abc")
 func matchesFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
 	err := validateArgs(tok, "last_index", args, 2, [][]string{{object.STRING_OBJ, object.REGEX_OBJ}, {object.STRING_OBJ}})
@@ -2007,19 +2028,41 @@ func matchesFn(tok token.Token, env *object.Environment, args ...object.Object) 
 		return err
 	}
 
-	var re *regexp.Regexp
-	if args[0].Type() == object.REGEX_OBJ {
-		re = args[0].(*object.Regex).Value;
-	} else {
-		var nok error
-		re, nok = regexp.Compile(args[0].(*object.String).Value)
-
-		if nok != nil {
-			return newError(tok, "invalid regular expression \"%s\"", nok.Error())
-		}
+	re := getRegexpObj(args[0])
+	if re.Type() == object.ERROR_OBJ {
+		return err;
 	}
 
-	return &object.Boolean{Token: tok, Value: re.MatchString(args[1].(*object.String).Value)}
+	m := re.(*object.Regex).Value.MatchString(args[1].(*object.String).Value)
+
+	return &object.Boolean{Token: tok, Value: m}
+}
+
+// match(pattern, "abc")
+func matchFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "last_index", args, 2, [][]string{{object.STRING_OBJ, object.REGEX_OBJ}, {object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	re := getRegexpObj(args[0])
+	if re.Type() == object.ERROR_OBJ {
+		return err;
+	}
+
+	match := re.(*object.Regex).Value.FindStringSubmatch(args[1].(*object.String).Value)
+
+	length := len(match)
+	if length == 0 {
+		return NULL;
+	}
+	newElements := make([]object.Object, length, length)
+
+	for i, s := range(match) {
+		newElements[i] = &object.String{Token: tok, Value: s}
+	}
+
+	return &object.Array{Token: tok, Elements: newElements}
 }
 
 // Clamps start and end arguments to the slice
