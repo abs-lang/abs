@@ -741,7 +741,7 @@ func TestRegex(t *testing.T) {
 		{`r = regex(""); r.str()`, ""},
 		{`regex("a").str()`, "a"},
 		{`r = regex("a(x+)b"); r.str()`, "a(x+)b"},
-		{`regex("won't(work")`, ""}
+		{`regex(")")`, "error parsing regexp: unexpected ): `)`"},
 	}
 
 	testBuiltinFunction(tests, t)
@@ -755,6 +755,7 @@ func TestMatches(t *testing.T) {
 		{`"ax*b".matches("ax")`, false},
 		{`r = regex("ax*b"); r.matches("xb")`, false},
 		{`"ax+b".matches("ab")`, false},
+		{`")".matches("x")`, "error parsing regexp: unexpected ): `)`"},
 	}
 
 	testBuiltinFunction(tests, t)
@@ -767,6 +768,7 @@ func TestMatch(t *testing.T) {
 		{`r = regex("a(y*)b"); r.match("xaybz")`, []string{"ayb", "y"}},
 		{`"abc".match("xyz")`, nil},
 		{`r = regex("a(y+)b"); r.match("ab")`, nil},
+		{`")".match("x")`, "error parsing regexp: unexpected ): `)`"},
 	}
 
 	testBuiltinFunction(tests, t)
@@ -780,6 +782,7 @@ func TestMatchAll(t *testing.T) {
 		{`"a(x*)b".match_all("a ab ax xb axb").len()`, 2},
 		{`"a(x*)b".match_all("a ab ax xb axb")[0]`, []string{"ab", ""}},
 		{`"a(x*)b".match_all("a ab ax xb axb")[1]`, []string{"axb", "x"}},
+		{`")".match_all("x")`, "error parsing regexp: unexpected ): `)`"},
 	}
 
 	testBuiltinFunction(tests, t)
@@ -792,6 +795,8 @@ func TestReplaceMatch(t *testing.T) {
 		{`".".replace_match("a", f(x) {})`, ""},
 		{`r = regex("a(x*)b"); r.replace_match("a ab axb axxxb", ".")`, "a . . ."},
 		{`"a(x*)b".replace_match("a ab axb axxxb", f(x) {x.len()})`, "a 2 3 5"},
+		{`"a(x*)b".replace_match("a ab axb axxxb", "\$1")`, "a  x xxx"},
+		{`")".replace_match("x", ".")`, "error parsing regexp: unexpected ): `)`"},
 	}
 
 	testBuiltinFunction(tests, t)

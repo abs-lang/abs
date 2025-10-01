@@ -2012,7 +2012,7 @@ func regexFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 	re, nok := regexp.Compile(args[0].(*object.String).Value)
 
 	if nok != nil {
-		return newError(tok, "invalid regular expression \"%s\"", nok.Error())
+		return newError(tok, "%s", nok.Error())
 	}
 
 	return &object.Regex{Token: tok, Value: re, Source: args[0].(*object.String).Value}
@@ -2041,8 +2041,8 @@ func matchesFn(tok token.Token, env *object.Environment, args ...object.Object) 
 	}
 
 	re := getRegexpObj(args[0])
-	if re.Type() == object.ERROR_OBJ {
-		return err;
+	if isError(re) {
+		return re;
 	}
 
 	m := re.(*object.Regex).Value.MatchString(args[1].(*object.String).Value)
@@ -2058,8 +2058,8 @@ func matchFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 	}
 
 	re := getRegexpObj(args[0])
-	if re.Type() == object.ERROR_OBJ {
-		return err;
+	if isError(re) {
+		return re;
 	}
 
 	match := re.(*object.Regex).Value.FindStringSubmatch(args[1].(*object.String).Value)
@@ -2085,8 +2085,8 @@ func match_allFn(tok token.Token, env *object.Environment, args ...object.Object
 	}
 
 	re := getRegexpObj(args[0])
-	if re.Type() == object.ERROR_OBJ {
-		return err;
+	if isError(re) {
+		return re;
 	}
 
 	allMatches := re.(*object.Regex).Value.FindAllStringSubmatch(args[1].(*object.String).Value, -1)
@@ -2119,8 +2119,8 @@ func replace_matchFn(tok token.Token, env *object.Environment, args ...object.Ob
 	}
 
 	re := getRegexpObj(args[0])
-	if re.Type() == object.ERROR_OBJ {
-		return err;
+	if isError(re) {
+		return re;
 	}
 
 	var s string;
