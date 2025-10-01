@@ -433,6 +433,12 @@ func GetFns() map[string]*object.Builtin {
 			Fn:    regexFn,
 			Doc:   "returns a string compiled to a regular expression",
 		},
+		// matches(pattern, "abc")
+		"matches": &object.Builtin {
+			Types: []string{object.STRING_OBJ,object.REGEX_OBJ},
+			Fn:    matchesFn,
+			Doc:   "checks whether a string matches a pattern",
+		},
 		// shift([1,2,3])
 		"shift": &object.Builtin{
 			Types: []string{object.ARRAY_OBJ},
@@ -1992,6 +1998,28 @@ func regexFn(tok token.Token, env *object.Environment, args ...object.Object) ob
 	}
 
 	return &object.Regex{Token: tok, Value: re, Source: args[0].(*object.String).Value}
+}
+
+// matches(pattern, "abc")
+func matchesFn(tok token.Token, env *object.Environment, args ...object.Object) object.Object {
+	err := validateArgs(tok, "last_index", args, 2, [][]string{{object.STRING_OBJ, object.REGEX_OBJ}, {object.STRING_OBJ}})
+	if err != nil {
+		return err
+	}
+
+	var re *regexp.Regexp
+	if args[0].Type() == object.REGEX_OBJ {
+		re = args[0].(*object.Regex).Value;
+	} else {
+		var nok error
+		re, nok = regexp.Compile(args[0].(*object.String).Value)
+
+		if nok != nil {
+			return newError(tok, "invalid regular expression \"%s\"", nok.Error())
+		}
+	}
+
+	return &object.Boolean{Token: tok, Value: re.MatchString(args[1].(*object.String).Value)}
 }
 
 // Clamps start and end arguments to the slice
