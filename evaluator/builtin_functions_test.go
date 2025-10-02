@@ -736,6 +736,73 @@ func TestPartition(t *testing.T) {
 	testBuiltinFunction(tests, t)
 }
 
+func TestRegex(t *testing.T) {
+	tests := []Tests{
+		{`r = regex(""); r.type()`, "REGEX"},
+		{`regex("a").str()`, "a"},
+		{`r = regex("a(x+)b"); r.str()`, "a(x+)b"},
+		{`regex(")")`, "error parsing regexp: unexpected ): `)`"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestMatches(t *testing.T) {
+	tests := []Tests{
+		{`r = regex(""); r.matches("")`, true},
+		{`"ax*b".matches("ab")`, true},
+		{`r = regex("ax*b"); r.matches("xaby")`, true},
+		{`"ax*b".matches("ax")`, false},
+		{`r = regex("ax*b"); r.matches("xb")`, false},
+		{`"ax+b".matches("ab")`, false},
+		{`")".matches("x")`, "error parsing regexp: unexpected ): `)`"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestMatch(t *testing.T) {
+	tests := []Tests{
+		{`"..".match("ab")`, []string{"ab"}},
+		{`"(.)(.)".match("ab")`, []string{"ab", "a", "b"}},
+		{`r = regex("a(y*)b"); r.match("xaybz")`, []string{"ayb", "y"}},
+		{`"abc".match("xyz")`, nil},
+		{`r = regex("a(y+)b"); r.match("ab")`, nil},
+		{`")".match("x")`, "error parsing regexp: unexpected ): `)`"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+// testBuiltinFunction does ot do nested arrays as results, so we get creative
+func TestMatchAll(t *testing.T) {
+	tests := []Tests{
+		{`".".match_all("abc")[2]`, []string{"c"}},
+		{`r = regex("ax*b"); r.match_all("a ab ax xb axb").len()`, 2},
+		{`"a(x*)b".match_all("a ab ax xb axb").len()`, 2},
+		{`"a(x*)b".match_all("a ab ax xb axb")[0]`, []string{"ab", ""}},
+		{`"a(x*)b".match_all("a ab ax xb axb")[1]`, []string{"axb", "x"}},
+		{`")".match_all("x")`, "error parsing regexp: unexpected ): `)`"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
+func TestReplaceMatch(t *testing.T) {
+	tests := []Tests{
+		{`".".replace_match("xyz", ".")`, "..."},
+		{`r = regex("x+"); r.replace_match("x xx xxx", f(x) { x.len() })`, "1 2 3"},
+		{`".".replace_match("a", f(x) {})`, ""},
+		{`r = regex("a(x*)b"); r.replace_match("a ab axb axxxb", ".")`, "a . . ."},
+		{`"a(x*)b".replace_match("a ab axb axxxb", f(x) {x.len()})`, "a 2 3 5"},
+		{`"a(x*)b".replace_match("a ab axb axxxb", len)`, "a 2 3 5"},
+		{`"a(x*)b".replace_match("a ab axb axxxb", "\$1")`, "a  x xxx"},
+		{`")".replace_match("x", ".")`, "error parsing regexp: unexpected ): `)`"},
+	}
+
+	testBuiltinFunction(tests, t)
+}
+
 func testBuiltinFunction(tests []Tests, t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
